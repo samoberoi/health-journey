@@ -50,7 +50,7 @@ export default function Payment() {
   const [referralStatus, setReferralStatus] = useState<"idle" | "applying" | "valid" | "invalid">("idle");
   const [referralMessage, setReferralMessage] = useState<string>("");
   const navigate = useNavigate();
-  const { user: authUser } = useAuth();
+  const { user: authUser, loading: authLoading } = useAuth();
   const storedUser = getUser();
   const name = storedUser.profile.name ?? "Friend";
   const plan = getSelectedPlan();
@@ -79,22 +79,22 @@ export default function Payment() {
     }
   };
 
-  const finalizePostPayment = async () => {
-    if (!authUser || !plan) return;
+  const finalizePostPayment = async (user: { id: string }) => {
+    if (!plan) return;
     if (plan.assigns_coach !== false) {
-      await autoAssignCoach(authUser.id, plan.plan_key);
-      const c = await fetchAssignedCoach(authUser.id);
+      await autoAssignCoach(user.id, plan.plan_key);
+      const c = await fetchAssignedCoach(user.id);
       setAssignedCoach(c);
     }
     await supabase
       .from("profiles" as any)
       .update({ onboarding_completed: true } as any)
-      .eq("user_id", authUser.id);
-    await sendWelcomeNotification(authUser.id);
+      .eq("user_id", user.id);
+    await sendWelcomeNotification(user.id);
     setStep("success");
   };
 
-  const handleRazorpayPay = async () => {
+  const handleRazorpayPay = async (user: { email?: string | null }) => {
     const ok = await loadRazorpayScript();
     if (!ok) throw new Error("Failed to load Razorpay checkout.");
 
@@ -113,7 +113,7 @@ export default function Payment() {
         name: "Bye Bye Diabetes",
         description: data.plan_name || plan!.name,
         image: "https://bbdo.hyperrevamp.com/favicon.ico",
-        prefill: { email: authUser!.email ?? undefined },
+        prefill: { email: user.email ?? undefined },
         theme: { color: "#248CCB" },
         handler: async (resp: any) => {
           try {
@@ -143,7 +143,14 @@ export default function Payment() {
   const handlePay = async () => {
     setError(null);
 
-    if (!authUser) {
+    // Auth may still be hydrating when the user taps quickly after arriving.
+    // Fall back to a live session check before erroring out.
+    let effectiveUser = authUser;
+    if (!effectiveUser) {
+      const { data } = await supabase.auth.getSession();
+      effectiveUser = (data.session?.user as typeof authUser) ?? null;
+    }
+    if (!effectiveUser) {
       setError("You're not signed in. Please log in again to complete payment.");
       return;
     }
@@ -156,8 +163,8 @@ export default function Payment() {
     try {
       if (plan.plan_key === RAZORPAY_TEST_PLAN_KEY) {
         // Live Razorpay flow for the ₹1 test plan only.
-        await handleRazorpayPay();
-        await finalizePostPayment();
+        await handleRazorpayPay(effectiveUser);
+        await finalizePostPayment(effectiveUser);
       } else {
         // Mock flow for all other plans.
         await new Promise((r) => setTimeout(r, 1200));
@@ -167,7 +174,7 @@ export default function Payment() {
         expiresAt.setMonth(expiresAt.getMonth() + duration);
 
         await createSubscription({
-          user_id: authUser.id,
+          user_id: effectiveUser.id,
           plan_id: plan.plan_key,
           plan_name: `${plan.name} — ${CYCLE_LABEL[plan.billing_cycle]}`,
           plan_price: plan.total_price,
@@ -176,7 +183,7 @@ export default function Payment() {
           expires_at: expiresAt.toISOString(),
         });
 
-        await finalizePostPayment();
+        await finalizePostPayment(effectiveUser);
       }
     } catch (e: any) {
       console.error("Payment failed", e);
@@ -285,7 +292,7 @@ export default function Payment() {
               </div>
             )}
 
-            <motion.button onClick={handlePay} disabled={loading || !plan} className="gradient-blue text-primary-foreground font-bold py-4 rounded-2xl glow-blue mt-auto flex items-center justify-center gap-2 disabled:opacity-50" whileTap={{ scale: 0.98 }}>
+            <motion.button onClick={handlePay} disabled={loading || authLoading || !plan} className="gradient-blue text-primary-foreground font-bold py-4 rounded-2xl glow-blue mt-auto flex items-center justify-center gap-2 disabled:opacity-50" whileTap={{ scale: 0.98 }}>
               {loading ? (<><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Processing...</>) : (<><Rocket className="w-5 h-5" strokeWidth={1.8} /> Start My Journey</>)}
             </motion.button>
           </motion.div>

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Plus, Edit2, Save, X, ChevronDown, ChevronUp, Phone, Mail, Star, Users as UsersIcon } from "lucide-react";
+import { Search, Plus, Edit2, Save, X, ChevronDown, ChevronUp, Phone, Mail, Star, Users as UsersIcon, Check, Package as PackageIcon } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";

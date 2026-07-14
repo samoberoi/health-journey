@@ -301,7 +301,7 @@ export default function YogaUpsell() {
               <div className="mt-4 rounded-2xl bg-background ring-1 ring-border/60 p-3">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-                    Upcoming classes ({upcoming.length})
+                    Upcoming 8 classes ({upcoming.length})
                   </p>
                 </div>
                 <ul className="divide-y divide-border/50">

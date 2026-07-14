@@ -414,7 +414,7 @@ export default function YogaUpsell() {
 
                   <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-semibold">
                     {p.classes_per_month && (
-                      <span className="rounded-full bg-muted px-2 py-0.5">{p.classes_per_month} classes / month</span>
+                      <span className="rounded-full bg-muted px-2 py-0.5">{p.classes_per_month} classes</span>
                     )}
                     {p.duration_minutes && (
                       <span className="rounded-full bg-muted px-2 py-0.5">{p.duration_minutes} min / class</span>

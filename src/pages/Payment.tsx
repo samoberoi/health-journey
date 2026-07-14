@@ -120,6 +120,7 @@ export default function Payment() {
       .update({ onboarding_completed: true } as any)
       .eq("user_id", user.id);
     await sendWelcomeNotification(user.id);
+    await (supabase as any).rpc("seed_onboarding_notifications", { _user_id: user.id }).catch(() => {});
     setStep("success");
   };
 

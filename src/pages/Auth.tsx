@@ -17,7 +17,7 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import logoImg from "@/assets/logo.png";
-import authHero from "@/assets/auth-activity-hero.jpg";
+import AuthHeroCarousel from "@/components/AuthHeroCarousel";
 import { toast } from "sonner";
 
 const DEFAULT_OTP = "111111";
@@ -290,7 +290,7 @@ export default function Auth() {
 
               {/* Top half hero image — extends to top edge */}
               <div className="relative h-[46vh] min-h-[300px] overflow-hidden shadow-card">
-                <img src={authHero} alt="Healthy vitality" className="absolute inset-0 w-full h-full object-cover" />
+                <AuthHeroCarousel />
                 <div className="absolute inset-x-0 bottom-0 p-6 pb-8 bg-gradient-to-t from-black/60 via-black/20 to-transparent">
                   <p className="text-white text-[28px] font-black tracking-[-0.02em] leading-tight drop-shadow-lg">Sign in</p>
                 </div>
@@ -406,7 +406,7 @@ export default function Auth() {
 
               {/* Top half hero image */}
               <div className="relative h-[46vh] min-h-[300px] overflow-hidden shadow-card">
-                <img src={authHero} alt="Verify" className="absolute inset-0 w-full h-full object-cover" />
+                <AuthHeroCarousel />
                 <button
                   onClick={() => { setStep("phone"); setOtp(""); }}
                   aria-label="Back"

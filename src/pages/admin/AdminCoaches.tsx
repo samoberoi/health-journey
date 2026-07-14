@@ -30,6 +30,7 @@ const packageLabel = (type: string) => {
 
 const emptyCoach: Partial<Coach> = {
   name: "", phone: "", email: "", coach_type: "active_reset" as any,
+  coach_packages: ["active_reset"] as any,
   specialization: "", qualification: "", bio: "", years_experience: 0,
   commission_percent: 0, languages: [], city: "", state: "", pincode: "",
   address_line1: "", address_line2: "", bank_name: "", bank_account_number: "",

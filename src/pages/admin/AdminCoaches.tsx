@@ -162,6 +162,7 @@ export default function AdminCoaches() {
       pan_card: newCoach.pan_card || null,
       emergency_contact_name: newCoach.emergency_contact_name || null,
       emergency_contact_phone: newCoach.emergency_contact_phone || null,
+      avatar_url: (newCoach as any).avatar_url || null,
       is_active: true,
     } as any);
     if (error) {

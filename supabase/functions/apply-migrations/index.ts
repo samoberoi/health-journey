@@ -16,8 +16,12 @@ Deno.serve(async (req) => {
   const slice = MIGRATIONS.slice(from, from + limit);
   const results: Array<{ file: string; ok: boolean; error?: string }> = [];
 
-  for (const { name, sql } of slice) {
-    try {
+  for (const { name, sql: originalSql } of slice) {
+    // Make storage.buckets inserts idempotent (buckets are pre-created by Cloud)
+    let sql = originalSql.replace(
+      /INSERT INTO storage\.buckets\s*\(([^)]+)\)\s*VALUES\s*(\([^)]+\))(?!\s*ON CONFLICT)/gi,
+      "INSERT INTO storage.buckets ($1) VALUES $2 ON CONFLICT (id) DO NOTHING",
+    );
       const { error } = await supabase.rpc("_bootstrap_exec_sql", { sql });
       if (error) throw error;
       results.push({ file: name, ok: true });

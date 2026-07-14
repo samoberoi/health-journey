@@ -114,6 +114,7 @@ export async function primeFoodImages(items: Array<{ id: string; image_url?: str
   const workers = Array.from({ length: Math.min(8, queue.length) }, async () => {
     while (queue.length) {
       const next = queue.shift()!;
+      if (next.absolute) { setInCache(next.id, next.path); continue; }
       const url = await signPath(next.path);
       if (url) setInCache(next.id, url);
     }

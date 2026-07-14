@@ -520,3 +520,73 @@ function InfoCell({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+function PackagesMultiSelect({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
+  const [open, setOpen] = useState(false);
+  const selected = value || [];
+  const toggle = (v: string) => {
+    if (selected.includes(v)) onChange(selected.filter((s) => s !== v));
+    else onChange([...selected, v]);
+  };
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="w-full min-h-10 rounded-md border border-input bg-background px-3 py-1.5 text-sm text-left hover:border-primary/50 transition-colors flex items-center gap-2 flex-wrap"
+        >
+          <PackageIcon className="w-4 h-4 text-primary shrink-0" />
+          {selected.length === 0 ? (
+            <span className="text-muted-foreground">Select packages…</span>
+          ) : (
+            selected.map((s) => {
+              const label = COACH_PACKAGES.find((p) => p.value === s)?.label || s;
+              return (
+                <Badge
+                  key={s}
+                  variant="secondary"
+                  className="gap-1 bg-primary/10 text-primary hover:bg-primary/15 border border-primary/20"
+                >
+                  {label}
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => { e.stopPropagation(); toggle(s); }}
+                    className="ml-0.5 rounded-full hover:bg-primary/20 p-0.5 cursor-pointer"
+                  >
+                    <X className="w-3 h-3" />
+                  </span>
+                </Badge>
+              );
+            })
+          )}
+          <ChevronDown className="w-4 h-4 text-muted-foreground ml-auto shrink-0" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-1.5" align="start">
+        <div className="space-y-0.5">
+          {COACH_PACKAGES.map((p) => {
+            const isSel = selected.includes(p.value);
+            return (
+              <button
+                key={p.value}
+                type="button"
+                onClick={() => toggle(p.value)}
+                className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-md text-sm text-left transition-colors ${
+                  isSel ? "bg-primary/10 text-primary" : "hover:bg-muted text-foreground"
+                }`}
+              >
+                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                  isSel ? "bg-primary border-primary text-primary-foreground" : "border-input"
+                }`}>
+                  {isSel && <Check className="w-3 h-3" />}
+                </div>
+                <span className="flex-1">{p.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}

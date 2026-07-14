@@ -245,7 +245,6 @@ export default function PatientLabTests({ alwaysShow = false, foundationMode = f
       const { data } = await supabase
         .from("thyrocare_tests" as any)
         .select("product_code, product_name, offer_rate, rate, markup_pct, fasting_required, parameters_count, description, raw_data")
-        .eq("foundation_default", true)
         .eq("is_active", true);
       const raw = ((data as any) || []) as Test[];
       // Order: BASIC → PLUS → ADVANCED
@@ -495,9 +494,9 @@ export default function PatientLabTests({ alwaysShow = false, foundationMode = f
     return (
       <div className="liquid-glass rounded-2xl p-6 text-center space-y-2">
         <FlaskConical className="w-8 h-8 text-primary mx-auto" />
-        <h3 className="text-base font-black">No Lab Tests Yet</h3>
+        <h3 className="text-base font-black">Awaiting your coach</h3>
         <p className="text-sm text-muted-foreground">
-          Your coach hasn't recommended any lab tests yet. Check back soon!
+          Your coach will review your health assessment and recommend the right lab panels for your plan. You'll see them here as soon as they're assigned.
         </p>
       </div>
     );

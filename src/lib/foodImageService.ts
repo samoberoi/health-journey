@@ -86,6 +86,8 @@ export function getFoodImageUrl(foodItemId: string): Promise<string | null> {
   const p = (async () => {
     const path = await fetchPath(foodItemId);
     if (path) {
+      // Absolute URL (external CDN like Unsplash / loremflickr) — use as-is.
+      if (/^https?:\/\//i.test(path)) { setInCache(foodItemId, path); return path; }
       const url = await signPath(path);
       if (url) { setInCache(foodItemId, url); return url; }
     }

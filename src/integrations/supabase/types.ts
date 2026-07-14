@@ -1426,11 +1426,17 @@ export type Database = {
           badge_emoji: string
           badge_key: string
           badge_name: string
+          badge_type: string
           created_at: string
           description: string | null
           id: string
           level: number
+          milestones_required: number
+          parent_badge_id: string | null
+          pattern: string | null
+          protocol_id: string | null
           required_streak_days: number
+          stage_order: number
           week_range_end: number | null
           week_range_start: number | null
         }
@@ -1438,11 +1444,17 @@ export type Database = {
           badge_emoji?: string
           badge_key: string
           badge_name: string
+          badge_type?: string
           created_at?: string
           description?: string | null
           id?: string
           level?: number
+          milestones_required?: number
+          parent_badge_id?: string | null
+          pattern?: string | null
+          protocol_id?: string | null
           required_streak_days?: number
+          stage_order?: number
           week_range_end?: number | null
           week_range_start?: number | null
         }
@@ -1450,11 +1462,17 @@ export type Database = {
           badge_emoji?: string
           badge_key?: string
           badge_name?: string
+          badge_type?: string
           created_at?: string
           description?: string | null
           id?: string
           level?: number
+          milestones_required?: number
+          parent_badge_id?: string | null
+          pattern?: string | null
+          protocol_id?: string | null
           required_streak_days?: number
+          stage_order?: number
           week_range_end?: number | null
           week_range_start?: number | null
         }
@@ -1510,6 +1528,41 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      fasting_stage_milestones: {
+        Row: {
+          badge_id: string
+          compliant_days_required: number
+          created_at: string
+          id: string
+          milestone_name: string | null
+          milestone_order: number
+        }
+        Insert: {
+          badge_id: string
+          compliant_days_required?: number
+          created_at?: string
+          id?: string
+          milestone_name?: string | null
+          milestone_order: number
+        }
+        Update: {
+          badge_id?: string
+          compliant_days_required?: number
+          created_at?: string
+          id?: string
+          milestone_name?: string | null
+          milestone_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fasting_stage_milestones_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "fasting_badges"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       fasting_tracking: {
         Row: {
@@ -1629,6 +1682,45 @@ export type Database = {
           name?: string
           severity_default?: Database["public"]["Enums"]["food_recommendation"]
           slug?: Database["public"]["Enums"]["food_category_slug"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      food_condition_rules: {
+        Row: {
+          action: string
+          condition_key: string
+          created_at: string
+          filter_id: string | null
+          id: string
+          is_active: boolean
+          name_pattern: string
+          priority: number
+          reason: string
+          updated_at: string
+        }
+        Insert: {
+          action: string
+          condition_key: string
+          created_at?: string
+          filter_id?: string | null
+          id?: string
+          is_active?: boolean
+          name_pattern: string
+          priority?: number
+          reason: string
+          updated_at?: string
+        }
+        Update: {
+          action?: string
+          condition_key?: string
+          created_at?: string
+          filter_id?: string | null
+          id?: string
+          is_active?: boolean
+          name_pattern?: string
+          priority?: number
+          reason?: string
           updated_at?: string
         }
         Relationships: []
@@ -3619,6 +3711,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "user_fasting_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "fasting_badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_fasting_milestones: {
+        Row: {
+          badge_id: string
+          completed_at: string
+          id: string
+          user_id: string
+          week_number: number
+        }
+        Insert: {
+          badge_id: string
+          completed_at?: string
+          id?: string
+          user_id: string
+          week_number: number
+        }
+        Update: {
+          badge_id?: string
+          completed_at?: string
+          id?: string
+          user_id?: string
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_fasting_milestones_badge_id_fkey"
             columns: ["badge_id"]
             isOneToOne: false
             referencedRelation: "fasting_badges"

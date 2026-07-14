@@ -174,7 +174,7 @@ export default function Payment() {
         expiresAt.setMonth(expiresAt.getMonth() + duration);
 
         await createSubscription({
-          user_id: authUser.id,
+          user_id: effectiveUser.id,
           plan_id: plan.plan_key,
           plan_name: `${plan.name} — ${CYCLE_LABEL[plan.billing_cycle]}`,
           plan_price: plan.total_price,

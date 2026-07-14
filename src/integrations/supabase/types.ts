@@ -4828,12 +4828,9 @@ export type Database = {
         Returns: string
       }
       current_user_package_key: { Args: { _user_id: string }; Returns: string }
-      delete_supplement_category: {
-        Args: { cat_key: string }
-        Returns: undefined
-      }
+      delete_supplement_category: { Args: { _key: string }; Returns: undefined }
       delete_supplement_condition: {
-        Args: { cond_key: string }
+        Args: { _key: string }
         Returns: undefined
       }
       email_exists: { Args: { _email: string }; Returns: boolean }
@@ -4927,11 +4924,11 @@ export type Database = {
         Returns: undefined
       }
       rename_supplement_category: {
-        Args: { new_key: string; new_label: string; old_key: string }
+        Args: { _new_key: string; _new_label: string; _old_key: string }
         Returns: undefined
       }
       rename_supplement_condition: {
-        Args: { new_key: string; new_label: string; old_key: string }
+        Args: { _new_key: string; _new_label: string; _old_key: string }
         Returns: undefined
       }
       run_daily_gamification_close: { Args: never; Returns: number }

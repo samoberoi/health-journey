@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import NotificationCenter from "@/components/NotificationCenter";
+import logoImg from "@/assets/logo.png";
 
 interface Props {
   /** Short role label shown next to the mark, e.g. "Coach", "Admin", "Partner". */
@@ -43,8 +44,8 @@ export default function RoleTopBar({
       style={{ borderBottom: "1px solid hsl(var(--border))" }}
     >
       <div className="flex items-center gap-2.5 min-w-0">
-        <div className="w-8 h-8 rounded-xl gradient-blue flex items-center justify-center shrink-0">
-          <span className="text-white font-black text-xs tracking-tighter">BB</span>
+        <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-sm">
+          <img src={logoImg} alt="BBDO" className="w-6 h-6 object-contain" />
         </div>
         <div className="flex flex-col min-w-0">
           <span className="text-foreground font-black text-[15px] leading-none tracking-tight truncate">

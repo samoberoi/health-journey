@@ -220,7 +220,7 @@ export default function YogaUpsell() {
             <p className="mt-1 text-sm text-muted-foreground">
               {isConfirmed ? (
                 activeBooking.selected_slot ? (
-                  <>All classes reserved: <strong className="text-foreground">{activeBooking.selected_slot}</strong>. Join every class this month from the meet link below.</>
+                  <>All classes reserved: <strong className="text-foreground">{activeBooking.selected_slot}</strong>. Join every upcoming class from the meet link below.</>
                 ) : (
                   <>Your booking is confirmed for the full month.</>
                 )

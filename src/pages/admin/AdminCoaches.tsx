@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
 import { logAudit } from "@/lib/auditLog";
 import ExportCsvButton from "@/components/admin/ExportCsvButton";
+import AvatarUploader from "@/components/admin/AvatarUploader";
 
 type Coach = Tables<"coaches">;
 

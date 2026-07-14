@@ -17,11 +17,12 @@ Deno.serve(async (req) => {
   const results: Array<{ file: string; ok: boolean; error?: string }> = [];
 
   for (const { name, sql: originalSql } of slice) {
-    // Make storage.buckets inserts idempotent (buckets are pre-created by Cloud)
-    let sql = originalSql.replace(
+    // Make storage.buckets inserts idempotent (buckets may be pre-created by Cloud)
+    const sql = originalSql.replace(
       /INSERT INTO storage\.buckets\s*\(([^)]+)\)\s*VALUES\s*(\([^)]+\))(?!\s*ON CONFLICT)/gi,
       "INSERT INTO storage.buckets ($1) VALUES $2 ON CONFLICT (id) DO NOTHING",
     );
+    try {
       const { error } = await supabase.rpc("_bootstrap_exec_sql", { sql });
       if (error) throw error;
       results.push({ file: name, ok: true });
@@ -30,7 +31,6 @@ Deno.serve(async (req) => {
       try { msg = JSON.stringify(e, Object.getOwnPropertyNames(e as object)); }
       catch { msg = String(e); }
       results.push({ file: name, ok: false, error: msg });
-      // Continue on error so we can see all failures
     }
   }
 

@@ -79,22 +79,22 @@ export default function Payment() {
     }
   };
 
-  const finalizePostPayment = async () => {
-    if (!authUser || !plan) return;
+  const finalizePostPayment = async (user: { id: string }) => {
+    if (!plan) return;
     if (plan.assigns_coach !== false) {
-      await autoAssignCoach(authUser.id, plan.plan_key);
-      const c = await fetchAssignedCoach(authUser.id);
+      await autoAssignCoach(user.id, plan.plan_key);
+      const c = await fetchAssignedCoach(user.id);
       setAssignedCoach(c);
     }
     await supabase
       .from("profiles" as any)
       .update({ onboarding_completed: true } as any)
-      .eq("user_id", authUser.id);
-    await sendWelcomeNotification(authUser.id);
+      .eq("user_id", user.id);
+    await sendWelcomeNotification(user.id);
     setStep("success");
   };
 
-  const handleRazorpayPay = async () => {
+  const handleRazorpayPay = async (user: { email?: string | null }) => {
     const ok = await loadRazorpayScript();
     if (!ok) throw new Error("Failed to load Razorpay checkout.");
 
@@ -113,7 +113,7 @@ export default function Payment() {
         name: "Bye Bye Diabetes",
         description: data.plan_name || plan!.name,
         image: "https://bbdo.hyperrevamp.com/favicon.ico",
-        prefill: { email: authUser!.email ?? undefined },
+        prefill: { email: user.email ?? undefined },
         theme: { color: "#248CCB" },
         handler: async (resp: any) => {
           try {

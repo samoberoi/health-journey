@@ -150,7 +150,7 @@ export default function YogaUpsell() {
       toast({
         title: "Payment successful (demo)",
         description: templateId
-          ? "Your seat is reserved for every class this month — meet link is on your home screen."
+          ? "Your seat is reserved for the next 8 classes — meet link is on your home screen."
           : "Your instructor will revert with a confirmed schedule.",
       });
       await load();

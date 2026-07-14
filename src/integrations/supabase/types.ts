@@ -4961,6 +4961,10 @@ export type Database = {
             Returns: undefined
           }
       run_daily_gamification_close: { Args: never; Returns: number }
+      seed_onboarding_notifications: {
+        Args: { _user_id: string }
+        Returns: number
+      }
       send_welcome_notification: { Args: { _user_id: string }; Returns: string }
       streak_from_dates: {
         Args: { _dates: string[]; _today: string }

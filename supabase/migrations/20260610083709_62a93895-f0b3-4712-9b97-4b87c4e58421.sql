@@ -1,0 +1,1 @@
+ALTER TABLE public.food_filters ADD COLUMN IF NOT EXISTS number_label text;

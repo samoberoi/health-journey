@@ -1,0 +1,2 @@
+ALTER TABLE public.thyrocare_tests ADD COLUMN IF NOT EXISTS markup_pct numeric;
+COMMENT ON COLUMN public.thyrocare_tests.markup_pct IS 'Optional per-test patient-facing markup percentage. Overrides global lab_test_markup_pct when set.';

@@ -1,0 +1,905 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════
+   BBDO DESIGN SYSTEM v2 — cream canvas × navy hero cards
+   Ref: uploaded designs (cream+glass palette × card architecture)
+   ═══════════════════════════════════════════════════ */
+
+@layer base {
+  :root {
+    /* ── Semantic shadcn tokens (HSL triples) ── */
+    --background: 0 0% 100%;              /* white canvas */
+    --foreground: 226 62% 15%;            /* #0F1A3D navy ink */
+
+    --card: 0 0% 100%;
+    --card-foreground: 226 62% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 226 62% 15%;
+
+    --primary: 202 70% 47%;               /* #248CCB brand blue — primary */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 6 76% 64%;               /* #EA6A5E soft coral — secondary/CTA (health-friendly) */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 40 25% 92%;                  /* soft cream */
+    --muted-foreground: 226 20% 40%;
+
+    --accent: 168 68% 42%;                /* #22B8A3 teal accent — calm, wellness */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 355 78% 56%;           /* true red — reserved for real danger only */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 202 30% 88%;
+    --input: 202 30% 88%;
+    --ring: 202 70% 47%;
+
+    --radius: 0.75rem;                    /* 12px — consistent card scale */
+
+    /* ── BBDO raw brand tokens ── */
+    --bbdo-bg: #FFFFFF;
+    --bbdo-cream: #FFFFFF;
+    --bbdo-cream-2: #F6F7FB;
+    --bbdo-paper: #FFFFFF;
+    --bbdo-ink: #0F1A3D;
+    --bbdo-ink-soft: #5B6480;
+    --bbdo-line: rgba(15, 26, 61, 0.08);
+    --bbdo-blue: #248CCB;                 /* primary brand */
+    --bbdo-blue-deep: #1970A6;
+    --bbdo-blue-soft: #E3F1FB;
+    --bbdo-blue-gradient: linear-gradient(135deg, #4FB0E8 0%, #248CCB 50%, #1970A6 100%);
+    --bbdo-red: #EA6A5E;                  /* softened coral — CTAs (not alarming) */
+    --bbdo-red-deep: #C24A42;
+    --bbdo-red-soft: #FCE8E4;
+    --bbdo-red-gradient: linear-gradient(135deg, #F49185 0%, #EA6A5E 50%, #C24A42 100%);
+    --bbdo-mint: #10B981;
+    --bbdo-mint-soft: #D4F4E4;
+    --bbdo-mint-gradient: linear-gradient(135deg, #4ADFA8 0%, #10B981 60%, #0A8A61 100%);
+    --bbdo-lime: #E8F27D;
+    --bbdo-amber: #F59E0B;
+    --bbdo-amber-soft: #FEF0D0;
+    --bbdo-amber-gradient: linear-gradient(135deg, #FCC757 0%, #F59E0B 60%, #C67A00 100%);
+    --bbdo-violet: #7C3AED;
+    --bbdo-violet-soft: #EEE4FD;
+    --bbdo-teal: #22B8A3;
+    --bbdo-teal-soft: #D6F3EE;
+    --bbdo-gradient: linear-gradient(135deg, #248CCB 0%, #22B8A3 100%);
+
+    /* ── PUNCH pillar colors (one per lifestyle pillar) ── */
+    --pillar-diet: #10B981;              /* mint green — Diet */
+    --pillar-diet-soft: #D4F4E4;
+    --pillar-move: #F59E0B;              /* amber — Move / Habits */
+    --pillar-move-soft: #FEF0D0;
+    --pillar-exercise: #F97316;          /* warm orange — Exercise (energetic, not danger) */
+    --pillar-exercise-soft: #FFE7D1;
+    --pillar-supplements: #248CCB;       /* blue — Supplements */
+    --pillar-supplements-soft: #E3F1FB;
+    --pillar-fasting: #7C3AED;           /* violet — Fasting */
+    --pillar-fasting-soft: #EEE4FD;
+
+    /* ── Elevation ── */
+    --shadow-card: 0 1px 2px rgba(15,26,61,0.05), 0 8px 24px -12px rgba(15,26,61,0.10);
+    --shadow-lift: 0 2px 4px rgba(15,26,61,0.06), 0 20px 40px -18px rgba(15,26,61,0.22);
+    --shadow-hero: 0 4px 12px rgba(15,26,61,0.08), 0 30px 60px -24px rgba(15,26,61,0.35);
+
+    /* ── Motion ── */
+    --ease-bbdo: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
+
+    /* ── Status ── */
+    --success: 160 84% 39%;
+    --success-soft: 160 70% 94%;
+    --warning: 38 92% 50%;
+    --warning-soft: 38 90% 95%;
+    --info: 224 66% 33%;
+    --info-soft: 222 76% 95%;
+    --critical: 355 78% 56%;
+    --critical-soft: 354 87% 96%;
+
+    /* Legacy aliases */
+    --neon-green: 160 84% 39%;
+    --neon-blue: 224 66% 33%;
+    --soft-red: 355 78% 56%;
+    --coral: 355 78% 56%;
+    --amber: 38 92% 50%;
+    --lime: 65 82% 72%;
+
+    --surface: 40 25% 92%;
+    --surface-2: 40 20% 88%;
+    --surface-3: 226 20% 90%;
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 226 62% 15%;
+    --sidebar-primary: 226 62% 15%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 40 25% 92%;
+    --sidebar-accent-foreground: 226 62% 15%;
+    --sidebar-border: 226 20% 90%;
+    --sidebar-ring: 226 62% 15%;
+  }
+
+  .dark { color-scheme: light; }
+}
+
+@layer base {
+  * { @apply border-border; }
+  html {
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overscroll-behavior: none;
+  }
+  html, body {
+    background: var(--bbdo-cream);
+    background-attachment: fixed;
+  }
+  body {
+    @apply text-foreground;
+    overscroll-behavior: none;
+    font-feature-settings: "ss01", "kern";
+    line-height: 1.5;
+  }
+  ::selection { background: var(--bbdo-blue); color: #fff; }
+  *:focus-visible { outline: 2px solid var(--bbdo-ink); outline-offset: 3px; border-radius: 4px; }
+  h1, h2, h3, h4, h5, h6 {
+    color: inherit;
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
+    letter-spacing: -0.035em;
+    font-weight: 500;
+  }
+  .font-black, .font-extrabold, .font-bold, .font-semibold { font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif; letter-spacing: -0.02em; font-weight: 500 !important; }
+  b, strong { font-weight: 500; }
+  .stat-number, .tabular { font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+  ::-webkit-scrollbar { display: none; }
+  * { -ms-overflow-style: none; scrollbar-width: none; }
+
+  svg.lucide, .lucide, svg[stroke] { stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+
+  /* ═══ Global pill/circle shape overrides ═══ */
+  button:not(.no-pill):not([data-shape="square"]):not(.chip):not(.fab):not(.top-icon-btn):not(.nav-pill) {
+    border-radius: 9999px;
+  }
+  .tile-icon-solid-blue,
+  .tile-icon-solid-red,
+  .tile-icon-solid-mint,
+  .tile-icon-solid-amber { border-radius: 9999px !important; }
+
+  /* ═══ Screen rhythm ═══ */
+  .bbdo-screen  { padding-left: 20px; padding-right: 20px; }
+  .bbdo-stack   { display: flex; flex-direction: column; gap: 16px; }
+  .bbdo-stack-lg{ display: flex; flex-direction: column; gap: 24px; }
+  .bbdo-divider { height: 1px; background: var(--bbdo-line); border: 0; }
+
+  /* ═══ Typography ═══ */
+  .bbdo-eyebrow { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 600; color: var(--bbdo-ink-soft); }
+  .bbdo-h2      { font-size: clamp(24px, 5vw, 40px); line-height: 1.02; letter-spacing: -0.035em; font-weight: 500; }
+  .text-display-xl { font-size: clamp(48px, 13vw, 200px); line-height: 0.88; letter-spacing: -0.045em; font-weight: 500; }
+  .text-display-lg { font-size: clamp(40px, 8vw, 120px);  line-height: 0.90; letter-spacing: -0.040em; font-weight: 500; }
+  .text-display-md { font-size: clamp(30px, 5.4vw, 80px); line-height: 0.94; letter-spacing: -0.035em; font-weight: 500; }
+  .text-display-sm { font-size: clamp(22px, 3vw, 40px);   line-height: 1.05; letter-spacing: -0.020em; font-weight: 500; }
+  .stat-xxl { font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif; font-weight: 500; letter-spacing: -0.04em; font-size: 56px; line-height: 0.95; }
+  .stat-xl  { font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif; font-weight: 500; letter-spacing: -0.035em; font-size: 40px; line-height: 1; }
+  .stat-lg  { font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif; font-weight: 500; letter-spacing: -0.03em;  font-size: 28px; line-height: 1; }
+  .bbdo-gradient-text { background: var(--bbdo-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+  /* ═══ HERO CARD — the governing surface (Image 2 architecture) ═══ */
+  .hero-card {
+    position: relative;
+    border-radius: 28px;
+    padding: 24px;
+    color: #ffffff;
+    background: var(--bbdo-blue-gradient);
+    box-shadow: var(--shadow-hero);
+    overflow: hidden;
+  }
+  .hero-card .bbdo-eyebrow { color: #ffffff; }
+  .hero-card-blue { background: var(--bbdo-blue); }
+  .hero-card-red  { background: var(--bbdo-red); }
+  .hero-card-mint { background: var(--bbdo-mint); }
+  .hero-card-cream { background: var(--bbdo-cream-2); color: var(--bbdo-ink); }
+  .hero-card-white { background: #ffffff; color: var(--bbdo-ink); box-shadow: var(--shadow-card); }
+
+  /* Stat pill — small rounded chip inside hero cards */
+  .stat-pill {
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 18px;
+    padding: 12px 14px;
+    color: #ffffff;
+    display: flex; flex-direction: column; gap: 2px;
+    min-width: 0;
+  }
+  .stat-pill-label { font-size: 11px; opacity: 0.72; font-weight: 500; }
+  .stat-pill-value { font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif; font-weight: 500; letter-spacing: -0.02em; font-size: 20px; }
+  .hero-card-cream .stat-pill,
+  .hero-card-white .stat-pill { background: var(--bbdo-cream); border-color: var(--bbdo-line); color: var(--bbdo-ink); }
+  .hero-card-cream .stat-pill-label,
+  .hero-card-white .stat-pill-label { color: var(--bbdo-ink-soft); opacity: 1; }
+
+  /* Circular FAB — 56px, dark, floats bottom-right */
+  .fab {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--bbdo-blue-gradient); color: #ffffff;
+    display: inline-flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 24px -6px rgba(15,26,61,0.45);
+    transition: transform 150ms var(--ease-bbdo), background 200ms var(--ease-bbdo);
+  }
+  .fab:active { transform: scale(0.94); }
+  .fab-white { background: #ffffff; color: var(--bbdo-ink); box-shadow: var(--shadow-card); }
+  .fab-red   { background: var(--bbdo-red); color: #fff; box-shadow: 0 8px 24px -6px rgba(230,57,70,0.45); }
+  .fab-sm    { width: 44px; height: 44px; }
+
+  /* Sub-card — white card living below a hero */
+  .sub-card {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: var(--shadow-card);
+    color: var(--bbdo-ink);
+  }
+  .sub-card-mint  { background: var(--bbdo-mint-soft); }
+  .sub-card-lime  { background: var(--bbdo-lime); }
+  .sub-card-cream { background: var(--bbdo-cream-2); }
+  .sub-card-tight { padding: 16px; border-radius: 20px; }
+
+  /* Chip — filter pill (Image 2 chip row) */
+  .chip {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--bbdo-ink);
+    font-family: inherit;
+    font-size: 14px; font-weight: 500;
+    border: 1px solid var(--bbdo-line);
+    transition: background 200ms var(--ease-bbdo), color 200ms var(--ease-bbdo);
+    white-space: nowrap;
+  }
+  .chip-active { background: var(--bbdo-blue); color: #ffffff; border-color: var(--bbdo-blue); }
+  .chip-sm { padding: 6px 12px; font-size: 12px; }
+
+  /* Small circular top-bar icon button */
+  .top-icon-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: #ffffff;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--bbdo-ink);
+    box-shadow: var(--shadow-card);
+    transition: transform 150ms var(--ease-bbdo);
+  }
+  .top-icon-btn:active { transform: scale(0.94); }
+
+  /* Bottom nav pill (Image 2 style — dark filled selected) */
+  .nav-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    color: var(--bbdo-ink-soft);
+    transition: all 200ms var(--ease-bbdo);
+    font-weight: 500; font-size: 13px;
+  }
+  .nav-pill-active { background: var(--bbdo-blue); color: #ffffff; padding: 10px 18px; }
+
+  /* Legacy hero/tile classes → alias to new system so untouched files still render */
+  .card-hero { @apply hero-card hero-card-blue; }
+  .card-hero-red { @apply hero-card hero-card-red; }
+  .card-hero-mint { @apply hero-card hero-card-mint; }
+  .card-tile { @apply sub-card sub-card-tight; }
+  .card-tile-mint { @apply sub-card sub-card-tight sub-card-mint; }
+  .card-tile-amber { background: #FEEFCE; border-radius: 20px; padding: 16px; }
+  .card-tile-red { background: var(--bbdo-red-soft); border-radius: 20px; padding: 16px; }
+  .card-tile-blue { background: var(--bbdo-blue-soft); border-radius: 20px; padding: 16px; }
+  .card-tile-lift:hover { transform: translateY(-1px); }
+
+  /* Legacy bbdo-card */
+  .bbdo-card {
+    background: #ffffff;
+    border: 1px solid var(--bbdo-line);
+    box-shadow: var(--shadow-card);
+    border-radius: 24px;
+  }
+  .bbdo-hover-lift { transition: transform 300ms var(--ease-ios), box-shadow 300ms var(--ease-ios); }
+  .bbdo-hover-lift:hover { transform: translate3d(0,-1px,0); box-shadow: var(--shadow-lift); }
+  .bbdo-paper { background: #ffffff; }
+  .bbdo-paper-soft { background: var(--bbdo-cream-2); }
+  .surface  { background: hsl(var(--surface)); }
+  .surface-2 { background: hsl(var(--surface-2)); }
+
+  /* Legacy liquid-glass → white sub-card (drops the frosted effect on the new cream canvas) */
+  .liquid-glass,
+  .liquid-glass-strong {
+    background: #ffffff;
+    border: 1px solid var(--bbdo-line);
+    box-shadow: var(--shadow-card);
+    border-radius: 24px;
+  }
+  .liquid-glass-nav {
+    background: #ffffff;
+    border-top: 1px solid var(--bbdo-line);
+  }
+  .liquid-glass-icon {
+    background: var(--bbdo-blue-soft);
+    color: var(--bbdo-blue);
+    border: 1px solid var(--bbdo-line);
+    border-radius: 9999px;
+  }
+  .liquid-glass-input {
+    background: #ffffff;
+    border: 1px solid var(--bbdo-line);
+    border-radius: 9999px;
+    transition: box-shadow 200ms var(--ease-ios), border-color 200ms var(--ease-ios);
+  }
+  .liquid-glass-input:focus-within { border-color: var(--bbdo-ink); box-shadow: 0 0 0 3px rgba(15,26,61,0.10); }
+  .glass-wash { background: var(--bbdo-cream); }
+
+  .tile-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px; border-radius: 9999px;
+    background: var(--bbdo-blue-soft);
+    color: var(--bbdo-blue);
+  }
+  .tile-icon-blue   { background: var(--bbdo-blue-soft);   color: var(--bbdo-blue); }
+  .tile-icon-red    { background: var(--bbdo-red-soft);    color: var(--bbdo-red); }
+  .tile-icon-mint   { background: var(--bbdo-mint-soft);   color: var(--bbdo-mint); }
+  .tile-icon-amber  { background: var(--bbdo-amber-soft);  color: var(--bbdo-amber); }
+  .tile-icon-violet { background: var(--bbdo-violet-soft); color: var(--bbdo-violet); }
+  /* Solid pillar/brand tile icons — flat colors, no gradients */
+  .tile-icon-solid-blue   { background: var(--bbdo-blue);   color: #fff; }
+  .tile-icon-solid-red    { background: var(--bbdo-red);    color: #fff; }
+  .tile-icon-solid-mint   { background: var(--bbdo-mint);   color: #fff; }
+  .tile-icon-solid-amber  { background: var(--bbdo-amber);  color: #fff; }
+  .tile-icon-solid-violet { background: var(--bbdo-violet); color: #fff; }
+
+  /* ═══ Auto-colorful icon backgrounds ═══
+     Default = blue-soft. Add .ic-0..ic-4 (or use explicit .tile-icon-{red|amber|mint|blue|violet})
+     to give each icon its own tint. */
+  .liquid-glass-icon,
+  .ob-icon,
+  .tile-icon {
+    background: var(--bbdo-blue-soft);
+    color: var(--bbdo-blue);
+  }
+  .ic-0 { background: var(--bbdo-red-soft) !important;    color: var(--bbdo-red) !important; }
+  .ic-1 { background: var(--bbdo-amber-soft) !important;  color: var(--bbdo-amber) !important; }
+  .ic-2 { background: var(--bbdo-mint-soft) !important;   color: var(--bbdo-mint) !important; }
+  .ic-3 { background: var(--bbdo-blue-soft) !important;   color: var(--bbdo-blue) !important; }
+  .ic-4 { background: var(--bbdo-violet-soft) !important; color: var(--bbdo-violet) !important; }
+  /* Explicit modifier classes always win */
+  .tile-icon-red,    .liquid-glass-icon.tile-icon-red    { background: var(--bbdo-red-soft) !important;    color: var(--bbdo-red) !important; }
+  .tile-icon-amber,  .liquid-glass-icon.tile-icon-amber  { background: var(--bbdo-amber-soft) !important;  color: var(--bbdo-amber) !important; }
+  .tile-icon-mint,   .liquid-glass-icon.tile-icon-mint   { background: var(--bbdo-mint-soft) !important;   color: var(--bbdo-mint) !important; }
+  .tile-icon-blue,   .liquid-glass-icon.tile-icon-blue   { background: var(--bbdo-blue-soft) !important;   color: var(--bbdo-blue) !important; }
+  .tile-icon-violet, .liquid-glass-icon.tile-icon-violet { background: var(--bbdo-violet-soft) !important; color: var(--bbdo-violet) !important; }
+
+  /* Legacy gradient CTAs → brand blue/red gradients for depth */
+  .gradient-blue, .gradient-green, .gradient-lime {
+    background: var(--bbdo-blue-gradient); color: #ffffff;
+    transition: filter 300ms var(--ease-bbdo);
+  }
+  .gradient-red, .gradient-danger {
+    background: var(--bbdo-red-gradient); color: #ffffff;
+    transition: filter 300ms var(--ease-bbdo);
+  }
+  .gradient-blue:hover, .gradient-green:hover, .gradient-lime:hover,
+  .gradient-red:hover, .gradient-danger:hover { filter: brightness(0.95); }
+
+  .glow-blue, .glow-green, .glow-lime { box-shadow: 0 10px 28px -10px rgba(36,140,203,0.55); }
+  .glow-red { box-shadow: 0 10px 28px -10px rgba(230,57,70,0.5); }
+
+  .mood-critical { background: hsl(var(--critical-soft)); }
+  .mood-warning  { background: hsl(var(--warning-soft)); }
+  .mood-success  { background: hsl(var(--success-soft)); }
+  .mood-info     { background: hsl(var(--info-soft)); }
+  .mood-danger   { background: hsl(var(--critical-soft)); }
+
+  .text-gradient-green, .text-gradient-blue, .text-gradient-lime { color: var(--bbdo-ink); }
+
+  /* Layout */
+  .app-container  { width: 100%; min-height: 100dvh; position: relative; background: var(--bbdo-cream); }
+  .phone-container {
+    width: 100%;
+    max-width: 430px;
+    height: 100dvh;
+    min-height: 100dvh;
+    margin: 0 auto;
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    background: var(--bbdo-cream);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Onboarding */
+  .ob-screen { position: relative; background: var(--bbdo-cream); min-height: 100dvh; }
+
+  /* Lock an onboarding screen to a single viewport — no vertical scroll. */
+  .ob-lock,
+  .ob-lock.phone-container {
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    min-height: 100dvh !important;
+    overflow-y: hidden !important;
+    overflow-x: hidden !important;
+  }
+  .ob-bg { position: absolute; inset: 0; z-index: 0; opacity: 0.14; }
+  .ob-bg img { width: 100%; height: 100%; object-fit: cover; }
+  .ob-bg::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.85) 55%, rgba(255,255,255,1) 100%);
+  }
+  .ob-content { @apply relative z-10 flex min-h-dvh flex-col; padding: calc(2.5rem + env(safe-area-inset-top)) 1.25rem calc(1.25rem + env(safe-area-inset-bottom)); }
+  @media (max-width: 380px) {
+    .ob-content { padding-top: calc(2rem + env(safe-area-inset-top)); padding-left: 1rem; padding-right: 1rem; }
+  }
+  .ob-kicker { font-size: 11px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--bbdo-ink-soft); }
+  .ob-title { font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif; font-size: clamp(1.5rem, 6vw, 2.4rem); font-weight: 500; line-height: 1.06; letter-spacing: -0.035em; color: var(--bbdo-ink); }
+  .ob-sub { color: var(--bbdo-ink-soft); font-size: 14px; font-weight: 400; line-height: 1.55; }
+  .ob-stack { @apply flex flex-col gap-2.5; }
+  .ob-frost { @apply sub-card; }
+  .ob-icon { @apply flex items-center justify-center flex-shrink-0; width: 2.5rem; height: 2.5rem; border-radius: 9999px; background: var(--bbdo-blue-soft); color: var(--bbdo-blue); }
+  .ob-bottom { @apply mt-auto pt-5; }
+  .ob-cta {
+    @apply w-full text-center font-bold text-white flex items-center justify-center gap-2;
+    min-height: 52px; padding: 0.9rem 1.25rem;
+    border-radius: 9999px;
+    background: var(--bbdo-red-gradient);
+    font-size: 15px; letter-spacing: 0.02em;
+    transition: opacity 200ms var(--ease-bbdo), transform 150ms var(--ease-bbdo);
+    box-shadow: 0 8px 24px -8px rgba(230,57,70,0.45);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .ob-cta:hover { opacity: 0.92; }
+  .ob-cta:active { transform: scale(0.98); }
+  .ob-cta:focus-visible { outline: 2px solid var(--bbdo-blue); outline-offset: 3px; }
+
+  .stat-number { font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif; font-weight: 500; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+
+  /* Motion */
+  @keyframes bbdo-rise { from { opacity:0; transform: translate3d(0,8px,0);} to { opacity:1; transform: translate3d(0,0,0);} }
+  @keyframes bbdo-fade { from { opacity:0; } to { opacity:1; } }
+  .bbdo-rise    { animation: bbdo-rise 0.22s var(--ease-bbdo) both; }
+  .bbdo-fade-in { animation: bbdo-fade 0.2s var(--ease-bbdo) both; }
+  .ios-tap      { transition: transform 150ms var(--ease-bbdo); }
+  .ios-tap:active { transform: scale(0.98); }
+  .ios-hover    { transition: opacity 200ms var(--ease-bbdo); }
+  .ios-hover:hover { opacity: 0.9; }
+
+  .danger-flash { background-color: hsl(var(--destructive) / 0.08); box-shadow: inset 0 0 0 1px hsl(var(--destructive) / 0.22); }
+  .danger-dot { opacity: 1; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bbdo-rise, .bbdo-fade-in { animation: none !important; opacity: 1 !important; transform: none !important; }
+    .bbdo-hover-lift:hover { transform: none !important; }
+  }
+
+  input[type="range"] { -webkit-appearance: none; appearance: none; height: 6px; border-radius: 999px; outline: none; background: var(--bbdo-line); }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--bbdo-blue-gradient);
+    box-shadow: 0 2px 10px rgba(15,26,61,0.4);
+    cursor: pointer; border: 3px solid #ffffff;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--bbdo-blue-gradient);
+    box-shadow: 0 2px 10px rgba(15,26,61,0.4);
+    cursor: pointer; border: 3px solid #ffffff;
+  }
+
+  .no-number-spinner::-webkit-outer-spin-button,
+  .no-number-spinner::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .no-number-spinner[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+
+  /* ═══ Mobile-first foundations (Batch 1) ═══ */
+
+  /* Safe-area helpers */
+  .safe-top     { padding-top: env(safe-area-inset-top); }
+  .safe-bottom  { padding-bottom: env(safe-area-inset-bottom); }
+  .safe-x       { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+  .pt-safe      { padding-top: calc(env(safe-area-inset-top) + 0.75rem); }
+  .pb-safe      { padding-bottom: calc(env(safe-area-inset-bottom) + 0.75rem); }
+  /* Content clearance above the floating bottom nav + FAB on mobile */
+  .pb-nav       { padding-bottom: calc(env(safe-area-inset-bottom) + 6.5rem); }
+  @media (min-width: 768px) { .pb-nav { padding-bottom: 0; } }
+
+  /* Consistent mobile page gutter (20px, matches .bbdo-screen but works on any element) */
+  .page-gutter  { padding-left: 20px; padding-right: 20px; }
+  @media (min-width: 640px) { .page-gutter { padding-left: 24px; padding-right: 24px; } }
+
+  /* Minimum 44×44 tap targets (Apple HIG / WCAG 2.5.5) */
+  .tap-44 { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+
+  /* Prevent iOS Safari zoom-on-focus for text inputs (needs ≥16px font-size) */
+  @media (max-width: 767px) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+    select,
+    textarea {
+      font-size: 16px;
+    }
+  }
+
+  /* Clamp helpers for user-generated strings */
+  .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+  .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* Kill horizontal scroll anywhere it slips through */
+  html, body { max-width: 100vw; overflow-x: hidden; }
+
+  /* ── Mobile-safety layer — applied across the entire app ── */
+  @media (max-width: 767px) {
+    /* Any raw <table> becomes horizontally scrollable inside its parent */
+    table {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    /* Give scrollable main content enough room above the fixed bottom dock (56px pill + 16px inset + safe-area) */
+    main { padding-bottom: max(7rem, calc(5rem + env(safe-area-inset-bottom))); }
+    /* Prevent long unbroken strings (emails, ids, urls) from blowing out layouts */
+    .admin-shell, .admin-shell * { min-width: 0; }
+    .admin-shell { overflow-x: hidden; }
+    /* Reduce heavy paddings on top-level admin sections */
+    .admin-shell > .p-6:not(.p-6\\:keep) { padding: 1rem; }
+    .admin-shell > .p-8 { padding: 1.25rem; }
+    /* Tabs bars that wrap – ensure horizontal scroll instead of overlap */
+    .admin-shell [role="tablist"], .admin-shell .tabs-scroll {
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .admin-shell [role="tablist"]::-webkit-scrollbar, .admin-shell .tabs-scroll::-webkit-scrollbar { display: none; }
+    /* Dialogs (Radix Dialog only — NOT Vaul drawers) don't crop content on tiny screens.
+       Vaul drawers also carry role="dialog" but need full-width bottom-sheet behavior,
+       so every rule below excludes them via :not([data-vaul-drawer]). */
+    [role="dialog"]:not([data-vaul-drawer]) {
+      width: calc(100vw - 1rem) !important;
+      max-width: calc(100vw - 1rem) !important;
+      max-height: calc(100dvh - 1rem) !important;
+      overflow-y: auto;
+      padding: 1rem;
+    }
+    [role="dialog"]:not([data-vaul-drawer]) form,
+    [role="dialog"]:not([data-vaul-drawer]) .grid,
+    [role="dialog"]:not([data-vaul-drawer]) input,
+    [role="dialog"]:not([data-vaul-drawer]) textarea,
+    [role="dialog"]:not([data-vaul-drawer]) button,
+    [role="dialog"]:not([data-vaul-drawer]) [data-radix-select-trigger] {
+      min-width: 0;
+      max-width: 100%;
+    }
+    [role="dialog"]:not([data-vaul-drawer]) .grid-cols-2:not(.keep-mobile-cols),
+    [role="dialog"]:not([data-vaul-drawer]) .grid-cols-3:not(.keep-mobile-cols),
+    [role="dialog"]:not([data-vaul-drawer]) .grid-cols-4:not(.keep-mobile-cols),
+    [role="dialog"]:not([data-vaul-drawer]) .md\:grid-cols-2:not(.keep-mobile-cols),
+    [role="dialog"]:not([data-vaul-drawer]) .md\:grid-cols-3:not(.keep-mobile-cols),
+    [role="dialog"]:not([data-vaul-drawer]) .md\:grid-cols-4:not(.keep-mobile-cols),
+    [role="dialog"]:not([data-vaul-drawer]) .lg\:grid-cols-2:not(.keep-mobile-cols),
+    [role="dialog"]:not([data-vaul-drawer]) .lg\:grid-cols-3:not(.keep-mobile-cols) {
+      grid-template-columns: minmax(0, 1fr) !important;
+    }
+    [role="dialog"]:not([data-vaul-drawer]) .col-span-2,
+    [role="dialog"]:not([data-vaul-drawer]) .col-span-3,
+    [role="dialog"]:not([data-vaul-drawer]) .md\:col-span-2,
+    [role="dialog"]:not([data-vaul-drawer]) .lg\:col-span-2 {
+      grid-column: auto !important;
+    }
+    [role="dialog"]:not([data-vaul-drawer]) [class*="DialogFooter"],
+    [role="dialog"]:not([data-vaul-drawer]) footer {
+      flex-direction: column !important;
+      align-items: stretch !important;
+    }
+
+    /* Vaul bottom-sheet drawers — always full-width, scrollable, respect their own grid. */
+    [data-vaul-drawer] {
+      width: 100vw !important;
+      max-width: 100vw !important;
+      max-height: 92dvh !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    [data-vaul-drawer] > div:not([data-vaul-handle]) {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   GLOBAL CONSISTENCY LAYER — solid colors + unified radii
+   Overrides ride at the bottom so they cascade over every
+   utility, component, and inline style in the app.
+   ═══════════════════════════════════════════════════════ */
+
+/* ── 1. No gradients anywhere. Every gradient token collapses to its solid pillar. ── */
+:root {
+  --bbdo-blue-gradient:  var(--bbdo-blue);
+  --bbdo-red-gradient:   var(--bbdo-red);
+  --bbdo-mint-gradient:  var(--bbdo-mint);
+  --bbdo-amber-gradient: var(--bbdo-amber);
+  --bbdo-gradient:       var(--bbdo-blue);
+}
+
+/* Kill Tailwind gradient utilities (`bg-gradient-to-*`, `from-*`, `via-*`, `to-*`). */
+[class*="bg-gradient-"] { background-image: none !important; }
+
+/* Kill inline linear-/radial-gradient backgrounds on hero-like surfaces.
+   Any element that still ships a gradient falls back to its own solid color. */
+.hero-card:not(.hero-card-red):not(.hero-card-mint):not(.hero-card-cream):not(.hero-card-white) { background: var(--bbdo-blue); }
+.gradient-blue, .gradient-green, .gradient-lime { background: var(--bbdo-blue) !important; }
+.gradient-red, .gradient-danger { background: var(--bbdo-red) !important; }
+.fab:not(.fab-white):not(.fab-red) { background: var(--bbdo-blue); }
+.ob-cta { background: var(--bbdo-red) !important; }
+
+/* Neutralize gradient-text helpers so headings stay readable. */
+.bbdo-gradient-text { background: none !important; -webkit-background-clip: initial !important; background-clip: initial !important; color: var(--bbdo-ink) !important; }
+
+/* ── 2. Unified border-radius scale. Rectangles with consistent rounded corners. ──
+   Scale: sm=8px, md=10px, base/lg=12px, xl=14px, 2xl=16px, 3xl=16px (capped),
+   full stays pill for chips/avatars/badges that need it. */
+.rounded-3xl { border-radius: 16px !important; }
+.rounded-2xl { border-radius: 16px !important; }
+.rounded-xl  { border-radius: 14px !important; }
+.rounded-lg  { border-radius: 12px !important; }
+.rounded-md  { border-radius: 10px !important; }
+.rounded     { border-radius: 10px !important; }
+.rounded-sm  { border-radius: 8px  !important; }
+
+/* Component-level radii aligned to the same scale. */
+.hero-card,
+.sub-card,
+.bbdo-card,
+.liquid-glass,
+.liquid-glass-strong { border-radius: 16px !important; }
+.sub-card-tight { border-radius: 14px !important; }
+.card-tile-amber,
+.card-tile-red,
+.card-tile-blue { border-radius: 14px !important; }
+.stat-pill { border-radius: 12px !important; }
+
+/* ── 3. Pillar page theming. Wrap a route with `.theme-<pillar>` and hero banners /
+   accent surfaces auto-tint to that pillar's solid color. ── */
+.theme-diet        { --page-accent: var(--pillar-diet);        --page-accent-soft: var(--pillar-diet-soft); }
+.theme-exercise    { --page-accent: var(--pillar-exercise);    --page-accent-soft: var(--pillar-exercise-soft); }
+.theme-move        { --page-accent: var(--pillar-move);        --page-accent-soft: var(--pillar-move-soft); }
+.theme-supplements { --page-accent: var(--pillar-supplements); --page-accent-soft: var(--pillar-supplements-soft); }
+.theme-fasting     { --page-accent: var(--pillar-fasting);     --page-accent-soft: var(--pillar-fasting-soft); }
+
+/* When a page sets --page-accent, hero-card / bbdo-eyebrow / accent text pick it up. */
+[class*="theme-"] .hero-card:not(.hero-card-cream):not(.hero-card-white) { background: var(--page-accent, var(--bbdo-blue)) !important; }
+[class*="theme-"] .page-accent-bg   { background: var(--page-accent, var(--bbdo-blue)) !important; color: #fff; }
+[class*="theme-"] .page-accent-soft { background: var(--page-accent-soft, var(--bbdo-blue-soft)) !important; color: var(--page-accent, var(--bbdo-blue)) !important; }
+[class*="theme-"] .page-accent-text { color: var(--page-accent, var(--bbdo-blue)) !important; }
+[class*="theme-"] .page-accent-icon { color: var(--page-accent, var(--bbdo-blue)) !important; }
+
+/* ── 4. Semantic status utilities — one vocabulary for every role.
+   Use these instead of raw Tailwind palette (bg-emerald-500/10, text-blue-600, etc.)
+   or hardcoded hex (bg-[#248CCB], text-[#E00101]). ── */
+.text-success   { color: hsl(var(--success)) !important; }
+.text-warning   { color: hsl(var(--warning)) !important; }
+.text-info      { color: hsl(var(--info)) !important; }
+.text-critical  { color: hsl(var(--critical)) !important; }
+.bg-success-soft  { background-color: hsl(var(--success-soft)) !important; }
+.bg-warning-soft  { background-color: hsl(var(--warning-soft)) !important; }
+.bg-info-soft     { background-color: hsl(var(--info-soft)) !important; }
+.bg-critical-soft { background-color: hsl(var(--critical-soft)) !important; }
+.bg-success   { background-color: hsl(var(--success)) !important; }
+.bg-warning   { background-color: hsl(var(--warning)) !important; }
+.bg-info      { background-color: hsl(var(--info)) !important; }
+.bg-critical  { background-color: hsl(var(--critical)) !important; }
+.border-success   { border-color: hsl(var(--success) / 0.35) !important; }
+.border-warning   { border-color: hsl(var(--warning) / 0.35) !important; }
+.border-info      { border-color: hsl(var(--info) / 0.35) !important; }
+.border-critical  { border-color: hsl(var(--critical) / 0.35) !important; }
+
+/* ── 5. Shared surface primitives for shared components. ── */
+.bbdo-surface-card {
+  background: #fff;
+  border: 1px solid var(--bbdo-line);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+}
+.bbdo-surface-sub {
+  background: var(--bbdo-cream-2);
+  border-radius: 14px;
+}
+
+/* ── 6. Mobile safety net for dense admin/coach/partner content pages.
+   Any raw <table> gets a horizontal scroll wrapper feel; oversized dialog
+   contents cap to viewport; role dashboards get uniform bottom padding so
+   the shared dock never overlaps content. ── */
+@media (max-width: 767px) {
+  .admin-shell {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  .admin-shell > div,
+  .admin-shell section,
+  .admin-shell article,
+  .admin-shell .liquid-glass,
+  .admin-shell .bbdo-card,
+  .admin-shell .sub-card,
+  .admin-shell .hero-card {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .admin-shell .mobile-stack,
+  .admin-shell .mobile-card-stack,
+  .admin-shell .mobile-action-stack {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .admin-shell .mobile-action-stack > *,
+  .admin-shell .mobile-full,
+  .admin-shell .mobile-full > button,
+  .admin-shell .mobile-full > a {
+    width: 100% !important;
+  }
+
+  .admin-shell .mobile-media {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: none !important;
+  }
+
+  .admin-shell .mobile-grid-1 {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .admin-shell .mobile-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  /* Only downshift 3-4 column grids that would otherwise activate on mobile.
+     lg:/xl: variants already collapse to 1 column on mobile via Tailwind and
+     forcing them to 2 columns squishes side-by-side cards awkwardly. */
+  .admin-shell .grid-cols-3:not([role="tablist"]):not(.keep-mobile-cols),
+  .admin-shell .grid-cols-4:not([role="tablist"]):not(.keep-mobile-cols),
+  .admin-shell .md\:grid-cols-3:not(.keep-mobile-cols),
+  .admin-shell .md\:grid-cols-4:not(.keep-mobile-cols) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .admin-shell .grid-cols-2:not(.keep-mobile-cols),
+  .admin-shell .md\:grid-cols-2:not(.keep-mobile-cols) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .admin-shell [class*="min-w-["],
+  .admin-shell [class*="w-[96vw"],
+  .admin-shell [class*="w-[90vw"] {
+    max-width: 100% !important;
+  }
+
+  .admin-shell [class*="justify-between"] {
+    min-width: 0;
+  }
+
+  .admin-shell [class*="justify-between"] > :first-child {
+    min-width: 0;
+  }
+
+  .admin-shell [class*="justify-between"] > :last-child {
+    flex-shrink: 0;
+  }
+
+  .admin-shell [class*="gap-"] > button,
+  .admin-shell [class*="gap-"] > a {
+    min-width: 0;
+  }
+
+  .admin-shell [class*="absolute -right-"],
+  .admin-shell [class*="absolute -left-"],
+  .admin-shell [class*="-right-10"],
+  .admin-shell [class*="-right-16"],
+  .admin-shell [class*="-right-8"],
+  .admin-shell [class*="-left-16"],
+  .admin-shell [class*="-top-24"],
+  .admin-shell [class*="-bottom-24"] {
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .admin-shell .pointer-events-none[class*="absolute"][class*="-right-"],
+  .admin-shell .pointer-events-none[class*="absolute"][class*="-left-"],
+  .admin-shell .pointer-events-none[class*="absolute"][class*="-top-"],
+  .admin-shell .pointer-events-none[class*="absolute"][class*="-bottom-"] {
+    display: none !important;
+  }
+
+  .admin-shell [class*="blur-"][class*="absolute"][class*="-right-"],
+  .admin-shell [class*="blur-"][class*="absolute"][class*="-left-"],
+  .admin-shell [class*="blur-"][class*="absolute"][class*="-top-"],
+  .admin-shell [class*="blur-"][class*="absolute"][class*="-bottom-"] {
+    display: none !important;
+  }
+
+  .admin-shell .mobile-wrap-between {
+    align-items: flex-start !important;
+    flex-wrap: wrap !important;
+  }
+
+  .admin-shell h1,
+  .admin-shell h2,
+  .admin-shell h3,
+  .admin-shell p,
+  .admin-shell span,
+  .admin-shell button,
+  .admin-shell a,
+  .admin-shell td,
+  .admin-shell th {
+    overflow-wrap: anywhere;
+  }
+
+  .admin-shell button,
+  .admin-shell a {
+    max-width: 100%;
+  }
+
+  .admin-shell .rounded-3xl,
+  .admin-shell .rounded-2xl {
+    border-radius: 14px !important;
+  }
+
+  main table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+  main table thead th,
+  main table tbody td {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  /* Ensure any fixed bar / large dialog leaves room for the shared dock. */
+  main {
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+  }
+  /* Cap dialog widths cleanly on small viewports (drawers are handled separately). */
+  [role="dialog"]:not([data-vaul-drawer]) {
+    width: calc(100vw - 1rem) !important;
+    max-width: calc(100vw - 1rem) !important;
+    max-height: calc(100dvh - 1rem) !important;
+    overflow-y: auto;
+  }
+  /* Force minimum 44px touch target for icon-only buttons in mobile chrome. */
+  button[aria-label]:not(.no-touch-target) {
+    min-height: 40px;
+    min-width: 40px;
+  }
+}
+

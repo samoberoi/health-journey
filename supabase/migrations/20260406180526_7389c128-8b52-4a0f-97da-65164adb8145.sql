@@ -1,0 +1,3 @@
+ALTER TABLE public.coaches 
+ADD COLUMN tour_completed_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+ADD COLUMN tour_signature TEXT DEFAULT NULL;

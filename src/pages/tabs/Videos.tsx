@@ -1,0 +1,383 @@
+import { useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Search, Play, CheckCircle2, RotateCcw, Clock, Sparkles, Target,
+  Activity, Brain, CircleDot, Dumbbell, Flower2, Lock, Moon, Move3D, Sun, Triangle, Wind,
+  type LucideIcon,
+} from "lucide-react";
+import { videos, videoGroups, videoTagFilters, type VideoEntry } from "@/lib/exerciseData";
+import VideoPlayer from "@/components/exercises/VideoPlayer";
+import { useVideoThumbnails } from "@/hooks/useVideoThumbnails";
+import { useVideoMetadata } from "@/hooks/useVideoMetadata";
+import { useVideoProgress } from "@/hooks/useVideoProgress";
+import { useYouTubeDurationPrefetch } from "@/hooks/useYouTubeDurationPrefetch";
+import { formatDuration } from "@/lib/videoProgressStore";
+import YogaUpsell from "@/components/YogaUpsell";
+import { useDailyYogaMinutes } from "@/hooks/useAppSettings";
+import SessionBreakdownCard from "@/components/shared/SessionBreakdownCard";
+
+const VIDEO_ICON_MAP: Record<string, LucideIcon> = {
+  Activity,
+  Brain,
+  CircleDot,
+  Dumbbell,
+  Flower2,
+  Lock,
+  Moon,
+  Move3D,
+  Sparkles,
+  Sun,
+  Target,
+  Triangle,
+  Wind,
+};
+
+function VideoFlatIcon({ name, className = "w-4 h-4" }: { name?: string | null; className?: string }) {
+  const Icon = VIDEO_ICON_MAP[name || ""] ?? Sparkles;
+  return <Icon className={className} strokeWidth={1.75} />;
+}
+
+export default function Videos() {
+  const [group, setGroup] = useState<(typeof videoGroups)[number]["id"]>("all");
+  const [tag, setTag] = useState<(typeof videoTagFilters)[number]["id"]>("all");
+  const [query, setQuery] = useState("");
+  const [active, setActive] = useState<VideoEntry | null>(null);
+  const { resolve } = useVideoThumbnails();
+  const { resolveVideo, customVideos, disabledIds } = useVideoMetadata();
+  const { getStatus, watched } = useVideoProgress();
+
+  const allResolved = useMemo(
+    () => [...videos.map(resolveVideo), ...customVideos].filter((v) => !disabledIds.has(v.id) && v.youtubeId),
+    [resolveVideo, customVideos, disabledIds],
+  );
+
+  // Prefetch durations for everything once
+  useYouTubeDurationPrefetch(useMemo(() => allResolved.map((v) => v.youtubeId), [allResolved]));
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return allResolved.filter((v) => {
+      if (group !== "all" && v.group !== group) return false;
+      if (tag !== "all" && !v.tags.includes(tag as any)) return false;
+      if (q && !`${v.name} ${v.category} ${v.benefits}`.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [group, tag, query, allResolved]);
+
+  const continueWatching = useMemo(() => {
+    return allResolved
+      .map((v) => ({ v, s: getStatus(v.id, v.youtubeId) }))
+      .filter(({ s }) => s.started && !s.completed && s.ratio < 0.9)
+      .sort((a, b) => (watched[b.v.id]?.watchedAt || 0) - (watched[a.v.id]?.watchedAt || 0))
+      .slice(0, 6)
+      .map(({ v }) => v);
+  }, [allResolved, watched, getStatus]);
+
+  const totalWatched = Object.values(watched).filter((w) => w.completed).length;
+
+  // Daily yoga goal — sum today's watched minutes across yoga-group videos
+  const yogaGoalMin = useDailyYogaMinutes(20);
+  const yogaMinutesToday = useMemo(() => {
+    const yogaIds = new Set(
+      allResolved
+        .filter((v) => v.group === "Pranayama" || v.group === "Yoga Asana" || v.group === "Bandha")
+        .map((v) => v.id),
+    );
+    const today = new Date();
+    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    let sec = 0;
+    for (const [vid, w] of Object.entries(watched)) {
+      if (!yogaIds.has(vid)) continue;
+      // Prefer today-accumulated real playback (accrues on every replay, resets daily)
+      if ((w as any).sessionDate === todayKey && typeof (w as any).todayWatchedSec === "number") {
+        sec += Math.max(0, (w as any).todayWatchedSec);
+        continue;
+      }
+      // Legacy fallback: fall back to progressSec if the video was opened today
+      const start = new Date(); start.setHours(0, 0, 0, 0);
+      if (w.watchedAt && w.watchedAt >= start.getTime()) {
+        const p = Math.max(0, w.progressSec || 0);
+        const d = Math.max(0, w.durationSec || 0);
+        sec += d > 0 ? Math.min(p, d) : p;
+      }
+    }
+    return Math.floor(sec / 60);
+  }, [watched, allResolved]);
+  const yogaPct = Math.min(100, Math.round((yogaMinutesToday / Math.max(1, yogaGoalMin)) * 100));
+  const yogaGoalMet = yogaMinutesToday >= yogaGoalMin;
+  const yogaRemaining = Math.max(0, yogaGoalMin - yogaMinutesToday);
+
+  return (
+    <div className="flex flex-col gap-4 pt-4 md:pt-6 pb-6">
+      {/* Hero */}
+      <motion.div
+        className="mx-5 rounded-2xl p-5 md:p-6 text-white shadow-card relative overflow-hidden"
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        style={{ background: "var(--bbdo-gradient)" }}
+      >
+        <div className="absolute -right-16 -top-16 w-44 h-44 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+        <div className="relative">
+          <p className="text-[11px] tracking-[0.18em] uppercase font-bold text-white/85">Exercise Library</p>
+          <h1 className="text-[22px] md:text-3xl font-black tracking-tight mt-1 leading-tight">
+            Move. Breathe. Recover.
+          </h1>
+          <p className="text-[13px] text-white/90 mt-1.5 leading-snug">
+            Curated yoga, pranayama &amp; fitness. Aim for {yogaGoalMin} minutes today.
+          </p>
+
+          {/* Daily yoga goal */}
+          <div className="mt-4 rounded-2xl bg-white/15 backdrop-blur-sm p-3.5 ring-1 ring-white/20">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <Target className="w-3.5 h-3.5 shrink-0" />
+                <span className="text-[11px] font-black uppercase tracking-[0.14em] truncate">Daily goal</span>
+              </div>
+              <span className="text-xs font-bold shrink-0">
+                {yogaMinutesToday}/{yogaGoalMin} min
+              </span>
+            </div>
+            <div className="mt-2 h-2 rounded-full bg-white/20 overflow-hidden">
+              <motion.div
+                initial={false}
+                animate={{ width: `${yogaPct}%` }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                className="h-full rounded-full"
+                style={{ background: yogaGoalMet ? "#10B981" : "#FFFFFF" }}
+              />
+            </div>
+            <p className="text-[11px] text-white/85 mt-2 leading-snug">
+              {yogaGoalMet
+                ? "You've hit today's yoga minimum — beautiful work."
+                : `${yogaRemaining} more min of yoga, pranayama or bandha to finish today's goal.`}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 mt-3 text-[11px] font-semibold">
+            <span className="inline-flex items-center gap-1.5 bg-white/18 px-2.5 py-1 rounded-full">
+              <Sparkles className="w-3.5 h-3.5" /> {allResolved.length} sessions
+            </span>
+            {totalWatched > 0 && (
+              <span className="inline-flex items-center gap-1.5 bg-white/18 px-2.5 py-1 rounded-full">
+                <CheckCircle2 className="w-3.5 h-3.5" /> {totalWatched} completed
+              </span>
+            )}
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Ideal daily plan (admin-configured) */}
+      <div className="mx-5">
+        <SessionBreakdownCard
+          totalKey="yoga_stress_daily_minutes"
+          sessionsKey="yoga_stress_sessions"
+          moduleLabel="yoga & stress"
+          accent="var(--bbdo-blue)"
+          progressMinutes={yogaMinutesToday}
+        />
+      </div>
+
+
+
+      {/* Search */}
+      <div className="px-5">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by name, benefit, category…"
+            className="w-full pl-9 pr-3 py-2.5 rounded-2xl bg-muted/40 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+          />
+        </div>
+      </div>
+
+      {/* Yoga upsell + booking status */}
+      <YogaUpsell />
+
+
+
+      {/* Group pills */}
+      <div className="flex gap-2 px-5 pr-8 overflow-x-auto no-scrollbar snap-x pb-1">
+        {videoGroups.map((g) => (
+          <button
+            key={g.id}
+            onClick={() => setGroup(g.id)}
+            className={`shrink-0 snap-start px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-1.5 border transition-colors ${
+              group === g.id
+                ? "bg-primary/10 text-primary border-primary/30"
+                : "bg-white text-foreground/80 border-border hover:bg-accent"
+            }`}
+          >
+            <VideoFlatIcon name={g.icon} className="w-4 h-4" />
+            <span className="whitespace-nowrap">{g.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Tag pills */}
+      <div className="flex gap-2 px-5 pr-8 overflow-x-auto no-scrollbar snap-x pb-1">
+        {videoTagFilters.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTag(t.id)}
+            className={`shrink-0 snap-start px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border transition-colors ${
+              tag === t.id
+                ? "bg-foreground text-background border-foreground"
+                : "bg-white text-foreground/70 border-border hover:bg-accent"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+
+
+      {/* Continue watching row — Netflix-style */}
+      {continueWatching.length > 0 && (
+        <section className="space-y-2">
+          <h2 className="px-5 text-sm font-black uppercase tracking-[0.12em] text-foreground/80">
+            Continue Watching
+          </h2>
+          <div className="flex gap-3 px-5 overflow-x-auto pb-2 snap-x" style={{ scrollbarWidth: "none" }}>
+            {continueWatching.map((v) => {
+              const s = getStatus(v.id, v.youtubeId);
+              return (
+                <button
+                  key={v.id}
+                  onClick={() => setActive({ ...v, thumbnail: resolve(v.id, v.thumbnail) })}
+                  className="no-pill snap-start shrink-0 w-56 rounded-xl overflow-hidden bg-white border border-border shadow-card text-left hover:-translate-y-px"
+                >
+                  <div className="relative w-full" style={{ aspectRatio: "16 / 9" }}>
+                    <img src={resolve(v.id, v.thumbnail)} alt={v.name} loading="lazy"
+                      className="absolute inset-0 w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-full bg-white/95 text-foreground flex items-center justify-center">
+                        <Play className="w-4 h-4 ml-0.5" fill="currentColor" />
+                      </div>
+                    </div>
+                    {/* Progress bar */}
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+                      <div className="h-full bg-[var(--bbdo-red)]" style={{ width: `${Math.max(2, s.ratio * 100)}%` }} />
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <p className="text-foreground font-bold text-sm truncate">{v.name}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      {formatDuration(s.progressSec)} of {s.durationSec > 0 ? formatDuration(s.durationSec) : "—"}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* Cards */}
+      <div className="grid gap-3 px-5 md:grid-cols-2">
+        {filtered.map((v, i) => {
+          const s = getStatus(v.id, v.youtubeId);
+          return (
+            <motion.button
+              key={v.id}
+              onClick={() => setActive({ ...v, thumbnail: resolve(v.id, v.thumbnail) })}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: Math.min(i * 0.03, 0.3), duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              whileTap={{ scale: 0.98 }}
+              className="no-pill rounded-xl text-left overflow-hidden group bg-white border border-border shadow-card hover:-translate-y-px"
+            >
+              <div className="relative w-full" style={{ aspectRatio: "16 / 9" }}>
+                <img
+                  src={resolve(v.id, v.thumbnail)}
+                  alt={v.name}
+                  loading="lazy"
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+
+                {/* Top-left icon */}
+                <div className="absolute top-2 left-2 w-9 h-9 rounded-xl bg-white/90 backdrop-blur flex items-center justify-center text-primary shadow-card">
+                  <VideoFlatIcon name={v.icon} className="w-5 h-5" />
+                </div>
+
+                {/* Top-right status badge */}
+                <div className="absolute top-2 right-2 flex gap-1.5">
+                  {s.completed ? (
+                    <span className="px-2 py-0.5 rounded-full bg-success-soft text-success text-[10px] font-bold inline-flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" /> Watched
+                    </span>
+                  ) : s.started ? (
+                    <span className="px-2 py-0.5 rounded-full bg-[var(--bbdo-red)] text-white text-[10px] font-bold">
+                      In Progress
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded-full bg-white/85 backdrop-blur text-foreground text-[10px] font-semibold">
+                      {v.group}
+                    </span>
+                  )}
+                </div>
+
+                {/* Center play button */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full bg-white/95 text-foreground flex items-center justify-center shadow-lift">
+                    {s.completed ? (
+                      <RotateCcw className="w-5 h-5" />
+                    ) : (
+                      <Play className="w-6 h-6 ml-0.5" fill="currentColor" />
+                    )}
+                  </div>
+                </div>
+
+                {/* Bottom — duration */}
+                {s.durationSec > 0 && (
+                  <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded-md bg-black/75 text-white text-[10px] font-bold inline-flex items-center gap-1">
+                    <Clock className="w-3 h-3" /> {formatDuration(s.durationSec)}
+                  </div>
+                )}
+
+                {/* Progress bar for in-progress */}
+                {s.started && !s.completed && (
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+                    <div className="h-full bg-[var(--bbdo-red)]" style={{ width: `${Math.max(2, s.ratio * 100)}%` }} />
+                  </div>
+                )}
+              </div>
+              <div className="p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="text-foreground font-bold text-sm leading-tight">{v.name}</h3>
+                  {s.completed && (
+                    <span className="shrink-0 text-[10px] font-bold text-success inline-flex items-center gap-0.5">
+                      <RotateCcw className="w-3 h-3" /> Watch again
+                    </span>
+                  )}
+                </div>
+                <p className="text-muted-foreground text-xs mt-1 line-clamp-2">{v.benefits}</p>
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {v.tags.slice(0, 3).map((t) => (
+                    <span key={t} className="px-2 py-0.5 rounded-full bg-accent text-foreground text-[10px]">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </motion.button>
+          );
+        })}
+      </div>
+
+      {filtered.length === 0 && (
+        <div className="text-center py-12 px-5">
+          <p className="text-muted-foreground text-sm">No videos match these filters.</p>
+        </div>
+      )}
+
+      <AnimatePresence>
+        {active && <VideoPlayer video={active} onClose={() => setActive(null)} />}
+      </AnimatePresence>
+    </div>
+  );
+}

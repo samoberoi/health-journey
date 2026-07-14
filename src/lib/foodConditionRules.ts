@@ -1,0 +1,145 @@
+/**
+ * Clinical condition ↔ food filter engine.
+ *
+ * Reads the user's deep-profiling data + saved conditions, fetches rule rows from
+ * public.food_condition_rules, and returns a Map keyed by food_items.id with the
+ * strongest applicable action ("avoid" > "limit" > "encourage") plus a human
+ * reason. Used by Quick Food Reference (and anywhere else meals are listed) to
+ * dim, skip, or emphasise foods automatically based on the person's health.
+ */
+import { supabase } from "@/integrations/supabase/client";
+import type { FoodItem } from "@/components/diet/dietTypes";
+
+export type ConditionAction = "avoid" | "limit" | "encourage";
+
+export type ConditionKey =
+  | "hypothyroid"
+  | "hyperthyroid"
+  | "pcos"
+  | "ckd"
+  | "uric_acid"
+  | "fatty_liver"
+  | "iron_deficiency";
+
+export interface ActiveCondition {
+  key: ConditionKey;
+  label: string;
+  emoji: string;
+}
+
+export interface FoodRuleHit {
+  action: ConditionAction;
+  reason: string;
+  condition: ActiveCondition;
+}
+
+export interface ConditionRuleRow {
+  id: string;
+  condition_key: string;
+  action: ConditionAction;
+  name_pattern: string;
+  filter_id: string | null;
+  reason: string;
+  priority: number;
+}
+
+const CONDITION_META: Record<ConditionKey, { label: string; emoji: string }> = {
+  hypothyroid:     { label: "Hypothyroidism",   emoji: "🦋" },
+  hyperthyroid:    { label: "Hyperthyroidism",  emoji: "🦋" },
+  pcos:            { label: "PMOS",             emoji: "🌸" },
+  ckd:             { label: "Kidney Disease",   emoji: "🫘" },
+  uric_acid:       { label: "High Uric Acid",   emoji: "🧪" },
+  fatty_liver:     { label: "Fatty Liver",      emoji: "🫀" },
+  iron_deficiency: { label: "Iron Deficiency",  emoji: "🩸" },
+};
+
+const RANK: Record<ConditionAction, number> = { avoid: 3, limit: 2, encourage: 1 };
+
+export function deriveActiveConditions(
+  deep: Record<string, any> | null | undefined,
+  uricAcidThreshold = 7.0,
+): ActiveCondition[] {
+  if (!deep) return [];
+  const out: ActiveCondition[] = [];
+  const push = (key: ConditionKey) => out.push({ key, ...CONDITION_META[key] });
+
+  // Thyroid → hypo vs hyper
+  const tt = String(deep.thyroidType || "").toLowerCase();
+  const t  = String(deep.thyroid || "").toLowerCase();
+  if (tt === "hypothyroid" || t === "hypothyroid") push("hypothyroid");
+  else if (tt === "hyperthyroid" || t === "hyperthyroid") push("hyperthyroid");
+  else if (t === "yes") push("hypothyroid"); // safest default when type unknown
+
+  if (String(deep.pcos || "").toLowerCase() === "yes") push("pcos");
+  if (String(deep.kidneyDisease || "").toLowerCase() === "yes") push("ckd");
+  if (String(deep.fattyLiver || "").toLowerCase() === "yes") push("fatty_liver");
+  if (String(deep.ironDeficiency || "").toLowerCase() === "yes") push("iron_deficiency");
+
+  const ua = Number(deep.uricAcid);
+  if (Number.isFinite(ua) && ua >= uricAcidThreshold) push("uric_acid");
+
+  return out;
+}
+
+export async function fetchConditionRules(keys: ConditionKey[]): Promise<ConditionRuleRow[]> {
+  if (!keys.length) return [];
+  const { data } = await supabase
+    .from("food_condition_rules")
+    .select("id,condition_key,action,name_pattern,filter_id,reason,priority")
+    .in("condition_key", keys as string[])
+    .eq("is_active", true);
+  return ((data as ConditionRuleRow[]) || []);
+}
+
+/**
+ * Build a Map from food_item.id -> the strongest rule hit for that food.
+ * "avoid" beats "limit" beats "encourage". Ties broken by rule priority.
+ */
+export function buildFoodRuleMap(
+  items: FoodItem[],
+  rules: ConditionRuleRow[],
+  active: ActiveCondition[],
+): Map<string, FoodRuleHit> {
+  const map = new Map<string, FoodRuleHit>();
+  if (!rules.length || !active.length) return map;
+
+  const conditionByKey = new Map(active.map((c) => [c.key, c] as const));
+
+  for (const item of items) {
+    const haystack = `${item.name} ${item.alt_name || ""}`.toLowerCase();
+    let best: (FoodRuleHit & { priority: number }) | null = null;
+
+    for (const rule of rules) {
+      if (rule.filter_id && rule.filter_id !== item.filter_id) continue;
+      if (!haystack.includes(rule.name_pattern.toLowerCase())) continue;
+
+      const condition = conditionByKey.get(rule.condition_key as ConditionKey);
+      if (!condition) continue;
+
+      const rank = RANK[rule.action];
+      const bestRank = best ? RANK[best.action] : -1;
+      if (
+        rank > bestRank ||
+        (rank === bestRank && rule.priority > (best?.priority ?? -1))
+      ) {
+        best = { action: rule.action, reason: rule.reason, condition, priority: rule.priority };
+      }
+    }
+
+    if (best) {
+      const { priority: _p, ...hit } = best;
+      map.set(item.id, hit);
+    }
+  }
+
+  return map;
+}
+
+export async function loadUserActiveConditions(userId: string): Promise<ActiveCondition[]> {
+  const { data } = await supabase
+    .from("profiles")
+    .select("deep_profiling")
+    .eq("user_id", userId)
+    .maybeSingle();
+  return deriveActiveConditions((data as any)?.deep_profiling);
+}

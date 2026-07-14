@@ -1,0 +1,21 @@
+
+ALTER TABLE public.coaches
+  ADD COLUMN email TEXT,
+  ADD COLUMN date_of_birth DATE,
+  ADD COLUMN emergency_contact_name TEXT,
+  ADD COLUMN emergency_contact_phone TEXT,
+  ADD COLUMN address_line1 TEXT,
+  ADD COLUMN address_line2 TEXT,
+  ADD COLUMN city TEXT,
+  ADD COLUMN state TEXT,
+  ADD COLUMN pincode TEXT,
+  ADD COLUMN pan_card TEXT,
+  ADD COLUMN aadhaar_card TEXT,
+  ADD COLUMN qualification TEXT,
+  ADD COLUMN languages TEXT[] DEFAULT '{}',
+  ADD COLUMN bio TEXT,
+  ADD COLUMN start_date DATE DEFAULT CURRENT_DATE,
+  ADD COLUMN commission_percent NUMERIC(5,2) DEFAULT 10.00,
+  ADD COLUMN bank_name TEXT,
+  ADD COLUMN bank_account_number TEXT,
+  ADD COLUMN bank_ifsc TEXT;

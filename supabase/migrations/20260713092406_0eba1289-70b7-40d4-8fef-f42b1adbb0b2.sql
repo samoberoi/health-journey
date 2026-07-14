@@ -1,0 +1,1 @@
+CREATE POLICY "Authenticated can read app settings" ON public.app_settings FOR SELECT TO authenticated USING (true);

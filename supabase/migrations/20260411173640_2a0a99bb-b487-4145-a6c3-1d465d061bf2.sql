@@ -1,0 +1,2 @@
+ALTER TABLE public.health_logs DROP CONSTRAINT health_logs_log_type_check;
+ALTER TABLE public.health_logs ADD CONSTRAINT health_logs_log_type_check CHECK (log_type = ANY (ARRAY['diabetes'::text, 'bp'::text, 'weight'::text, 'water'::text]));

@@ -1,0 +1,2 @@
+CREATE POLICY "Users can insert own supplement plans" ON public.user_supplement_plans FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own supplement plans" ON public.user_supplement_plans FOR UPDATE TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);

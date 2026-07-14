@@ -1,0 +1,1 @@
+ALTER TABLE public.movement_config ADD COLUMN IF NOT EXISTS max_daily_steps INTEGER NOT NULL DEFAULT 12000;

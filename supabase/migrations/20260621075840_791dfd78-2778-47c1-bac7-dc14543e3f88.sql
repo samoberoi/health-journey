@@ -1,0 +1,2 @@
+CREATE POLICY "Users can insert own protocols" ON public.user_protocols FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own protocols" ON public.user_protocols FOR UPDATE TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);

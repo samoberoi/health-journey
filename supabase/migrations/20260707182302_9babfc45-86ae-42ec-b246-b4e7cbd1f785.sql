@@ -1,0 +1,1 @@
+UPDATE public.user_bbdo_badges SET snapshot = snapshot || '{"weight_start": 92.4, "weight_end": 90.1, "glucose_start": 148, "glucose_end": 121, "insulin_start": 24, "insulin_end": 18, "systolic_start": 142, "systolic_end": 128, "diastolic_start": 92, "diastolic_end": 84}'::jsonb, viewed=false WHERE id='76c42945-9869-43ac-8aec-3cae71a0861c';

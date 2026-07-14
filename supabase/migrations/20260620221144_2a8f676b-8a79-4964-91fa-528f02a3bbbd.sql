@@ -1,0 +1,1 @@
+ALTER VIEW public.admin_referrals_overview SET (security_invoker = true);

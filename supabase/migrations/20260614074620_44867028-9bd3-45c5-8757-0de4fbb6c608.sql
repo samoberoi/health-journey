@@ -1,0 +1,1 @@
+DELETE FROM public.thyrocare_orders WHERE thyrocare_order_id IS NULL OR status IN ('failed','cancelled');

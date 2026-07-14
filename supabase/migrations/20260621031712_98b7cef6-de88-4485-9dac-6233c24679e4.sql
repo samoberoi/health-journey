@@ -1,0 +1,1 @@
+ALTER TABLE public.health_logs ADD COLUMN IF NOT EXISTS steps_count integer;

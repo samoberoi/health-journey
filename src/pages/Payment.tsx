@@ -1,0 +1,265 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { Check, Flame, Lock, Rocket, User, Star, Gift } from "lucide-react";
+import { getUser } from "@/lib/userStore";
+import { useAuth } from "@/contexts/AuthContext";
+import { createSubscription } from "@/lib/subscriptionService";
+import { supabase } from "@/integrations/supabase/client";
+import { getSelectedPlan, CYCLE_LABEL } from "@/lib/packageService";
+import { autoAssignCoach, fetchAssignedCoach, coachTypeLabel, type Coach } from "@/lib/coachService";
+import { sendWelcomeNotification } from "@/lib/notificationService";
+import logoImg from "@/assets/logo.png";
+
+function ConfettiPiece({ delay }: { delay: number }) {
+  const colors = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--warning))", "hsl(var(--destructive))"];
+  const color = colors[Math.floor(Math.random() * colors.length)];
+  const left = Math.random() * 100;
+  const size = Math.random() * 10 + 6;
+  return (
+    <motion.div className="absolute top-0 rounded-sm" style={{ left: `${left}%`, backgroundColor: color, width: size, height: size }}
+      initial={{ y: -20, opacity: 1, rotate: 0 }} animate={{ y: 700, opacity: [1, 1, 0], rotate: Math.random() * 720 - 360 }}
+      transition={{ delay, duration: 2 + Math.random(), ease: "easeIn" }} />
+  );
+}
+
+export default function Payment() {
+  const [step, setStep] = useState<"form" | "success">("form");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [assignedCoach, setAssignedCoach] = useState<Coach | null>(null);
+  const [referralCode, setReferralCode] = useState("");
+  const [referralStatus, setReferralStatus] = useState<"idle" | "applying" | "valid" | "invalid">("idle");
+  const [referralMessage, setReferralMessage] = useState<string>("");
+  const navigate = useNavigate();
+  const { user: authUser } = useAuth();
+  const storedUser = getUser();
+  const name = storedUser.profile.name ?? "Friend";
+  const plan = getSelectedPlan();
+  const duration = plan?.duration_months ?? 0;
+
+  const coachInitials = (assignedCoach?.name ?? "Coach").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+
+  const applyReferral = async () => {
+    const code = referralCode.trim();
+    if (!code) return;
+    setReferralStatus("applying");
+    setReferralMessage("");
+    try {
+      const { data, error } = await supabase.rpc("apply_referral_code" as any, { _code: code });
+      if (error) throw error;
+      if (data === false || data === null) {
+        setReferralStatus("invalid");
+        setReferralMessage("Invalid referral code. Please check and try again.");
+        return;
+      }
+      setReferralStatus("valid");
+      setReferralMessage("Referral code applied successfully.");
+    } catch (e: any) {
+      setReferralStatus("invalid");
+      setReferralMessage("Invalid referral code. Please check and try again.");
+    }
+  };
+
+  const handlePay = async () => {
+    setError(null);
+
+    if (!authUser) {
+      setError("You're not signed in. Please log in again to complete payment.");
+      return;
+    }
+    if (!plan) {
+      setError("Please select a package before completing payment.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await new Promise((r) => setTimeout(r, 1200));
+
+      const now = new Date();
+      const expiresAt = new Date(now);
+      expiresAt.setMonth(expiresAt.getMonth() + duration);
+
+      await createSubscription({
+        user_id: authUser.id,
+        plan_id: plan.plan_key,
+        plan_name: `${plan.name} — ${CYCLE_LABEL[plan.billing_cycle]}`,
+        plan_price: plan.total_price,
+        duration_months: duration,
+        started_at: now.toISOString(),
+        expires_at: expiresAt.toISOString(),
+      });
+
+      if (plan.assigns_coach !== false) {
+        await autoAssignCoach(authUser.id, plan.plan_key);
+        const c = await fetchAssignedCoach(authUser.id);
+        setAssignedCoach(c);
+      }
+
+      await supabase
+        .from("profiles" as any)
+        .update({ onboarding_completed: true } as any)
+        .eq("user_id", authUser.id);
+      await sendWelcomeNotification(authUser.id);
+
+      setStep("success");
+    } catch (e: any) {
+      console.error("Payment failed", e);
+      setError(e?.message ?? "Payment failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (step === "success") {
+      // Newly paid users always see the guided tour for their new package.
+      const timer = setTimeout(() => navigate("/tour"), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [step, navigate]);
+
+  return (
+    <div className="phone-container min-h-dvh flex flex-col px-6 pt-14 pb-10 relative overflow-hidden bg-background">
+      <AnimatePresence initial={false}>
+        {step === "form" ? (
+          <motion.div key="form" className="flex flex-col flex-1" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}>
+            <div className="mb-8">
+              <span className="text-xs font-medium text-primary uppercase tracking-widest">Almost there!</span>
+              <h1 className="text-3xl font-black text-foreground mt-1">Start your<br />journey</h1>
+            </div>
+
+            <div className="liquid-glass rounded-2xl p-5 mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Flame className="w-5 h-5 text-primary" strokeWidth={1.8} />
+                  </div>
+                  <div>
+                    <p className="text-foreground font-bold">{plan?.name ?? "No package selected"}</p>
+                    <p className="text-muted-foreground text-xs">{plan ? CYCLE_LABEL[plan.billing_cycle] : "Go back and choose a package"}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-primary font-black text-xl">{plan ? `₹${plan.total_price.toLocaleString("en-IN")}` : "—"}</p>
+                  <p className="text-muted-foreground text-xs">{plan ? `for ${duration} month${duration > 1 ? "s" : ""}` : "Select first"}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 mb-8">
+              <div className="liquid-glass rounded-2xl px-4 py-4">
+                <p className="text-xs text-muted-foreground mb-1">Card number</p>
+                <input placeholder="4242 4242 4242 4242" className="bg-transparent text-foreground font-medium text-base outline-none w-full placeholder:text-muted-foreground/50" />
+              </div>
+              <div className="flex gap-3">
+                <div className="flex-1 liquid-glass rounded-2xl px-4 py-4">
+                  <p className="text-xs text-muted-foreground mb-1">Expiry</p>
+                  <input placeholder="MM/YY" className="bg-transparent text-foreground font-medium text-base outline-none w-full placeholder:text-muted-foreground/50" />
+                </div>
+                <div className="flex-1 liquid-glass rounded-2xl px-4 py-4">
+                  <p className="text-xs text-muted-foreground mb-1">CVV</p>
+                  <input placeholder="123" className="bg-transparent text-foreground font-medium text-base outline-none w-full placeholder:text-muted-foreground/50" />
+                </div>
+              </div>
+            </div>
+
+            {/* Referral code */}
+            <div className="mb-4">
+              <div className="liquid-glass rounded-2xl px-4 py-3 flex items-center gap-3">
+                <Gift className="w-4 h-4 text-primary shrink-0" strokeWidth={1.8} />
+                <input
+                  type="text"
+                  placeholder="Referral code (optional)"
+                  value={referralCode}
+                  onChange={(e) => {
+                    setReferralCode(e.target.value.toUpperCase());
+                    if (referralStatus !== "idle") { setReferralStatus("idle"); setReferralMessage(""); }
+                  }}
+                  disabled={referralStatus === "valid"}
+                  className="flex-1 bg-transparent text-foreground font-medium text-sm outline-none placeholder:text-muted-foreground min-w-0 uppercase disabled:opacity-70"
+                />
+                {referralStatus === "valid" ? (
+                  <span className="text-success text-xs font-semibold flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Applied</span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={applyReferral}
+                    disabled={!referralCode.trim() || referralStatus === "applying"}
+                    className="text-primary text-xs font-semibold disabled:opacity-40"
+                  >
+                    {referralStatus === "applying" ? "Applying..." : "Apply"}
+                  </button>
+                )}
+              </div>
+              {referralMessage && (
+                <p className={`text-xs mt-2 ml-1 ${referralStatus === "valid" ? "text-success" : "text-destructive"}`}>
+                  {referralMessage}
+                </p>
+              )}
+            </div>
+
+
+            <p className="text-muted-foreground text-xs text-center mb-3 flex items-center justify-center gap-1.5">
+              <Lock className="w-3 h-3" strokeWidth={1.8} /> Secured with 256-bit encryption. Cancel anytime.
+            </p>
+
+            {error && (
+              <div className="mb-3 px-4 py-3 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-xs text-center">
+                {error}
+              </div>
+            )}
+
+            <motion.button onClick={handlePay} disabled={loading || !plan} className="gradient-blue text-primary-foreground font-bold py-4 rounded-2xl glow-blue mt-auto flex items-center justify-center gap-2 disabled:opacity-50" whileTap={{ scale: 0.98 }}>
+              {loading ? (<><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Processing...</>) : (<><Rocket className="w-5 h-5" strokeWidth={1.8} /> Start My Journey</>)}
+            </motion.button>
+          </motion.div>
+        ) : (
+          <motion.div key="success" className="flex flex-col flex-1 items-center justify-center text-center" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1]}}>
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              {Array.from({ length: 30 }).map((_, i) => (<ConfettiPiece key={i} delay={i * 0.05} />))}
+            </div>
+
+            <motion.div className="w-28 h-28 rounded-full overflow-hidden border-4 border-primary/30 shadow-2xl mb-6">
+              <img src={logoImg} alt="Bye Bye Diabetes" className="w-full h-full object-cover" />
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+              <h1 className="text-3xl font-black text-foreground mb-2">Welcome to your<br />transformation journey!</h1>
+              <p className="text-muted-foreground text-sm mb-6">{name}, your <span className="text-primary font-semibold">{plan?.name}</span> is now active.</p>
+            </motion.div>
+
+            {plan?.assigns_coach !== false && assignedCoach && (
+              <motion.div className="w-full liquid-glass rounded-2xl p-5 text-left mb-4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+                <p className="text-primary text-xs font-semibold uppercase tracking-widest mb-3">Your Assigned Coach</p>
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-full gradient-blue flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden">
+                    {assignedCoach.avatar_url ? (
+                      <img src={assignedCoach.avatar_url} alt={assignedCoach.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-white font-black text-lg">{coachInitials}</span>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-foreground font-black text-base">{assignedCoach.name}</p>
+                    <p className="text-muted-foreground text-xs mt-0.5">{coachTypeLabel(assignedCoach.coach_type)}</p>
+                    <div className="flex gap-0.5 mt-1 items-center">
+                      {[...Array(5)].map((_, i) => (<Star key={i} className="w-3 h-3 fill-amber-400 text-amber-400" strokeWidth={0} />))}
+                      <span className="text-muted-foreground text-xs ml-1">{assignedCoach.avg_rating || "5.0"}</span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-1">They'll reach out shortly to schedule your onboarding meeting.</p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="flex items-center gap-2 text-muted-foreground text-xs">
+              <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /> Taking you to your dashboard...
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

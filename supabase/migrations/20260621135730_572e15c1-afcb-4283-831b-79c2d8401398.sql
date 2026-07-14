@@ -1,0 +1,1 @@
+ALTER TABLE public.meal_photos ALTER COLUMN photo_url DROP NOT NULL;

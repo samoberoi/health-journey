@@ -429,14 +429,16 @@ function CoachFormFields({
       <FormField label="Phone *" value={data.phone || ""} onChange={(v) => set("phone", v)} />
       <FormField label="Email" value={data.email || ""} onChange={(v) => set("email", v)} />
       <div>
-        <label className="text-xs font-medium text-muted-foreground mb-1 block">Package</label>
-        <select
-          value={data.coach_type || "active_reset"}
-          onChange={(e) => set("coach_type", e.target.value)}
-          className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
-        >
-          {COACH_PACKAGES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-        </select>
+        <label className="text-xs font-medium text-muted-foreground mb-1 block">Packages</label>
+        <PackagesMultiSelect
+          value={((data as any).coach_packages && (data as any).coach_packages.length
+            ? (data as any).coach_packages
+            : (data.coach_type ? [data.coach_type as string] : []))}
+          onChange={(vals) => {
+            const next = vals.length ? vals : ["active_reset"];
+            onChange({ ...data, coach_packages: next as any, coach_type: next[0] as any });
+          }}
+        />
       </div>
       <FormField label="Specialization" value={data.specialization || ""} onChange={(v) => set("specialization", v)} />
       <FormField label="Qualification" value={data.qualification || ""} onChange={(v) => set("qualification", v)} />

@@ -427,6 +427,15 @@ function CoachFormFields({
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="sm:col-span-2 lg:col-span-3">
+        <label className="text-xs font-medium text-muted-foreground mb-1 block">Profile photo</label>
+        <AvatarUploader
+          value={(data as any).avatar_url || null}
+          onChange={(url) => set("avatar_url", url)}
+          folder="coaches"
+          entityId={(data as any).id || (data as any).phone || null}
+        />
+      </div>
       <FormField label="Name *" value={data.name || ""} onChange={(v) => set("name", v)} />
       <FormField label="Phone *" value={data.phone || ""} onChange={(v) => set("phone", v)} />
       <FormField label="Email" value={data.email || ""} onChange={(v) => set("email", v)} />

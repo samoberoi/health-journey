@@ -86,6 +86,8 @@ export function getFoodImageUrl(foodItemId: string): Promise<string | null> {
   const p = (async () => {
     const path = await fetchPath(foodItemId);
     if (path) {
+      // Absolute URL (external CDN like Unsplash / loremflickr) — use as-is.
+      if (/^https?:\/\//i.test(path)) { setInCache(foodItemId, path); return path; }
       const url = await signPath(path);
       if (url) { setInCache(foodItemId, url); return url; }
     }
@@ -101,10 +103,10 @@ export function getFoodImageUrl(foodItemId: string): Promise<string | null> {
 
 /** Batch-prime cache for a list of items (call once per visible list). */
 export async function primeFoodImages(items: Array<{ id: string; image_url?: string | null }>) {
-  const need: Array<{ id: string; path: string }> = [];
+  const need: Array<{ id: string; path: string; absolute: boolean }> = [];
   for (const it of items) {
     if (getFromCache(it.id)) continue;
-    if (it.image_url) need.push({ id: it.id, path: it.image_url });
+    if (it.image_url) need.push({ id: it.id, path: it.image_url, absolute: /^https?:\/\//i.test(it.image_url) });
   }
   if (!need.length) return;
   // Sign in parallel, capped at 8 concurrent
@@ -112,6 +114,7 @@ export async function primeFoodImages(items: Array<{ id: string; image_url?: str
   const workers = Array.from({ length: Math.min(8, queue.length) }, async () => {
     while (queue.length) {
       const next = queue.shift()!;
+      if (next.absolute) { setInCache(next.id, next.path); continue; }
       const url = await signPath(next.path);
       if (url) setInCache(next.id, url);
     }

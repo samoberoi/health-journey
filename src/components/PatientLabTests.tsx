@@ -494,9 +494,9 @@ export default function PatientLabTests({ alwaysShow = false, foundationMode = f
     return (
       <div className="liquid-glass rounded-2xl p-6 text-center space-y-2">
         <FlaskConical className="w-8 h-8 text-primary mx-auto" />
-        <h3 className="text-base font-black">No Lab Tests Yet</h3>
+        <h3 className="text-base font-black">Awaiting your coach</h3>
         <p className="text-sm text-muted-foreground">
-          Your coach hasn't recommended any lab tests yet. Check back soon!
+          Your coach will review your health assessment and recommend the right lab panels for your plan. You'll see them here as soon as they're assigned.
         </p>
       </div>
     );

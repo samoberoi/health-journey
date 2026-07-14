@@ -3172,6 +3172,7 @@ export type Database = {
       supplement_categories: {
         Row: {
           created_at: string
+          icon: string | null
           id: string
           is_active: boolean
           key: string
@@ -3179,6 +3180,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          icon?: string | null
           id?: string
           is_active?: boolean
           key: string
@@ -3186,6 +3188,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          icon?: string | null
           id?: string
           is_active?: boolean
           key?: string
@@ -3246,6 +3249,7 @@ export type Database = {
       supplement_conditions: {
         Row: {
           created_at: string
+          icon: string | null
           id: string
           is_active: boolean
           key: string
@@ -3253,6 +3257,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          icon?: string | null
           id?: string
           is_active?: boolean
           key: string
@@ -3260,6 +3265,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          icon?: string | null
           id?: string
           is_active?: boolean
           key?: string
@@ -4923,14 +4929,34 @@ export type Database = {
         Args: { _day?: string; _user_id: string }
         Returns: undefined
       }
-      rename_supplement_category: {
-        Args: { _new_key: string; _new_label: string; _old_key: string }
-        Returns: undefined
-      }
-      rename_supplement_condition: {
-        Args: { _new_key: string; _new_label: string; _old_key: string }
-        Returns: undefined
-      }
+      rename_supplement_category:
+        | {
+            Args: { _new_key: string; _new_label: string; _old_key: string }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              _new_icon?: string
+              _new_key: string
+              _new_label: string
+              _old_key: string
+            }
+            Returns: undefined
+          }
+      rename_supplement_condition:
+        | {
+            Args: { _new_key: string; _new_label: string; _old_key: string }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              _new_icon?: string
+              _new_key: string
+              _new_label: string
+              _old_key: string
+            }
+            Returns: undefined
+          }
       run_daily_gamification_close: { Args: never; Returns: number }
       send_welcome_notification: { Args: { _user_id: string }; Returns: string }
       streak_from_dates: {

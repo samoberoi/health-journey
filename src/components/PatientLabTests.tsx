@@ -245,7 +245,6 @@ export default function PatientLabTests({ alwaysShow = false, foundationMode = f
       const { data } = await supabase
         .from("thyrocare_tests" as any)
         .select("product_code, product_name, offer_rate, rate, markup_pct, fasting_required, parameters_count, description, raw_data")
-        .eq("foundation_default", true)
         .eq("is_active", true);
       const raw = ((data as any) || []) as Test[];
       // Order: BASIC → PLUS → ADVANCED

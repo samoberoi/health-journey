@@ -321,8 +321,21 @@ export default function CoachGuidedTour({ coachId, coachName, onComplete, onClos
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             className="flex flex-col gap-6"
           >
+            {/* Hero image */}
+            <div className="relative w-full max-w-lg mx-auto aspect-[16/9] rounded-3xl overflow-hidden shadow-xl">
+              <img
+                src={slide.image}
+                alt={slide.title}
+                width={1200}
+                height={640}
+                loading="lazy"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
+            </div>
+
             {/* Icon + title */}
-            <div className="flex flex-col items-center text-center gap-3 pt-4">
+            <div className="flex flex-col items-center text-center gap-3">
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}

@@ -6,6 +6,11 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import philosophyImg from "@/assets/coach-tour/philosophy.jpg";
+import punchImg from "@/assets/coach-tour/punch.jpg";
+import roleImg from "@/assets/coach-tour/role.jpg";
+import traitsImg from "@/assets/coach-tour/traits.jpg";
+import visionImg from "@/assets/coach-tour/vision.jpg";
 
 interface Props {
   coachId: string;
@@ -19,6 +24,7 @@ const SLIDES = [
   {
     id: 1,
     icon: Heart,
+    image: philosophyImg,
     accent: "from-rose-500 to-pink-600",
     glow: "shadow-rose-500/20",
     title: "Philosophy Reset",
@@ -33,6 +39,7 @@ const SLIDES = [
   {
     id: 2,
     icon: Target,
+    image: punchImg,
     accent: "from-secondary to-primary",
     glow: "shadow-secondary/20",
     title: "Core System — PUNCH",
@@ -47,6 +54,7 @@ const SLIDES = [
   {
     id: 3,
     icon: ShieldCheck,
+    image: roleImg,
     accent: "from-emerald-500 to-teal-600",
     glow: "shadow-emerald-500/20",
     title: "Role Clarity",
@@ -61,6 +69,7 @@ const SLIDES = [
   {
     id: 4,
     icon: Sparkles,
+    image: traitsImg,
     accent: "from-amber-500 to-orange-600",
     glow: "shadow-amber-500/20",
     title: "Top 5 Traits Needed",
@@ -75,6 +84,7 @@ const SLIDES = [
   {
     id: 5,
     icon: Rocket,
+    image: visionImg,
     accent: "from-violet-500 to-purple-600",
     glow: "shadow-violet-500/20",
     title: "Vision & Opportunity",
@@ -311,8 +321,21 @@ export default function CoachGuidedTour({ coachId, coachName, onComplete, onClos
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             className="flex flex-col gap-6"
           >
+            {/* Hero image */}
+            <div className="relative w-full max-w-lg mx-auto aspect-[16/9] rounded-3xl overflow-hidden shadow-xl">
+              <img
+                src={slide.image}
+                alt={slide.title}
+                width={1200}
+                height={640}
+                loading="lazy"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
+            </div>
+
             {/* Icon + title */}
-            <div className="flex flex-col items-center text-center gap-3 pt-4">
+            <div className="flex flex-col items-center text-center gap-3">
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}

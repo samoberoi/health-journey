@@ -14,6 +14,7 @@ import { calculateStreak } from "@/lib/streakService";
 import { createNotification } from "@/lib/notificationService";
 import { toast } from "sonner";
 import ScheduleMeetingDialog from "@/components/coach/ScheduleMeetingDialog";
+import PatientDailySummaryDialog from "@/components/coach/PatientDailySummaryDialog";
 
 interface FastingSummary {
   user_id: string;
@@ -100,6 +101,7 @@ export default function CoachHome({ onViewPatient, onViewFasting }: { onViewPati
   const [domainStats, setDomainStats] = useState({ exercise: 0, yoga: 0, diet: 0 });
   const [loading, setLoading] = useState(true);
   const [nudging, setNudging] = useState<string | null>(null);
+  const [summaryPatient, setSummaryPatient] = useState<PatientSummary | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -633,7 +635,7 @@ export default function CoachHome({ onViewPatient, onViewFasting }: { onViewPati
               return (
                 <button
                   key={p.user_id}
-                  onClick={onViewPatient}
+                  onClick={() => setSummaryPatient(p)}
                   className="flex items-center gap-3 py-3 border-b border-border/30 last:border-0 text-left w-full hover:opacity-90"
                 >
                   <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden relative">
@@ -710,6 +712,19 @@ export default function CoachHome({ onViewPatient, onViewFasting }: { onViewPati
           coachId={coach.id}
           patients={patients.map((p) => ({ user_id: p.user_id, name: p.name, phone: p.phone }))}
           onScheduled={() => { setSchedulePickerOpen(false); loadData(); }}
+        />
+      )}
+      {summaryPatient && (
+        <PatientDailySummaryDialog
+          open={!!summaryPatient}
+          onClose={() => setSummaryPatient(null)}
+          patient={{
+            user_id: summaryPatient.user_id,
+            name: summaryPatient.name,
+            avatar_url: summaryPatient.avatar_url,
+            assigned_at: summaryPatient.assigned_at,
+          }}
+          coachName={coach?.name ?? null}
         />
       )}
     </div>

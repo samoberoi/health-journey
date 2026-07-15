@@ -120,7 +120,11 @@ export default function Payment() {
       .update({ onboarding_completed: true } as any)
       .eq("user_id", user.id);
     await sendWelcomeNotification(user.id);
-    await (supabase as any).rpc("seed_onboarding_notifications", { _user_id: user.id }).catch(() => {});
+    try {
+      await (supabase as any).rpc("seed_onboarding_notifications", { _user_id: user.id });
+    } catch {
+      // Non-blocking: payment completion must not fail if notification seeding is unavailable.
+    }
     setStep("success");
   };
 

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { logAudit } from "@/lib/auditLog";
 import ExportCsvButton from "@/components/admin/ExportCsvButton";
+import ImportCsvButton from "@/components/admin/ImportCsvButton";
 
 interface Package {
   plan_key: string;
@@ -178,6 +179,7 @@ export default function AdminAssignments() {
           </p>
         </div>
         <ExportCsvButton filename="coach-assignments" rows={assignments as any} />
+<ImportCsvButton table="coach_assignments" onImported={() => window.location.reload()} />
       </div>
 
       {packages.map((pkg) => {

@@ -16,6 +16,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { logAudit } from "@/lib/auditLog";
 import ExportCsvButton from "@/components/admin/ExportCsvButton";
+import ImportCsvButton from "@/components/admin/ImportCsvButton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -304,6 +305,7 @@ export default function AdminExercises() {
             <Plus className="w-4 h-4 mr-1" /> New exercise
           </Button>
           <ExportCsvButton filename="exercises" rows={filtered as any} />
+<ImportCsvButton table="exercises" onImported={() => window.location.reload()} />
         </div>
       </div>
 

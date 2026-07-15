@@ -38,6 +38,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { logAudit } from "@/lib/auditLog";
 import ExportCsvButton from "@/components/admin/ExportCsvButton";
+import ImportCsvButton from "@/components/admin/ImportCsvButton";
 import SessionsGoalConfigCard from "@/components/admin/SessionsGoalConfigCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -320,6 +321,7 @@ export default function AdminVideos() {
               <Plus className="w-4 h-4 mr-1" /> New video
             </Button>
             <ExportCsvButton filename="videos" rows={filtered as any} />
+<ImportCsvButton table="videos" onImported={() => window.location.reload()} />
           </div>
         </div>
 

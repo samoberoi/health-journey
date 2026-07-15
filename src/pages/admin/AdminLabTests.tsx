@@ -20,6 +20,7 @@ import { applyMarkup, effectiveMarkup, setLabTestMarkup, useLabTestMarkup } from
 import { toast } from "sonner";
 import { logAudit } from "@/lib/auditLog";
 import ExportCsvButton from "@/components/admin/ExportCsvButton";
+import ImportCsvButton from "@/components/admin/ImportCsvButton";
 
 type LabTest = {
   id: string;
@@ -405,6 +406,7 @@ export default function AdminLabTests() {
               Sync from Thyrocare
             </Button>
             <ExportCsvButton filename="lab-tests" rows={filtered as any} />
+<ImportCsvButton table="thyrocare_tests" onImported={() => window.location.reload()} />
           </div>
         </div>
         <div className="grid grid-cols-3 gap-3">

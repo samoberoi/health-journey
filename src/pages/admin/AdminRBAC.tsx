@@ -23,6 +23,7 @@ import {
 } from "@/lib/rbacService";
 import { logAudit } from "@/lib/auditLog";
 import ExportCsvButton from "@/components/admin/ExportCsvButton";
+import ImportCsvButton from "@/components/admin/ImportCsvButton";
 
 type PermMap = Record<string, { can_view: boolean; can_edit: boolean; can_delete: boolean }>;
 
@@ -190,6 +191,7 @@ export default function AdminRBAC() {
             }))
           }
         />
+<ImportCsvButton table="rbac_permissions" onImported={() => window.location.reload()} />
       </div>
 
       {/* Subject pills: packages first, then Coach, Super Admin */}

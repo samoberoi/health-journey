@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 import DateRangeFilter, { defaultRange, DateRange } from "@/components/admin/DateRangeFilter";
 import ExportCsvButton from "@/components/admin/ExportCsvButton";
+import ImportCsvButton from "@/components/admin/ImportCsvButton";
 import { differenceInDays } from "date-fns";
 
 interface Sub {
@@ -476,6 +477,7 @@ function SearchExport({ search, setSearch, placeholder, filename, rows }: { sear
         <Input placeholder={placeholder} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
       </div>
       <ExportCsvButton filename={filename} rows={rows} />
+<ImportCsvButton table="subscriptions" onImported={() => window.location.reload()} />
     </div>
   );
 }

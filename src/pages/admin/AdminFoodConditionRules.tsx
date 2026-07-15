@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { useConfirm } from "@/components/ConfirmProvider";
 import { logAudit } from "@/lib/auditLog";
 import ExportCsvButton from "@/components/admin/ExportCsvButton";
+import ImportCsvButton from "@/components/admin/ImportCsvButton";
 import { Plus, Pencil, Trash2, Search, HeartPulse, Check, ChevronsUpDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -189,6 +190,7 @@ export default function AdminFoodConditionRules() {
         </div>
         <div className="flex items-center gap-2">
           <ExportCsvButton filename="food_condition_rules" rows={rules as any} />
+<ImportCsvButton table="food_condition_rules" onImported={() => window.location.reload()} />
           <Button onClick={openNew}><Plus className="w-4 h-4 mr-2" />Add Rule</Button>
         </div>
       </div>

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
 
 import ExportCsvButton from "@/components/admin/ExportCsvButton";
+import ImportCsvButton from "@/components/admin/ImportCsvButton";
 
 
 interface UserProfile {
@@ -145,6 +146,7 @@ export default function AdminUsers() {
             />
           </div>
           <ExportCsvButton filename="users" rows={filtered as any} />
+<ImportCsvButton table="profiles" onImported={() => window.location.reload()} />
         </div>
       </div>
 

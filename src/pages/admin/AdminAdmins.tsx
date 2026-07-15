@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { logAudit } from "@/lib/auditLog";
 import ExportCsvButton from "@/components/admin/ExportCsvButton";
+import ImportCsvButton from "@/components/admin/ImportCsvButton";
 import { useConfirm } from "@/components/ConfirmProvider";
 
 interface AdminRow {
@@ -147,6 +148,7 @@ export default function AdminAdmins() {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <ExportCsvButton filename="admins" rows={admins} />
+<ImportCsvButton table="user_roles" onImported={() => window.location.reload()} />
           <Button onClick={openAdd} size="sm" className="shrink-0">
             <Plus className="w-4 h-4 mr-1" /> Create
           </Button>

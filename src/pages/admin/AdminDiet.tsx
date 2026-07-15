@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { useConfirm } from "@/components/ConfirmProvider";
 import { logAudit } from "@/lib/auditLog";
 import ExportCsvButton from "@/components/admin/ExportCsvButton";
+import ImportCsvButton from "@/components/admin/ImportCsvButton";
 import {
   Plus, Pencil, Trash2, AlertTriangle, Sparkles, Search, Leaf, Wheat, Candy, Bean, Milk, Apple,
   Beef, Drumstick, Droplets, Salad, EggFried, Sprout, Nut, FlaskConical, Image as ImageIcon,
@@ -186,7 +187,8 @@ export default function AdminDiet() {
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground tracking-tight">Diet Intelligence</h1>
           <p className="text-sm text-muted-foreground mt-1.5 max-w-2xl">Three-tier food taxonomy powering the reversal programme. Curate categories, filters and items — diet flags travel with every food.</p>
         </div>
-        <div className="shrink-0 self-start"><ExportCsvButton filename="diet-items" rows={items as any} /></div>
+        <div className="shrink-0 self-start"><ExportCsvButton filename="diet-items" rows={items as any} />
+<ImportCsvButton table="food_items" onImported={() => window.location.reload()} /></div>
       </div>
 
       {/* Category pills */}

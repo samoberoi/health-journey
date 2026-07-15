@@ -34,6 +34,7 @@ import {
   upsertMovementLevel,
 } from "@/lib/movementService";
 import ExportCsvButton from "@/components/admin/ExportCsvButton";
+import ImportCsvButton from "@/components/admin/ImportCsvButton";
 
 type Tab = "algorithm" | "levels" | "badges" | "simulator";
 
@@ -98,6 +99,7 @@ export default function AdminMovement() {
             filename={`movement-${tab}`}
             rows={() => (tab === "badges" ? badges : tab === "levels" ? levels : config ? [config] : []) as any}
           />
+<ImportCsvButton table="movement_config" onImported={() => window.location.reload()} />
         </div>
       </div>
 

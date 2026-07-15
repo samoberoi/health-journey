@@ -14,6 +14,7 @@ import {
   fetchBadgeDefinitions, updateBadgeDefinition, type FastingBadge
 } from "@/lib/streakService";
 import ExportCsvButton from "@/components/admin/ExportCsvButton";
+import ImportCsvButton from "@/components/admin/ImportCsvButton";
 import StageMilestoneEditor from "@/components/fasting/StageMilestoneEditor";
 
 const typeIcons: Record<string, React.ElementType> = {
@@ -170,6 +171,7 @@ export default function AdminFasting() {
             </p>
           </div>
           <ExportCsvButton filename="fasting-protocols" rows={protocols as any} />
+<ImportCsvButton table="fasting_protocols" onImported={() => window.location.reload()} />
         </div>
         <div className="grid grid-cols-3 gap-3">
           {protocols.map((p) => {

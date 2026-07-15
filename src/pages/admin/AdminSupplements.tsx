@@ -21,6 +21,7 @@ import {
   type SupplementBadge
 } from "@/lib/supplementBadgeService";
 import ExportCsvButton from "@/components/admin/ExportCsvButton";
+import ImportCsvButton from "@/components/admin/ImportCsvButton";
 
 type View = "catalog" | "rules" | "badges";
 
@@ -358,6 +359,7 @@ export default function AdminSupplements() {
             filename={view === "rules" ? "supplement-rules" : "supplements"}
             rows={() => (view === "rules" ? rules : supplements) as any}
           />
+<ImportCsvButton table={view === "rules" ? "supplement_condition_rules" : view === "badges" ? "supplement_badges" : "supplement_master"} onImported={() => window.location.reload()} />
           {view !== "badges" && (
             <button
               onClick={() => view === "catalog" ? setShowAddSupp(true) : setShowAddRule(true)}

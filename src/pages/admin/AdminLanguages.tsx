@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { logAudit } from "@/lib/auditLog";
 import ExportCsvButton from "@/components/admin/ExportCsvButton";
+import ImportCsvButton from "@/components/admin/ImportCsvButton";
 import { useAppLanguages } from "@/hooks/useAppLanguages";
 
 export default function AdminLanguages() {
@@ -77,6 +78,7 @@ export default function AdminLanguages() {
             />
           </div>
           <ExportCsvButton filename="languages" rows={languages as any} />
+<ImportCsvButton table="app_languages" onImported={() => window.location.reload()} />
         </div>
       </div>
 

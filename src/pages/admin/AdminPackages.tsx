@@ -17,6 +17,7 @@ import {
 } from "@/lib/packageService";
 import { logAudit } from "@/lib/auditLog";
 import ExportCsvButton from "@/components/admin/ExportCsvButton";
+import ImportCsvButton from "@/components/admin/ImportCsvButton";
 import { useConfirm } from "@/components/ConfirmProvider";
 
 const CYCLES: BillingCycle[] = ["monthly", "quarterly", "half_yearly", "yearly"];
@@ -146,6 +147,7 @@ export default function AdminPackages() {
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <ExportCsvButton filename="packages" rows={pkgs as any} />
+<ImportCsvButton table="packages" onImported={() => window.location.reload()} />
                 <Button onClick={addPackage} className="gap-2">
                   <Plus className="w-4 h-4" /> New
                 </Button>

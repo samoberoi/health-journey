@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session, User } from "@supabase/supabase-js";
 import { logAudit } from "@/lib/auditLog";
@@ -72,6 +72,7 @@ interface AuthContextType {
   session: Session | null;
   user: User | null;
   loading: boolean;
+  ready: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -79,13 +80,22 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   user: null,
   loading: true,
+  ready: false,
   signOut: async () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [ready, setReady] = useState(false);
   const prevUserId = useRef<string | null>(null);
+
+  const applySession = useCallback((nextSession: Session | null) => {
+    setSession(nextSession);
+    prevUserId.current = nextSession?.user?.id ?? null;
+    if (nextSession) void persistAuthSessionToNative();
+    else void syncNativePersistenceFromLocalStorage();
+  }, []);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -95,18 +105,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             localStorage.removeItem(EXPLICIT_LOGOUT_KEY);
           } else {
             localStorage.removeItem(EXPLICIT_LOGOUT_KEY);
-            setSession(null);
+            applySession(null);
             setLoading(false);
+            setReady(true);
             prevUserId.current = null;
             void syncNativePersistenceFromLocalStorage();
             return;
           }
         }
 
-        setSession(session);
+        applySession(session);
         setLoading(false);
-        if (session) void persistAuthSessionToNative();
-        else void syncNativePersistenceFromLocalStorage();
+        setReady(true);
         const newUid = session?.user?.id ?? null;
         if (event === "SIGNED_IN" && newUid && prevUserId.current !== newUid) {
           logAudit({ module: "Auth", action: "login", target_type: "user", target_id: newUid });
@@ -127,19 +137,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           localStorage.removeItem(EXPLICIT_LOGOUT_KEY);
         } else {
           localStorage.removeItem(EXPLICIT_LOGOUT_KEY);
-          setSession(null);
+          applySession(null);
           setLoading(false);
+          setReady(true);
           prevUserId.current = null;
           void syncNativePersistenceFromLocalStorage();
           return;
         }
       }
 
-      setSession(session);
-      prevUserId.current = session?.user?.id ?? null;
+      applySession(session);
       setLoading(false);
-      if (session) void persistAuthSessionToNative();
-      else void syncNativePersistenceFromLocalStorage();
+      setReady(true);
       const uid = session?.user?.id;
       if (uid) {
         setTimeout(() => {
@@ -151,7 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [applySession]);
 
   const signOut = async () => {
     const uid = session?.user?.id;
@@ -164,11 +173,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       prevUserId.current = null;
       setSession(null);
       setLoading(false);
+      setReady(true);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, signOut }}>
+    <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, ready, signOut }}>
       {children}
     </AuthContext.Provider>
   );

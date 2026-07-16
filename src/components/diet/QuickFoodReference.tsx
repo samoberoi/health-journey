@@ -121,6 +121,8 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
   // on first load; the user can then toggle any chip on/off.
   const [conditionKeys, setConditionKeys] = useState<Set<ConditionKey>>(new Set());
   const [conditionsSynced, setConditionsSynced] = useState(false);
+  // Keys of conditions the user actually has (from profile). Only these show as chips.
+  const [profileConditionKeys, setProfileConditionKeys] = useState<Set<string>>(new Set());
   const activeConditions: ActiveCondition[] = useMemo(
     () =>
       Array.from(conditionKeys).map((k) => {
@@ -151,7 +153,9 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
         normalizePref(lifestyleDiet);
       if (pref) { setProfilePref(pref); setDiet(pref); }
       const conds = deriveActiveConditions((profRes.data as any)?.deep_profiling, metaMap);
-      if (conds.length) setConditionKeys(new Set(conds.map((c) => c.key)));
+      const profileKeys = new Set(conds.map((c) => c.key));
+      setProfileConditionKeys(profileKeys);
+      if (conds.length) setConditionKeys(new Set(profileKeys));
       setConditionsSynced(true);
     })();
   }, [user, conditionsSynced]);

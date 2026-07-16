@@ -265,6 +265,8 @@ export default function LogFAB({ packageKey }: { packageKey?: string | null }) {
     setSaving(false);
     if (result) {
       toast.success("Weight saved");
+      // Best-effort write-back to Apple Health (iOS native only).
+      void import("@/lib/appleHealth").then((m) => m.writeWeightToAppleHealth(w));
       window.dispatchEvent(new CustomEvent("health-log-saved"));
       closeLog();
     } else {

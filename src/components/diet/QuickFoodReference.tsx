@@ -13,7 +13,7 @@ import {
 } from "./dietTypes";
 import {
   type ActiveCondition, type FoodRuleHit, type ConditionRuleRow, type ConditionKey,
-  deriveActiveConditions, fetchConditionRules, buildFoodRuleMap,
+  deriveActiveConditions, fetchConditionRules, buildFoodRuleMap, fetchFoodConditions,
 } from "@/lib/foodConditionRules";
 
 const EASE = [0.22, 1, 0.36, 1] as const;

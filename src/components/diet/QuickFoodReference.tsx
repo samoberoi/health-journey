@@ -676,6 +676,7 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
             </div>
           )}
         </div>
+        )}
 
 
 

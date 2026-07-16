@@ -323,7 +323,9 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
     // - Other views: hide only avoid when hideSkipped is on; limits still appear so
     //   users can see them (they will be dimmed / labelled by the row itself).
     if (ruleMap.size) {
-      if (preset === "best") {
+      if (actionFilter) {
+        list = list.filter((it) => ruleMap.get(it.id)?.action === actionFilter);
+      } else if (preset === "best") {
         list = list.filter((it) => {
           const a = ruleMap.get(it.id)?.action;
           return a !== "avoid" && a !== "limit";

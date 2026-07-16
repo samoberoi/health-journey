@@ -90,6 +90,7 @@ export async function updateProfile(userId: string, updates: Partial<ProfileRow>
     void fireHealthMetricFeedback(
       { user_id: userId, log_type: "weight", weight_kg: nextWeight },
       previousProfile?.weight ?? null,
+      { createInboxNotification: false },
     );
   }
 
@@ -101,12 +102,16 @@ export async function updateProfile(userId: string, updates: Partial<ProfileRow>
   const previousDiastolic = Number(previousClinical.diastolicBP ?? previousClinical.bp_diastolic ?? previousClinical.diastolic ?? previousClinical.bloodPressureDiastolic);
   const bpChanged = systolic !== previousSystolic || diastolic !== previousDiastolic;
   if (Number.isFinite(systolic) && Number.isFinite(diastolic) && bpChanged) {
-    void fireHealthMetricFeedback({
-      user_id: userId,
-      log_type: "bp",
-      bp_systolic: systolic,
-      bp_diastolic: diastolic,
-    });
+    void fireHealthMetricFeedback(
+      {
+        user_id: userId,
+        log_type: "bp",
+        bp_systolic: systolic,
+        bp_diastolic: diastolic,
+      },
+      null,
+      { createInboxNotification: false },
+    );
   }
 
   return true;

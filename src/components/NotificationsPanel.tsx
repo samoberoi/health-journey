@@ -12,7 +12,8 @@ import {
   type AppNotification,
 } from "@/lib/notificationService";
 import { getNotificationSoundSettings } from "@/lib/notificationSoundService";
-import { playNotificationSound, setMasterVolume } from "@/lib/soundEngine";
+import { playCriticalHealthAlert, playNotificationSound, setMasterVolume } from "@/lib/soundEngine";
+import { sendLocalHealthAlert } from "@/lib/healthAlerts";
 
 const TYPE_CONFIG: Record<string, { icon: React.ElementType; color: string; bg: string }> = {
   supplement_reminder: { icon: Pill, color: "text-purple-500", bg: "bg-purple-500/10" },
@@ -78,8 +79,14 @@ export default function NotificationsPanel({ onClose, embedded = false }: Notifi
       // Play the admin-configured BBDO sound for every incoming notification.
       getNotificationSoundSettings().then((s) => {
         if (!s.enabled) return;
-        setMasterVolume(s.volume);
-        playNotificationSound(s.variant);
+        if (n.type === "health_alert") {
+          setMasterVolume(1);
+          playCriticalHealthAlert();
+          void sendLocalHealthAlert(n.title, n.body);
+        } else {
+          setMasterVolume(s.volume);
+          playNotificationSound(s.variant);
+        }
       }).catch(() => {});
     });
     return unsub;

@@ -60,7 +60,7 @@ export async function insertHealthLog(log: Partial<Omit<HealthLog, "id" | "creat
     prevWeight = (prev as any)?.weight_kg ?? null;
   }
 
-  void fireHealthMetricFeedback(log, prevWeight);
+  void fireHealthMetricFeedback(log, prevWeight, { createInboxNotification: false });
 
   return data as unknown as HealthLog;
 }

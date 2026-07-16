@@ -730,35 +730,6 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
                 </div>
               </div>
 
-              {/* Action toggles: Avoid / Limit / Encourage — multi-select, all on by default */}
-              <div className="mt-2 flex gap-1.5">
-                {(Object.keys(ACTION_META) as ActionKey[]).map((k) => {
-                  const meta = ACTION_META[k];
-                  const active = actionKeys.has(k);
-                  // Count items across the currently-selected conditions
-                  let count = 0;
-                  conditionBreakdown.forEach((b) => {
-                    if (!conditionKeys.has(b.condition.key)) return;
-                    count += b[k].length;
-                  });
-                  return (
-                    <button
-                      key={k}
-                      onClick={() => toggleAction(k)}
-                      aria-pressed={active}
-                      className={`flex-1 h-9 px-3 rounded-xl text-[12px] font-black border transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 ${
-                        active ? meta.activeCls : `${meta.bgCls} ${meta.textCls} opacity-60 hover:opacity-80`
-                      }`}
-                    >
-                      <span className={`w-1.5 h-1.5 rounded-full ${active ? "bg-white/90" : meta.dot}`} />
-                      {meta.label}
-                      <span className={`text-[10px] font-bold ${active ? "opacity-80" : "opacity-70"}`}>
-                        {count}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
 
               {skippedCount > 0 && (
                 <p className="text-[11px] text-muted-foreground mt-2 leading-snug">

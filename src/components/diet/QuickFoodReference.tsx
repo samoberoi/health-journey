@@ -585,44 +585,93 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
 
 
 
-        {/* Health-condition chips — toggle to filter foods by clinical condition.
-            Auto-selected from profile; user can add/remove any. */}
-        <div className="px-4 pb-2 pt-0 max-w-3xl mx-auto overflow-x-auto scrollbar-hide">
-          <div className="flex gap-1.5 min-w-max items-center">
-            <span className="shrink-0 text-[9.5px] font-bold tracking-[0.14em] uppercase text-muted-foreground pr-1">
-              Health filter
-            </span>
-            {conditionCatalog.map((c) => {
-              const active = conditionKeys.has(c.key);
-              const Icon = CONDITION_ICONS[c.key] ?? ShieldAlert;
-              const short = CONDITION_SHORT[c.key] ?? c.label;
-              return (
+        {/* Health-condition filter — dynamic from public.food_conditions.
+            Chips use DB label directly so admin edits (e.g. "Kidney Stone" vs
+            "Kidney Disease") show up here in real time. Three action toggles
+            below the box let users filter foods by Avoid / Limit / Encourage. */}
+        <div className="px-4 pb-2 pt-1 max-w-3xl mx-auto">
+          <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-white to-muted/30 p-2.5">
+            <div className="flex items-center justify-between gap-2 px-1 pb-1.5">
+              <div className="flex items-center gap-1.5">
+                <ShieldAlert className="w-3.5 h-3.5 text-[var(--bbdo-blue)]" strokeWidth={2.4} />
+                <span className="text-[9.5px] font-black tracking-[0.16em] uppercase text-muted-foreground">
+                  Health filter
+                </span>
+              </div>
+              {conditionKeys.size > 0 && (
                 <button
-                  key={c.key}
-                  onClick={() => toggleCondition(c.key)}
-                  className={`shrink-0 h-8 px-2.5 rounded-full text-[11px] font-bold border transition-colors active:scale-[0.98] flex items-center gap-1 ${
-                    active
-                      ? "bg-[var(--bbdo-blue)] text-white border-[var(--bbdo-blue)]"
-                      : "bg-white text-foreground border-border"
-                  }`}
-                  aria-pressed={active}
+                  onClick={() => setConditionKeys(new Set())}
+                  className="h-6 px-2 rounded-full text-[10px] font-bold text-rose-600 hover:bg-rose-50 active:opacity-70"
                 >
-                  <Icon className="w-3 h-3" strokeWidth={2.4} />
-                  {short}
-                  {active && <Check className="w-3 h-3" strokeWidth={2.6} />}
+                  Clear all
                 </button>
-              );
-            })}
-            {conditionKeys.size > 0 && (
-              <button
-                onClick={() => setConditionKeys(new Set())}
-                className="shrink-0 h-8 px-2 text-[11px] font-bold text-rose-600 active:opacity-70"
-              >
-                Clear
-              </button>
-            )}
+              )}
+            </div>
+            <div className="overflow-x-auto scrollbar-hide">
+              <div className="flex gap-1.5 min-w-max items-center">
+                {conditionCatalog.length === 0 && (
+                  <span className="text-[11px] text-muted-foreground italic px-1">Loading conditions…</span>
+                )}
+                {conditionCatalog.map((c) => {
+                  const active = conditionKeys.has(c.key);
+                  const Icon = CONDITION_ICONS[c.key] ?? ShieldAlert;
+                  return (
+                    <button
+                      key={c.key}
+                      onClick={() => toggleCondition(c.key)}
+                      className={`shrink-0 h-8 px-3 rounded-full text-[11.5px] font-bold border transition-all active:scale-[0.97] flex items-center gap-1.5 ${
+                        active
+                          ? "bg-[var(--bbdo-blue)] text-white border-[var(--bbdo-blue)] shadow-sm shadow-[var(--bbdo-blue)]/25"
+                          : "bg-white text-foreground border-border hover:border-[var(--bbdo-blue)]/40"
+                      }`}
+                      aria-pressed={active}
+                    >
+                      {c.emoji ? (
+                        <span className="text-[13px] leading-none">{c.emoji}</span>
+                      ) : (
+                        <Icon className="w-3 h-3" strokeWidth={2.4} />
+                      )}
+                      {c.label}
+                      {active && <Check className="w-3 h-3" strokeWidth={2.8} />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
+
+          {/* Action toggles: Avoid (red) · Limit (orange) · Encourage (green) */}
+          {conditionKeys.size > 0 && ruleMap.size > 0 && (
+            <div className="mt-2 flex gap-1.5">
+              {(Object.keys(ACTION_META) as ActionKey[]).map((k) => {
+                const meta = ACTION_META[k];
+                const active = actionFilter === k;
+                const count = (() => {
+                  let n = 0;
+                  ruleMap.forEach((r) => { if (r.action === k) n++; });
+                  return n;
+                })();
+                return (
+                  <button
+                    key={k}
+                    onClick={() => setActionFilter(active ? null : k)}
+                    className={`flex-1 h-9 px-3 rounded-xl text-[12px] font-black border transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 ${
+                      active ? meta.activeCls : `${meta.bgCls} ${meta.textCls} hover:brightness-95`
+                    }`}
+                    aria-pressed={active}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${active ? "bg-white/90" : meta.dot}`} />
+                    {meta.label}
+                    <span className={`text-[10px] font-bold ${active ? "opacity-80" : "opacity-70"}`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
+
 
 
 

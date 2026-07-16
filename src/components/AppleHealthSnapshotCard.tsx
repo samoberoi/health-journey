@@ -82,6 +82,10 @@ export default function AppleHealthSnapshotCard() {
 
   useEffect(() => {
     if (!user) return;
+    // Enable background delivery once so iOS wakes the app on new samples.
+    void enableAppleHealthBackgroundSync();
+    let unsub: () => void = () => {};
+    void onAppleHealthDataChanged(() => { void load(); }).then((fn) => { unsub = fn; });
     const sub = CapApp.addListener("appStateChange", ({ isActive }) => {
       if (isActive) void load();
     });
@@ -89,6 +93,7 @@ export default function AppleHealthSnapshotCard() {
     document.addEventListener("visibilitychange", onVis);
     return () => {
       document.removeEventListener("visibilitychange", onVis);
+      unsub();
       void sub.then((s) => s.remove());
     };
   }, [load, user]);

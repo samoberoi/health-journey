@@ -1,0 +1,71 @@
+import { supabase } from "@/integrations/supabase/client";
+import type { HealthSnapshot } from "@/lib/appleHealth";
+
+export type StoredHealthSnapshot = HealthSnapshot & {
+  date: string;
+  synced_at: string;
+};
+
+function todayKey(): string {
+  const d = new Date();
+  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60_000);
+  return local.toISOString().slice(0, 10);
+}
+
+/** Upsert today's Apple Health snapshot for the given user. */
+export async function saveHealthSnapshot(userId: string, snap: HealthSnapshot): Promise<void> {
+  if (!userId) return;
+  const row = {
+    user_id: userId,
+    date: todayKey(),
+    steps: snap.steps ?? null,
+    active_calories: snap.activeCalories ?? null,
+    distance_meters: snap.distanceMeters ?? null,
+    exercise_minutes: snap.exerciseMinutes ?? null,
+    resting_heart_rate: snap.restingHeartRate ?? null,
+    hrv_ms: snap.hrvMs ?? null,
+    sleep_hours: snap.sleepHours ?? null,
+    weight_kg: snap.weightKg ?? null,
+    weight_at: snap.weightAt ?? null,
+    glucose_mg_dl: snap.glucoseMgDl ?? null,
+    glucose_at: snap.glucoseAt ?? null,
+    synced_at: new Date().toISOString(),
+  };
+  const { error } = await supabase
+    .from("apple_health_snapshots" as any)
+    .upsert(row, { onConflict: "user_id,date" });
+  if (error) console.warn("saveHealthSnapshot failed", error);
+}
+
+/** Load the most recent stored snapshot for a user (used on web, where HealthKit isn't available). */
+export async function fetchLatestHealthSnapshot(userId: string): Promise<StoredHealthSnapshot | null> {
+  if (!userId) return null;
+  const { data, error } = await supabase
+    .from("apple_health_snapshots" as any)
+    .select("*")
+    .eq("user_id", userId)
+    .order("date", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) {
+    console.warn("fetchLatestHealthSnapshot failed", error);
+    return null;
+  }
+  if (!data) return null;
+  const r = data as any;
+  return {
+    date: r.date,
+    synced_at: r.synced_at,
+    steps: r.steps ?? undefined,
+    activeCalories: r.active_calories ?? undefined,
+    distanceMeters: r.distance_meters ?? undefined,
+    exerciseMinutes: r.exercise_minutes ?? undefined,
+    restingHeartRate: r.resting_heart_rate ?? undefined,
+    hrvMs: r.hrv_ms ?? undefined,
+    sleepHours: r.sleep_hours != null ? Number(r.sleep_hours) : undefined,
+    weightKg: r.weight_kg != null ? Number(r.weight_kg) : undefined,
+    weightAt: r.weight_at ?? undefined,
+    glucoseMgDl: r.glucose_mg_dl ?? undefined,
+    glucoseAt: r.glucose_at ?? undefined,
+  };
+}

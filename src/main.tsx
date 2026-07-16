@@ -11,6 +11,7 @@ import {
   installNativePersistenceLifecycleFlush,
   installNativePersistenceMirror,
 } from "@/lib/nativePersistence";
+import { bindAudioUnlock } from "@/lib/soundEngine";
 
 // Global typography — Montserrat
 import "@fontsource/montserrat/400.css";

@@ -88,6 +88,51 @@ const DIET_BADGE: Record<DietType, { label: string; cls: string; title: string }
   jain:    { label: "JN", cls: "bg-amber-500/10  text-amber-700   border-amber-500/30",   title: "Strictly Jain" },
 };
 
+// Color themes per category — visual reinforcement for admins.
+// sugar_spike = red (never touch), metabolic_essential + power_addon = green (encourage).
+const CAT_THEME: Record<string, {
+  tileActive: string;
+  tileInactive: string;
+  title: string;
+  chip: string;
+  filterActive: string;
+  filterInactive: string;
+  filterIconBox: string;
+  filterCount: string;
+}> = {
+  sugar_spike: {
+    tileActive: "border-destructive bg-gradient-to-br from-destructive/15 via-destructive/5 to-transparent shadow-lift",
+    tileInactive: "border-destructive/30 bg-destructive/5 hover:border-destructive/60",
+    title: "text-destructive",
+    chip: "bg-destructive text-destructive-foreground",
+    filterActive: "bg-destructive text-destructive-foreground border-destructive shadow-card",
+    filterInactive: "bg-destructive/5 text-destructive border-destructive/30 hover:border-destructive/60",
+    filterIconBox: "bg-destructive-foreground/15",
+    filterCount: "bg-destructive-foreground/15",
+  },
+  metabolic_essential: {
+    tileActive: "border-emerald-600 bg-gradient-to-br from-emerald-500/15 via-emerald-500/5 to-transparent shadow-lift",
+    tileInactive: "border-emerald-500/30 bg-emerald-500/5 hover:border-emerald-500/60",
+    title: "text-emerald-700",
+    chip: "bg-emerald-600 text-white",
+    filterActive: "bg-emerald-600 text-white border-emerald-600 shadow-card",
+    filterInactive: "bg-emerald-500/5 text-emerald-700 border-emerald-500/30 hover:border-emerald-500/60",
+    filterIconBox: "bg-white/15",
+    filterCount: "bg-white/15",
+  },
+  power_addon: {
+    tileActive: "border-green-600 bg-gradient-to-br from-green-500/15 via-green-500/5 to-transparent shadow-lift",
+    tileInactive: "border-green-500/30 bg-green-500/5 hover:border-green-500/60",
+    title: "text-green-700",
+    chip: "bg-green-600 text-white",
+    filterActive: "bg-green-600 text-white border-green-600 shadow-card",
+    filterInactive: "bg-green-500/5 text-green-700 border-green-500/30 hover:border-green-500/60",
+    filterIconBox: "bg-white/15",
+    filterCount: "bg-white/15",
+  },
+};
+const themeFor = (slug?: string) => CAT_THEME[slug || ""] || CAT_THEME.metabolic_essential;
+
 export default function AdminDiet() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [filters, setFilters] = useState<Filter[]>([]);

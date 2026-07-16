@@ -24,13 +24,29 @@ export default function Splash() {
   useEffect(() => {
     setPhase("reality");
     const tExit = setTimeout(() => setGone(true), 2200);
-    const tNav = setTimeout(() => {
+    const tNav = setTimeout(async () => {
       try {
         if (!localStorage.getItem("bb_language")) {
           localStorage.setItem("bb_language", "en");
         }
       } catch {
         /* ignore */
+      }
+      // If the user is already signed in (and hasn't explicitly logged out),
+      // skip the entire onboarding funnel and go straight to the app.
+      // BiometricGate will then prompt for Face ID before revealing content.
+      try {
+        const explicitlyLoggedOut =
+          localStorage.getItem(EXPLICIT_LOGOUT_KEY) === "1";
+        if (!explicitlyLoggedOut) {
+          const { data } = await supabase.auth.getSession();
+          if (data.session) {
+            navigate("/home", { replace: true });
+            return;
+          }
+        }
+      } catch {
+        /* fall through to onboarding */
       }
       navigate("/reality-hook");
     }, 2800);

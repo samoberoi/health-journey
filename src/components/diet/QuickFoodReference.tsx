@@ -268,10 +268,19 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
         (it.alt_name || "").toLowerCase().includes(q),
       );
     }
-    // Health-condition filter: hide items whose strongest rule action is "avoid"
-    // (e.g. hypothyroid user won't see raw broccoli, CKD user won't see banana).
-    if (hideSkipped && ruleMap.size) {
-      list = list.filter((it) => ruleMap.get(it.id)?.action !== "avoid");
+    // Health-condition filter.
+    // - "Best for you" is stricter: never show avoid OR limit for the active conditions.
+    // - Other views: hide only avoid when hideSkipped is on; limits still appear so
+    //   users can see them (they will be dimmed / labelled by the row itself).
+    if (ruleMap.size) {
+      if (preset === "best") {
+        list = list.filter((it) => {
+          const a = ruleMap.get(it.id)?.action;
+          return a !== "avoid" && a !== "limit";
+        });
+      } else if (hideSkipped) {
+        list = list.filter((it) => ruleMap.get(it.id)?.action !== "avoid");
+      }
     }
     const giScore = (it: FoodItem) => avgOf(it.gi_min, it.gi_max) ?? 999;
     const carbScore = (it: FoodItem) => avgOf(it.carbs_min, it.carbs_max) ?? 999;

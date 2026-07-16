@@ -1,8 +1,8 @@
 import UIKit
 import Capacitor
 import AparajitaCapacitorBiometricAuth
-import CapacitorApp
-import CapacitorPreferences
+import AppPlugin
+import PreferencesPlugin
 
 class BBDOBridgeViewController: CAPBridgeViewController {
     override open func capacitorDidLoad() {

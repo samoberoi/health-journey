@@ -183,20 +183,22 @@ export function buildFoodRuleMap(
  * so UI stays in sync with backend edits (no hardcoded "PMOS" mismatches).
  */
 export async function fetchFoodConditions(): Promise<
-  { key: string; label: string; emoji: string; sort_order: number }[]
+  { key: string; label: string; emoji: string; icon_url: string | null; sort_order: number }[]
 > {
   const { data } = await supabase
     .from("food_conditions")
-    .select("key,label,emoji,sort_order,is_active")
+    .select("key,label,emoji,icon_url,sort_order,is_active")
     .eq("is_active", true)
     .order("sort_order");
   return ((data as any[]) || []).map((r) => ({
     key: r.key,
     label: r.label,
     emoji: r.emoji || "",
+    icon_url: r.icon_url || null,
     sort_order: r.sort_order ?? 100,
   }));
 }
+
 
 export async function loadUserActiveConditions(userId: string): Promise<ActiveCondition[]> {
   const [profRes, conds] = await Promise.all([

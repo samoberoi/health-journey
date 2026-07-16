@@ -1119,3 +1119,89 @@ function shortName(name: string): string {
     .replace("Dairy Products", "Dairy")
     .replace("Other Add-ons", "Add-ons");
 }
+
+function ConditionBreakdownCard({
+  condition,
+  avoid,
+  limit,
+  encourage,
+  onOpen,
+}: {
+  condition: ActiveCondition;
+  avoid: { item: FoodItem; reason: string }[];
+  limit: { item: FoodItem; reason: string }[];
+  encourage: { item: FoodItem; reason: string }[];
+  onOpen: (item: FoodItem) => void;
+}) {
+  const [expanded, setExpanded] = useState<"avoid" | "limit" | "encourage" | null>(
+    avoid.length ? "avoid" : limit.length ? "limit" : "encourage",
+  );
+
+  const tabs = [
+    { key: "avoid" as const,     label: "Avoid",     items: avoid,     tint: "text-rose-700 bg-rose-500/10 border-rose-500/30" },
+    { key: "limit" as const,     label: "Limit",     items: limit,     tint: "text-amber-700 bg-amber-500/10 border-amber-500/30" },
+    { key: "encourage" as const, label: "Encourage", items: encourage, tint: "text-emerald-700 bg-emerald-500/10 border-emerald-500/30" },
+  ];
+
+  const active = tabs.find((t) => t.key === expanded) ?? tabs[0];
+
+  return (
+    <div className="rounded-2xl border border-border bg-white overflow-hidden">
+      <div className="px-3.5 py-2.5 bg-muted/40 border-b border-border flex items-center gap-2">
+        {condition.emoji && <span className="text-base leading-none">{condition.emoji}</span>}
+        <div className="flex-1 min-w-0">
+          <p className="text-[9.5px] font-bold tracking-[0.14em] uppercase text-muted-foreground">
+            For your condition
+          </p>
+          <p className="text-sm font-black text-foreground truncate">{condition.label}</p>
+        </div>
+      </div>
+      <div className="flex gap-1.5 px-3.5 pt-2.5">
+        {tabs.map((t) => {
+          const isActive = t.key === expanded;
+          return (
+            <button
+              key={t.key}
+              onClick={() => setExpanded(isActive ? null : t.key)}
+              className={`shrink-0 h-8 px-3 rounded-full text-[11px] font-bold border transition-colors active:scale-[0.98] flex items-center gap-1.5 ${
+                isActive
+                  ? "bg-foreground text-background border-foreground"
+                  : `bg-white border-border ${t.tint.split(" ").find((c) => c.startsWith("text-")) || ""}`
+              }`}
+            >
+              {t.label}
+              <span className={`text-[9.5px] font-black ${isActive ? "opacity-70" : "text-muted-foreground"}`}>
+                {t.items.length}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      {expanded && active.items.length > 0 && (
+        <div className="px-3.5 py-2.5 flex flex-wrap gap-1.5">
+          {active.items.slice(0, 24).map(({ item, reason }) => (
+            <button
+              key={item.id}
+              onClick={() => onOpen(item)}
+              title={reason}
+              className={`h-7 px-2.5 rounded-full text-[11px] font-bold border transition-colors active:scale-[0.98] ${active.tint}`}
+            >
+              {item.name}
+            </button>
+          ))}
+          {active.items.length > 24 && (
+            <span className="h-7 px-2 flex items-center text-[10.5px] font-bold text-muted-foreground">
+              +{active.items.length - 24} more
+            </span>
+          )}
+        </div>
+      )}
+      {expanded && active.items.length === 0 && (
+        <div className="px-3.5 py-3 text-[11px] text-muted-foreground">
+          No foods flagged for {active.label.toLowerCase()}.
+        </div>
+      )}
+    </div>
+  );
+}
+

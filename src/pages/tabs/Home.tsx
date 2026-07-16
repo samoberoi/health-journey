@@ -31,6 +31,7 @@ import {
 } from "@/lib/supplementService";
 import { calculateSupplementStreak, checkAndAwardSupplementBadges } from "@/lib/supplementBadgeService";
 import TodayStepsCard from "@/components/TodayStepsCard";
+import AppleHealthSnapshotCard from "@/components/AppleHealthSnapshotCard";
 import { fetchMovementOverview } from "@/lib/movementUserService";
 import { fetchUserStats } from "@/lib/userStatsService";
 import { useColorGauges } from "@/hooks/useColorGauges";
@@ -1886,6 +1887,10 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
         const evt = new CustomEvent("nav:set-tab", { detail: "habits" });
         window.dispatchEvent(evt);
       }} />
+
+      {/* ─── Apple Health snapshot ─── */}
+      <AppleHealthSnapshotCard />
+
 
       {/* ─── Supplement Tracker Card ─── */}
       {suppPlan && suppItems.length > 0 && (() => {

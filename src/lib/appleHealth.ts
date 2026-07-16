@@ -5,10 +5,27 @@ type HealthAvailability = { available: boolean };
 type HealthAuthorization = { granted: boolean };
 type TodaySteps = { steps: number; startDate: string; endDate: string };
 
+export type HealthSnapshot = {
+  steps?: number;
+  activeCalories?: number;
+  distanceMeters?: number;
+  exerciseMinutes?: number;
+  weightKg?: number;
+  weightAt?: string;
+  restingHeartRate?: number;
+  restingHeartRateAt?: string;
+  hrvMs?: number;
+  hrvAt?: string;
+  glucoseMgDl?: number;
+  glucoseAt?: string;
+  sleepHours?: number;
+};
+
 type BBDOHealthKitPlugin = {
   isAvailable(): Promise<HealthAvailability>;
   requestAuthorization(): Promise<HealthAuthorization>;
   getTodayStepCount(): Promise<TodaySteps>;
+  getHealthSnapshot?(): Promise<HealthSnapshot>;
 };
 
 const BBDOHealthKit = registerPlugin<BBDOHealthKitPlugin>("BBDOHealthKit");
@@ -34,5 +51,24 @@ export async function syncTodayStepsFromAppleHealth(): Promise<number | null> {
   } catch (error) {
     reportStartupError("healthkit sync failed", error);
     throw error;
+  }
+}
+
+export async function fetchAppleHealthSnapshot(): Promise<HealthSnapshot | null> {
+  if (!canUseAppleHealthSteps()) return null;
+  try {
+    const availability = await BBDOHealthKit.isAvailable();
+    if (!availability.available) return null;
+    await BBDOHealthKit.requestAuthorization();
+    if (typeof BBDOHealthKit.getHealthSnapshot !== "function") {
+      // Old native build without snapshot method — fall back to steps only
+      const steps = await BBDOHealthKit.getTodayStepCount();
+      return { steps: Math.max(0, Math.round(Number(steps.steps || 0))) };
+    }
+    const snap = await BBDOHealthKit.getHealthSnapshot();
+    return snap ?? null;
+  } catch (error) {
+    reportStartupError("healthkit snapshot failed", error);
+    return null;
   }
 }

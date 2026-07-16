@@ -247,7 +247,11 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
   // Raw rules for the currently-active conditions (used for the breakdown card).
   const [conditionRules, setConditionRules] = useState<ConditionRuleRow[]>([]);
 
-  // Rebuild the food → rule map whenever conditions or the catalog change.
+  // Rebuild the food → rule map whenever conditions/items change, AND live-subscribe
+  // to admin edits on food_condition_rules / food_conditions / food_items so users
+  // see new rules (e.g. "Encourage broccoli for hypertension") appear immediately
+  // without a hard refresh.
+  const [rulesReloadTick, setRulesReloadTick] = useState(0);
   useEffect(() => {
     (async () => {
       if (!activeConditions.length || !items.length) {
@@ -259,7 +263,18 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
       setConditionRules(rules);
       setRuleMap(buildFoodRuleMap(items, rules, activeConditions));
     })();
-  }, [activeConditions, items]);
+  }, [activeConditions, items, rulesReloadTick]);
+
+  useEffect(() => {
+    const bump = () => setRulesReloadTick((t) => t + 1);
+    const channel = supabase
+      .channel("qfr-condition-rules")
+      .on("postgres_changes", { event: "*", schema: "public", table: "food_condition_rules" }, bump)
+      .on("postgres_changes", { event: "*", schema: "public", table: "food_conditions" }, bump)
+      .on("postgres_changes", { event: "*", schema: "public", table: "food_items" }, bump)
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
 
   // Per-condition breakdown: for each active condition, group matched foods by action.
   // Used by the "For your <condition>: avoid / limit / encourage" card.

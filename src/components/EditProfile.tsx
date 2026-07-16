@@ -536,6 +536,7 @@ export default function EditProfile({ onBack }: EditProfileProps) {
       pcos: deepProfiling.pcos,
       uricAcid: deepProfiling.uricAcid,
       kidneyDisease: deepProfiling.kidneyDisease,
+      kidneyStones: deepProfiling.kidneyStones,
       ironDeficiency: deepProfiling.ironDeficiency,
       stressLevel: deepProfiling.stressLevel,
       bellyFat: deepProfiling.bellyFat,

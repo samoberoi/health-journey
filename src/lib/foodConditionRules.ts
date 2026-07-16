@@ -24,7 +24,9 @@ export interface ActiveCondition {
   key: ConditionKey;
   label: string;
   emoji: string;
+  icon_url?: string | null;
 }
+
 
 export interface FoodRuleHit {
   action: ConditionAction;
@@ -64,7 +66,7 @@ const RANK: Record<ConditionAction, number> = { avoid: 3, limit: 2, encourage: 1
  */
 export function deriveActiveConditions(
   deep: Record<string, any> | null | undefined,
-  metaMap: Record<string, { label: string; emoji: string }> = FALLBACK_META,
+  metaMap: Record<string, { label: string; emoji: string; icon_url?: string | null }> = FALLBACK_META,
   uricAcidThreshold = 7.0,
   clinical: Record<string, any> | null | undefined = null,
 ): ActiveCondition[] {
@@ -76,8 +78,9 @@ export function deriveActiveConditions(
     if (seen.has(key)) return;
     seen.add(key);
     const meta = metaMap[key] ?? FALLBACK_META[key] ?? { label: key, emoji: "" };
-    out.push({ key, label: meta.label, emoji: meta.emoji });
+    out.push({ key, label: meta.label, emoji: meta.emoji, icon_url: (meta as any).icon_url ?? null });
   };
+
 
   // Thyroid → hypo vs hyper
   const tt = String(d.thyroidType || "").toLowerCase();
@@ -183,27 +186,29 @@ export function buildFoodRuleMap(
  * so UI stays in sync with backend edits (no hardcoded "PMOS" mismatches).
  */
 export async function fetchFoodConditions(): Promise<
-  { key: string; label: string; emoji: string; sort_order: number }[]
+  { key: string; label: string; emoji: string; icon_url: string | null; sort_order: number }[]
 > {
   const { data } = await supabase
     .from("food_conditions")
-    .select("key,label,emoji,sort_order,is_active")
+    .select("key,label,emoji,icon_url,sort_order,is_active")
     .eq("is_active", true)
     .order("sort_order");
   return ((data as any[]) || []).map((r) => ({
     key: r.key,
     label: r.label,
     emoji: r.emoji || "",
+    icon_url: r.icon_url || null,
     sort_order: r.sort_order ?? 100,
   }));
 }
+
 
 export async function loadUserActiveConditions(userId: string): Promise<ActiveCondition[]> {
   const [profRes, conds] = await Promise.all([
     supabase.from("profiles").select("deep_profiling, clinical").eq("user_id", userId).maybeSingle(),
     fetchFoodConditions(),
   ]);
-  const metaMap = Object.fromEntries(conds.map((c) => [c.key, { label: c.label, emoji: c.emoji }]));
+  const metaMap = Object.fromEntries(conds.map((c) => [c.key, { label: c.label, emoji: c.emoji, icon_url: c.icon_url }]));
   const row: any = profRes.data;
   return deriveActiveConditions(row?.deep_profiling, metaMap, 7.0, row?.clinical);
 }

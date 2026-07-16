@@ -106,15 +106,15 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
   const [presetCategory, setPresetCategory] = useState<string | null>(null);
 
   // Master list of conditions from public.food_conditions (admin-managed).
-  // Drives the chip row + label/emoji map so UI never drifts from backend.
+  // Drives the chip row + label/icon map so UI never drifts from backend.
   const [conditionCatalog, setConditionCatalog] = useState<
-    { key: string; label: string; emoji: string; sort_order: number }[]
+    { key: string; label: string; emoji: string; icon_url: string | null; sort_order: number }[]
   >([]);
   const conditionMetaMap = useMemo(
     () =>
       Object.fromEntries(
-        conditionCatalog.map((c) => [c.key, { label: c.label, emoji: c.emoji }]),
-      ) as Record<string, { label: string; emoji: string }>,
+        conditionCatalog.map((c) => [c.key, { label: c.label, emoji: c.emoji, icon_url: c.icon_url }]),
+      ) as Record<string, { label: string; emoji: string; icon_url: string | null }>,
     [conditionCatalog],
   );
 
@@ -127,11 +127,12 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
   const activeConditions: ActiveCondition[] = useMemo(
     () =>
       Array.from(conditionKeys).map((k) => {
-        const meta = conditionMetaMap[k] ?? { label: k, emoji: "" };
-        return { key: k, label: meta.label, emoji: meta.emoji };
+        const meta = conditionMetaMap[k] ?? { label: k, emoji: "", icon_url: null };
+        return { key: k, label: meta.label, emoji: meta.emoji, icon_url: meta.icon_url };
       }),
     [conditionKeys, conditionMetaMap],
   );
+
   const [ruleMap, setRuleMap] = useState<Map<string, FoodRuleHit>>(new Map());
   const [hideSkipped, setHideSkipped] = useState(true);
   // Multi-select action filter for the education area. All three on by default.
@@ -162,7 +163,7 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
       ]);
       if (cancelled) return;
       setConditionCatalog(catalog);
-      const metaMap = Object.fromEntries(catalog.map((c) => [c.key, { label: c.label, emoji: c.emoji }]));
+      const metaMap = Object.fromEntries(catalog.map((c) => [c.key, { label: c.label, emoji: c.emoji, icon_url: c.icon_url }]));
       const profRow: any = profRes.data;
       const lifestyleDiet = profRow?.lifestyle?.diet as string | undefined;
       const pref =
@@ -716,17 +717,25 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
                         <div
                           key={c.key}
                           title="Managed in your profile"
-                          className="shrink-0 h-8 px-3 rounded-full text-[11.5px] font-bold border flex items-center gap-1.5 bg-[var(--bbdo-blue)] text-white border-[var(--bbdo-blue)] shadow-sm shadow-[var(--bbdo-blue)]/25"
+                          className="shrink-0 h-8 pl-1.5 pr-3 rounded-full text-[11.5px] font-bold border flex items-center gap-1.5 bg-[var(--bbdo-blue)] text-white border-[var(--bbdo-blue)] shadow-sm shadow-[var(--bbdo-blue)]/25"
                         >
-                          {c.emoji ? (
-                            <span className="text-[13px] leading-none">{c.emoji}</span>
+                          {c.icon_url ? (
+                            <img
+                              src={c.icon_url}
+                              alt=""
+                              className="w-5 h-5 rounded-full bg-white/95 object-contain p-0.5"
+                              loading="lazy"
+                            />
+                          ) : c.emoji ? (
+                            <span className="text-[13px] leading-none pl-1">{c.emoji}</span>
                           ) : (
-                            <Icon className="w-3 h-3" strokeWidth={2.4} />
+                            <Icon className="w-3 h-3 ml-1" strokeWidth={2.4} />
                           )}
                           {c.label}
                         </div>
                       );
                     })}
+
                 </div>
               </div>
 
@@ -1180,7 +1189,12 @@ function ConditionBreakdownCard({
   return (
     <div className="rounded-2xl border border-border bg-white overflow-hidden">
       <div className="px-3.5 py-2.5 bg-muted/40 border-b border-border flex items-center gap-2">
-        {condition.emoji && <span className="text-base leading-none">{condition.emoji}</span>}
+        {condition.icon_url ? (
+          <img src={condition.icon_url} alt="" className="w-7 h-7 rounded-lg bg-white object-contain p-0.5 border border-border" loading="lazy" />
+        ) : condition.emoji ? (
+          <span className="text-base leading-none">{condition.emoji}</span>
+        ) : null}
+
         <div className="flex-1 min-w-0">
           <p className="text-[9.5px] font-bold tracking-[0.14em] uppercase text-muted-foreground">
             For your condition

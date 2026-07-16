@@ -26,9 +26,11 @@ interface Condition {
   key: string;
   label: string;
   emoji: string | null;
+  icon_url: string | null;
   sort_order: number;
   is_active: boolean;
 }
+
 
 interface Rule {
   id: string;
@@ -65,9 +67,11 @@ const emptyConditionForm = (): Omit<Condition, "id"> => ({
   key: "",
   label: "",
   emoji: "",
+  icon_url: null,
   sort_order: 100,
   is_active: true,
 });
+
 
 export default function AdminFoodConditionRules() {
   const confirm = useConfirm();
@@ -205,7 +209,7 @@ export default function AdminFoodConditionRules() {
   };
   const openEditCondition = (c: Condition) => {
     setCondEditing(c);
-    setCondForm({ key: c.key, label: c.label, emoji: c.emoji || "", sort_order: c.sort_order, is_active: c.is_active });
+    setCondForm({ key: c.key, label: c.label, emoji: c.emoji || "", icon_url: c.icon_url || null, sort_order: c.sort_order, is_active: c.is_active });
     setCondDialogOpen(true);
   };
   const slugify = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
@@ -217,9 +221,11 @@ export default function AdminFoodConditionRules() {
       key,
       label: condForm.label.trim(),
       emoji: (condForm.emoji || "").trim() || null,
+      icon_url: condForm.icon_url || null,
       sort_order: Number(condForm.sort_order) || 100,
       is_active: condForm.is_active,
     };
+
     if (condEditing) {
       // If key changed, cascade-update existing rules to new key
       const keyChanged = condEditing.key !== key;
@@ -301,7 +307,7 @@ export default function AdminFoodConditionRules() {
               conditionFilter === c.key ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:bg-muted"
             } ${c.is_active ? "" : "opacity-60"}`}
           >
-            {c.emoji} {c.label} · {countsByCondition[c.key] || 0}
+            {c.icon_url ? <img src={c.icon_url} alt="" className="inline w-4 h-4 mr-1 align-text-bottom" /> : c.emoji} {c.label} · {countsByCondition[c.key] || 0}
           </button>
         ))}
       </div>
@@ -351,7 +357,7 @@ export default function AdminFoodConditionRules() {
               const act = ACTIONS.find((a) => a.value === r.action)!;
               return (
                 <TableRow key={r.id} className={r.is_active ? "" : "opacity-50"}>
-                  <TableCell><Badge variant="outline">{cond?.emoji} {cond?.label || r.condition_key}</Badge></TableCell>
+                  <TableCell><Badge variant="outline" className="gap-1">{cond?.icon_url ? <img src={cond.icon_url} alt="" className="w-4 h-4" /> : cond?.emoji} {cond?.label || r.condition_key}</Badge></TableCell>
                   <TableCell><Badge variant="outline" className={act.cls}>{act.label}</Badge></TableCell>
                   <TableCell className="font-mono text-sm">{r.name_pattern}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
@@ -534,7 +540,7 @@ export default function AdminFoodConditionRules() {
                   const uses = countsByCondition[c.key] || 0;
                   return (
                     <TableRow key={c.id} className={c.is_active ? "" : "opacity-60"}>
-                      <TableCell><Badge variant="outline">{c.emoji} {c.label}</Badge></TableCell>
+                      <TableCell><Badge variant="outline" className="gap-1">{c.icon_url ? <img src={c.icon_url} alt="" className="w-4 h-4" /> : c.emoji} {c.label}</Badge></TableCell>
                       <TableCell className="font-mono text-xs text-muted-foreground">{c.key}</TableCell>
                       <TableCell className="text-center">{c.sort_order}</TableCell>
                       <TableCell className="text-center">{uses}</TableCell>
@@ -595,9 +601,49 @@ export default function AdminFoodConditionRules() {
                 Lowercase, snake_case identifier used internally. Renaming will re-key all existing rules.
               </p>
             </div>
+            <div>
+              <Label>Icon image</Label>
+              <div className="flex items-center gap-3 mt-1">
+                <div className="w-14 h-14 rounded-lg border border-border bg-muted/30 flex items-center justify-center overflow-hidden">
+                  {condForm.icon_url ? (
+                    <img src={condForm.icon_url} alt="" className="w-full h-full object-contain" />
+                  ) : condForm.emoji ? (
+                    <span className="text-2xl">{condForm.emoji}</span>
+                  ) : (
+                    <span className="text-[10px] text-muted-foreground">No icon</span>
+                  )}
+                </div>
+                <div className="flex-1 space-y-2">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const ext = (file.name.split(".").pop() || "png").toLowerCase();
+                      const key = slugify(condForm.key || condForm.label) || `cond-${Date.now()}`;
+                      const path = `${key}-${Date.now()}.${ext}`;
+                      const { error } = await supabase.storage.from("condition-icons").upload(path, file, { upsert: true, contentType: file.type });
+                      if (error) { toast.error(error.message); return; }
+                      const { data } = supabase.storage.from("condition-icons").getPublicUrl(path);
+                      setCondForm((f) => ({ ...f, icon_url: data.publicUrl }));
+                      toast.success("Icon uploaded");
+                    }}
+                  />
+                  {condForm.icon_url && (
+                    <Button variant="ghost" size="sm" onClick={() => setCondForm((f) => ({ ...f, icon_url: null }))}>
+                      Remove icon
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Recommended: square PNG on transparent background, at least 256×256.
+              </p>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Emoji</Label>
+                <Label>Emoji (fallback)</Label>
                 <Input
                   value={condForm.emoji || ""}
                   onChange={(e) => setCondForm((f) => ({ ...f, emoji: e.target.value }))}
@@ -613,6 +659,7 @@ export default function AdminFoodConditionRules() {
                 />
               </div>
             </div>
+
             <div className="flex items-center gap-2">
               <Switch
                 checked={condForm.is_active}

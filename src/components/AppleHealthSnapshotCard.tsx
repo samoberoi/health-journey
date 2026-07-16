@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import {
   canUseAppleHealthSteps, fetchAppleHealthSnapshot, type HealthSnapshot,
+  enableAppleHealthBackgroundSync, onAppleHealthDataChanged,
 } from "@/lib/appleHealth";
 import { useAuth } from "@/contexts/AuthContext";
 import {

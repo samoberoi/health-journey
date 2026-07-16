@@ -101,7 +101,9 @@ export default function BiometricToggle() {
             : checking
             ? "Checking device support…"
             : supported
-              ? `${label} is on by default and required each time you open the app.`
+              ? enabled
+                ? `${label} is required each time you open the app.`
+                : `Turn this on to require ${label} each time you open the app.`
               : "Not available on this device. Enroll Face ID in Settings or use a real iPhone (simulator not supported)."}
         </div>
       </div>

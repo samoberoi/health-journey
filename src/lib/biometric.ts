@@ -49,7 +49,16 @@ export async function getBiometryLabel(): Promise<string> {
 
 export function isBiometricEnabled(): boolean {
   if (!isNative()) return false;
-  return localStorage.getItem(DISABLED_KEY) !== "1";
+  return localStorage.getItem(ENABLED_KEY) === "1";
+}
+
+export function isBiometricSetupPending(): boolean {
+  if (!isNative()) return false;
+  return localStorage.getItem(ENABLED_KEY) !== "1" && localStorage.getItem(DISABLED_KEY) !== "1";
+}
+
+export function shouldRequireBiometricUnlock(): boolean {
+  return isBiometricEnabled() || isBiometricSetupPending();
 }
 
 export function setBiometricEnabled(on: boolean) {

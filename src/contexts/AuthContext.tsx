@@ -85,9 +85,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (session) {
             localStorage.removeItem(EXPLICIT_LOGOUT_KEY);
           } else {
+            localStorage.removeItem(EXPLICIT_LOGOUT_KEY);
             setSession(null);
             setLoading(false);
             prevUserId.current = null;
+            void syncNativePersistenceFromLocalStorage();
             return;
           }
         }
@@ -114,9 +116,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (session) {
           localStorage.removeItem(EXPLICIT_LOGOUT_KEY);
         } else {
+          localStorage.removeItem(EXPLICIT_LOGOUT_KEY);
           setSession(null);
           setLoading(false);
           prevUserId.current = null;
+          void syncNativePersistenceFromLocalStorage();
           return;
         }
       }

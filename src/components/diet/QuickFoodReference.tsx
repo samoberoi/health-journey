@@ -617,7 +617,7 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
                 {conditionCatalog.length === 0 && (
                   <span className="text-[11px] text-muted-foreground italic px-1">Loading conditions…</span>
                 )}
-                {conditionCatalog.map((c) => {
+                {conditionCatalog.filter((c) => profileConditionKeys.has(c.key)).map((c) => {
                   const active = conditionKeys.has(c.key);
                   const Icon = CONDITION_ICONS[c.key] ?? ShieldAlert;
                   return (

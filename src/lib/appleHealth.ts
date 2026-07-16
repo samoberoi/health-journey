@@ -1,4 +1,4 @@
-import { Capacitor, registerPlugin } from "@capacitor/core";
+import { Capacitor, registerPlugin, type PluginListenerHandle } from "@capacitor/core";
 import { logStartupEvent, reportStartupError } from "@/lib/startupDiagnostics";
 
 type HealthAvailability = { available: boolean };
@@ -26,6 +26,12 @@ type BBDOHealthKitPlugin = {
   requestAuthorization(): Promise<HealthAuthorization>;
   getTodayStepCount(): Promise<TodaySteps>;
   getHealthSnapshot?(): Promise<HealthSnapshot>;
+  saveWeight?(opts: { kg: number; at?: string }): Promise<{ saved: boolean }>;
+  enableBackgroundSync?(): Promise<{ enabled: boolean }>;
+  addListener?(
+    event: "healthDataChanged",
+    cb: (data: { type: string }) => void,
+  ): Promise<PluginListenerHandle> | PluginListenerHandle;
 };
 
 const BBDOHealthKit = registerPlugin<BBDOHealthKitPlugin>("BBDOHealthKit");
@@ -61,7 +67,6 @@ export async function fetchAppleHealthSnapshot(): Promise<HealthSnapshot | null>
     if (!availability.available) return null;
     await BBDOHealthKit.requestAuthorization();
     if (typeof BBDOHealthKit.getHealthSnapshot !== "function") {
-      // Old native build without snapshot method — fall back to steps only
       const steps = await BBDOHealthKit.getTodayStepCount();
       return { steps: Math.max(0, Math.round(Number(steps.steps || 0))) };
     }
@@ -70,5 +75,44 @@ export async function fetchAppleHealthSnapshot(): Promise<HealthSnapshot | null>
   } catch (error) {
     reportStartupError("healthkit snapshot failed", error);
     return null;
+  }
+}
+
+/** Write a weight sample back to Apple Health. */
+export async function writeWeightToAppleHealth(kg: number, at?: Date): Promise<boolean> {
+  if (!canUseAppleHealthSteps() || !kg || kg <= 0) return false;
+  try {
+    if (typeof BBDOHealthKit.saveWeight !== "function") return false;
+    const r = await BBDOHealthKit.saveWeight({ kg, at: (at ?? new Date()).toISOString() });
+    return !!r?.saved;
+  } catch (e) {
+    console.warn("writeWeightToAppleHealth failed", e);
+    return false;
+  }
+}
+
+/** Enable HealthKit background delivery so iOS wakes the app on new samples. */
+export async function enableAppleHealthBackgroundSync(): Promise<boolean> {
+  if (!canUseAppleHealthSteps()) return false;
+  try {
+    if (typeof BBDOHealthKit.enableBackgroundSync !== "function") return false;
+    const r = await BBDOHealthKit.enableBackgroundSync();
+    return !!r?.enabled;
+  } catch (e) {
+    console.warn("enableAppleHealthBackgroundSync failed", e);
+    return false;
+  }
+}
+
+/** Subscribe to native "healthDataChanged" events. Returns unsubscribe fn. */
+export async function onAppleHealthDataChanged(cb: () => void): Promise<() => void> {
+  if (!canUseAppleHealthSteps() || typeof BBDOHealthKit.addListener !== "function") {
+    return () => {};
+  }
+  try {
+    const handle = await Promise.resolve(BBDOHealthKit.addListener("healthDataChanged", () => cb()));
+    return () => { try { (handle as PluginListenerHandle).remove(); } catch {} };
+  } catch {
+    return () => {};
   }
 }

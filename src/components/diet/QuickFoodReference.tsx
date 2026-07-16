@@ -242,7 +242,7 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
       setLoading(false);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [rulesReloadTick]);
 
   // Raw rules for the currently-active conditions (used for the breakdown card).
   const [conditionRules, setConditionRules] = useState<ConditionRuleRow[]>([]);

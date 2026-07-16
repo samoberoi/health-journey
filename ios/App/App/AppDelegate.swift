@@ -95,10 +95,13 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "isAvailable", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "requestAuthorization", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getTodayStepCount", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "getHealthSnapshot", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "getHealthSnapshot", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "saveWeight", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "enableBackgroundSync", returnType: CAPPluginReturnPromise)
     ]
 
     private let healthStore = HKHealthStore()
+    private var backgroundObserversStarted = false
 
     private func readTypes() -> Set<HKObjectType> {
         var types = Set<HKObjectType>()
@@ -116,6 +119,12 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         return types
     }
 
+    private func shareTypes() -> Set<HKSampleType> {
+        var types = Set<HKSampleType>()
+        if let w = HKQuantityType.quantityType(forIdentifier: .bodyMass) { types.insert(w) }
+        return types
+    }
+
     @objc func isAvailable(_ call: CAPPluginCall) {
         bbdoNativeLog("BBDOHealthKit.isAvailable invoked")
         call.resolve(["available": HKHealthStore.isHealthDataAvailable()])
@@ -127,7 +136,7 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
             call.reject("Apple Health is not available on this device", "healthkitUnavailable")
             return
         }
-        healthStore.requestAuthorization(toShare: [], read: readTypes()) { success, error in
+        healthStore.requestAuthorization(toShare: shareTypes(), read: readTypes()) { success, error in
             DispatchQueue.main.async {
                 if let error = error {
                     call.reject(error.localizedDescription, "authorizationFailed")
@@ -136,6 +145,57 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
                 call.resolve(["granted": success])
             }
         }
+    }
+
+    // MARK: - Write-back (weight)
+
+    @objc func saveWeight(_ call: CAPPluginCall) {
+        guard HKHealthStore.isHealthDataAvailable(),
+              let type = HKQuantityType.quantityType(forIdentifier: .bodyMass) else {
+            call.reject("Apple Health is not available", "healthkitUnavailable"); return
+        }
+        let kg = call.getDouble("kg") ?? 0
+        guard kg > 0 else { call.reject("Invalid weight", "invalidValue"); return }
+        let date = call.getString("at").flatMap { ISO8601DateFormatter().date(from: $0) } ?? Date()
+        let sample = HKQuantitySample(
+            type: type,
+            quantity: HKQuantity(unit: HKUnit.gramUnit(with: .kilo), doubleValue: kg),
+            start: date, end: date
+        )
+        healthStore.save(sample) { ok, err in
+            DispatchQueue.main.async {
+                if let err = err { call.reject(err.localizedDescription, "saveFailed"); return }
+                call.resolve(["saved": ok])
+            }
+        }
+    }
+
+    // MARK: - Background delivery
+
+    @objc func enableBackgroundSync(_ call: CAPPluginCall) {
+        guard HKHealthStore.isHealthDataAvailable() else {
+            call.reject("Apple Health is not available", "healthkitUnavailable"); return
+        }
+        if backgroundObserversStarted { call.resolve(["enabled": true]); return }
+        backgroundObserversStarted = true
+
+        let watchIds: [HKQuantityTypeIdentifier] = [
+            .stepCount, .heartRate, .restingHeartRate,
+            .heartRateVariabilitySDNN, .bloodGlucose, .bodyMass
+        ]
+        let plugin = self
+        for id in watchIds {
+            guard let type = HKQuantityType.quantityType(forIdentifier: id) else { continue }
+            let observer = HKObserverQuery(sampleType: type, predicate: nil) { _, completion, _ in
+                DispatchQueue.main.async {
+                    plugin.notifyListeners("healthDataChanged", data: ["type": id.rawValue])
+                }
+                completion()
+            }
+            healthStore.execute(observer)
+            healthStore.enableBackgroundDelivery(for: type, frequency: .immediate) { _, _ in }
+        }
+        call.resolve(["enabled": true])
     }
 
     @objc func getTodayStepCount(_ call: CAPPluginCall) {

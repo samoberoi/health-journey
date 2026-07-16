@@ -1,0 +1,1 @@
+ALTER TABLE public.food_conditions ADD COLUMN IF NOT EXISTS icon_url text;

@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { fetchUnreadCount, subscribeToNotifications } from "@/lib/notificationService";
 import { playNotificationSound } from "@/lib/soundEngine";
 import { getNotificationSoundSettings } from "@/lib/notificationSoundService";
+import { fireRealtimeHealthNotificationAlert } from "@/lib/healthAlerts";
 import AttentionBadge from "@/components/attention/AttentionBadge";
 
 /**
@@ -18,12 +19,17 @@ export default function NotificationCenter({ unreadCount: controlledCount }: { u
   useEffect(() => {
     if (!user) return;
     if (controlledCount == null) fetchUnreadCount(user.id).then(setUnreadCount);
-    const unsub = subscribeToNotifications(user.id, () => {
+    const unsub = subscribeToNotifications(user.id, (notification) => {
       if (controlledCount == null) fetchUnreadCount(user.id).then(setUnreadCount);
       // Play the BBDO signature sound on any new notification, regardless of
       // whether the notifications panel is currently mounted.
       void getNotificationSoundSettings().then((s) => {
-        if (s.enabled) playNotificationSound(s.variant);
+        if (!s.enabled) return;
+        if (notification.type === "health_alert") {
+          fireRealtimeHealthNotificationAlert(notification);
+        } else {
+          playNotificationSound(s.variant);
+        }
       });
     });
     return unsub;

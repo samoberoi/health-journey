@@ -251,7 +251,7 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
   // to admin edits on food_condition_rules / food_conditions / food_items so users
   // see new rules (e.g. "Encourage broccoli for hypertension") appear immediately
   // without a hard refresh.
-  const [rulesReloadTick, setRulesReloadTick] = useState(0);
+  
   useEffect(() => {
     (async () => {
       if (!activeConditions.length || !items.length) {

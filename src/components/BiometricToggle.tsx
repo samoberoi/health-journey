@@ -23,7 +23,7 @@ export default function BiometricToggle() {
   const native = isNative();
   const [supported, setSupported] = useState(false);
   const [checking, setChecking] = useState(native);
-  const [enabled, setEnabled] = useState(() => isBiometricEnabled());
+  const [enabled, setEnabled] = useState(false);
   const [label, setLabel] = useState("Face ID");
 
   useEffect(() => {
@@ -33,28 +33,29 @@ export default function BiometricToggle() {
       return;
     }
     void (async () => {
+      let ok = false;
       try {
-        const ok = await isBiometricAvailable();
+        ok = await isBiometricAvailable();
         setSupported(ok);
         setLabel(await getBiometryLabel());
       } catch {
         setSupported(false);
       } finally {
-        setEnabled(isBiometricEnabled());
+        setEnabled(ok && isBiometricEnabled());
         setChecking(false);
       }
     })();
   }, [native]);
 
   useEffect(() => {
-    const sync = () => setEnabled(isBiometricEnabled());
+    const sync = () => setEnabled(supported && isBiometricEnabled());
     window.addEventListener(BIOMETRIC_PREFERENCE_CHANGED_EVENT, sync);
     window.addEventListener("storage", sync);
     return () => {
       window.removeEventListener(BIOMETRIC_PREFERENCE_CHANGED_EVENT, sync);
       window.removeEventListener("storage", sync);
     };
-  }, []);
+  }, [supported]);
 
   const handleToggle = async (next: boolean) => {
     if (!native) {

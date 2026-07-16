@@ -105,7 +105,7 @@ export default function Dashboard() {
   };
 
   const showMessagesTab = packageKey === "foundation" && hasYogaBooking;
-  const ALL_TABS: Tab[] = ["home", "diet", "fasting", "habits", "exercise", "supplements", "videos", "labs", "community", "consult", "messages"];
+  const ALL_TABS: Tab[] = ["home", "diet", "fasting", "habits", "exercise", "supplements", "videos", "labs", "events", "community", "consult", "messages"];
   const tabs: Tab[] = ALL_TABS.filter((t) => {
     if (t === "messages") return showMessagesTab;
     return canSeeTab(t);

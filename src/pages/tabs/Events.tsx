@@ -11,6 +11,8 @@ import {
   type EventRegistrationRow,
 } from "@/lib/eventsService";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import EventPaymentModal from "@/components/events/EventPaymentModal";
 
 type SubTab = "discover" | "mine";
 
@@ -19,6 +21,7 @@ export default function Events() {
   const [events, setEvents] = useState<EventRow[]>([]);
   const [mine, setMine] = useState<Array<EventRegistrationRow & { event: EventRow }>>([]);
   const [loading, setLoading] = useState(true);
+  const [payFor, setPayFor] = useState<EventRow | null>(null);
   const { toast } = useToast();
 
   const load = useCallback(async () => {
@@ -45,18 +48,38 @@ export default function Events() {
   const handleRegister = async (ev: EventRow) => {
     try {
       const reg = await registerForEvent(ev.id);
+      // Paid event → open the payment modal to collect ₹fee_inr before confirming the seat.
+      if (reg.payment_status === "pending" && ev.is_paid && ev.fee_inr > 0) {
+        setPayFor(ev);
+        return;
+      }
       toast({
         title: reg.status === "waitlisted" ? "Added to waitlist" : "You're in!",
-        description:
-          reg.payment_status === "pending"
-            ? `Complete ₹${ev.fee_inr} payment to confirm your seat.`
-            : `${ev.title} — see you there.`,
+        description: `${ev.title} — see you there.`,
       });
       await load();
     } catch (e: any) {
       toast({ title: "Registration failed", description: e.message, variant: "destructive" });
     }
   };
+
+  const confirmPayment = async (ev: EventRow) => {
+    // Mark the pending registration as paid — feeds P&L via pnl_compute.
+    const { error } = await (supabase as any)
+      .from("event_registrations")
+      .update({
+        payment_status: "paid",
+        amount_paid_inr: ev.fee_inr,
+        status: "registered",
+      })
+      .eq("event_id", ev.id)
+      .eq("user_id", (await supabase.auth.getUser()).data.user?.id);
+    if (error) throw error;
+    setPayFor(null);
+    toast({ title: "You're in!", description: `${ev.title} — see you there.` });
+    await load();
+  };
+
 
   const handleCancel = async (ev: EventRow) => {
     try {
@@ -122,6 +145,22 @@ export default function Events() {
           ))}
         </div>
       )}
+
+      <EventPaymentModal
+        open={!!payFor}
+        amountInr={payFor?.fee_inr ?? 0}
+        title={payFor?.title ?? ""}
+        subtitle={payFor ? formatEventWhen(payFor.starts_at, payFor.timezone) : undefined}
+        onCancel={async () => {
+          // Cancel the pending registration if user backs out.
+          if (payFor) await cancelEventRegistration(payFor.id);
+          setPayFor(null);
+          await load();
+        }}
+        onSuccess={async () => {
+          if (payFor) await confirmPayment(payFor);
+        }}
+      />
     </div>
   );
 }

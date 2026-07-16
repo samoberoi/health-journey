@@ -150,11 +150,33 @@ export function buildFoodRuleMap(
   return map;
 }
 
-export async function loadUserActiveConditions(userId: string): Promise<ActiveCondition[]> {
+/**
+ * Fetch the master list of health conditions the admin has configured.
+ * Consumers use this to build the "Health filter" chip row and label map,
+ * so UI stays in sync with backend edits (no hardcoded "PMOS" mismatches).
+ */
+export async function fetchFoodConditions(): Promise<
+  { key: string; label: string; emoji: string; sort_order: number }[]
+> {
   const { data } = await supabase
-    .from("profiles")
-    .select("deep_profiling")
-    .eq("user_id", userId)
-    .maybeSingle();
-  return deriveActiveConditions((data as any)?.deep_profiling);
+    .from("food_conditions")
+    .select("key,label,emoji,sort_order,is_active")
+    .eq("is_active", true)
+    .order("sort_order");
+  return ((data as any[]) || []).map((r) => ({
+    key: r.key,
+    label: r.label,
+    emoji: r.emoji || "",
+    sort_order: r.sort_order ?? 100,
+  }));
 }
+
+export async function loadUserActiveConditions(userId: string): Promise<ActiveCondition[]> {
+  const [profRes, conds] = await Promise.all([
+    supabase.from("profiles").select("deep_profiling").eq("user_id", userId).maybeSingle(),
+    fetchFoodConditions(),
+  ]);
+  const metaMap = Object.fromEntries(conds.map((c) => [c.key, { label: c.label, emoji: c.emoji }]));
+  return deriveActiveConditions((profRes.data as any)?.deep_profiling, metaMap);
+}
+

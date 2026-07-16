@@ -589,10 +589,11 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
 
 
 
-        {/* Health-condition filter — dynamic from public.food_conditions.
-            Chips use DB label directly so admin edits (e.g. "Kidney Stone" vs
-            "Kidney Disease") show up here in real time. Three action toggles
-            below the box let users filter foods by Avoid / Limit / Encourage. */}
+        {/* Health-condition filter — only shows conditions the user has enabled
+            in their profile (deep_profiling). Chips, labels, and emojis are read
+            live from public.food_conditions so admin edits appear in real time.
+            If the user has no conditions flagged, the whole box is hidden. */}
+        {profileConditionKeys.size > 0 && (
         <div className="px-4 pb-2 pt-1 max-w-3xl mx-auto">
           <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-white to-muted/30 p-2.5">
             <div className="flex items-center justify-between gap-2 px-1 pb-1.5">

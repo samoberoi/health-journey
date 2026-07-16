@@ -115,6 +115,7 @@ export async function hydrateNativePersistence() {
     const authBackup = await readAuthSessionBackup();
     if (authBackup) {
       localStorage.setItem(authBackup.key, authBackup.value);
+      await Preferences.set({ key: authBackup.key, value: authBackup.value });
       await rememberKey(authBackup.key);
     }
 
@@ -129,7 +130,12 @@ export async function hydrateNativePersistence() {
       if (key === AUTH_SESSION_BACKUP_KEY) continue;
       const { value } = await Preferences.get({ key });
       if (value == null) {
-        localStorage.removeItem(key);
+        if (authBackup?.key === key) {
+          localStorage.setItem(key, authBackup.value);
+          await Preferences.set({ key, value: authBackup.value });
+        } else {
+          localStorage.removeItem(key);
+        }
       } else {
         localStorage.setItem(key, value);
         await saveAuthSessionBackup(key, value);

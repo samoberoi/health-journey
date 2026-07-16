@@ -4,6 +4,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { logAudit } from "@/lib/auditLog";
 import { clearUser } from "@/lib/userStore";
 import { sendWelcomeNotification } from "@/lib/notificationService";
+import { registerNativePush, isNativePushSupported } from "@/lib/nativePush";
 import {
   clearNativePersistedAuthState,
   getNativePersistenceDiagnostics,

@@ -531,9 +531,10 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
             <span className="shrink-0 text-[9.5px] font-bold tracking-[0.14em] uppercase text-muted-foreground pr-1">
               Health filter
             </span>
-            {CONDITION_CHOICES.map((c) => {
+            {conditionCatalog.map((c) => {
               const active = conditionKeys.has(c.key);
               const Icon = CONDITION_ICONS[c.key] ?? ShieldAlert;
+              const short = CONDITION_SHORT[c.key] ?? c.label;
               return (
                 <button
                   key={c.key}
@@ -546,7 +547,7 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
                   aria-pressed={active}
                 >
                   <Icon className="w-3 h-3" strokeWidth={2.4} />
-                  {c.short}
+                  {short}
                   {active && <Check className="w-3 h-3" strokeWidth={2.6} />}
                 </button>
               );

@@ -37,6 +37,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { fetchCompliments, markAllSeen, type Compliment } from "@/lib/complimentService";
 import HealthScoreRing from "@/components/HealthScoreRing";
 import BbdoBadgeGrid from "@/components/badges/BbdoBadgeGrid";
+import { playNotificationSound, getMasterVolume, setMasterVolume, getMuted, setMuted } from "@/lib/soundEngine";
+import { getNotificationSoundSettings } from "@/lib/notificationSoundService";
+import { createNotification } from "@/lib/notificationService";
 
 const APP_VERSION = (globalThis as any).__APP_VERSION__ ?? "1.0.0";
 

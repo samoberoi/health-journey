@@ -109,37 +109,52 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
   // Sub-category chip inside a preset. null = grouped by category.
   const [presetCategory, setPresetCategory] = useState<string | null>(null);
 
-  // Active clinical conditions derived from profile (thyroid, PMOS, CKD, uric acid,
-  // fatty liver, iron deficiency). Rules from food_condition_rules DB then map
-  // foods → avoid / limit / encourage with a reason we surface on each card.
+  // Master list of conditions from public.food_conditions (admin-managed).
+  // Drives the chip row + label/emoji map so UI never drifts from backend.
+  const [conditionCatalog, setConditionCatalog] = useState<
+    { key: string; label: string; emoji: string; sort_order: number }[]
+  >([]);
+  const conditionMetaMap = useMemo(
+    () =>
+      Object.fromEntries(
+        conditionCatalog.map((c) => [c.key, { label: c.label, emoji: c.emoji }]),
+      ) as Record<string, { label: string; emoji: string }>,
+    [conditionCatalog],
+  );
+
   // Manually-selected condition keys. Auto-populated from profile deep_profiling
   // on first load; the user can then toggle any chip on/off.
   const [conditionKeys, setConditionKeys] = useState<Set<ConditionKey>>(new Set());
   const [conditionsSynced, setConditionsSynced] = useState(false);
   const activeConditions: ActiveCondition[] = useMemo(
-    () => Array.from(conditionKeys).map((k) => ({ key: k, ...CONDITION_META_BY_KEY[k] })),
-    [conditionKeys],
+    () =>
+      Array.from(conditionKeys).map((k) => {
+        const meta = conditionMetaMap[k] ?? { label: k, emoji: "" };
+        return { key: k, label: meta.label, emoji: meta.emoji };
+      }),
+    [conditionKeys, conditionMetaMap],
   );
   const [ruleMap, setRuleMap] = useState<Map<string, FoodRuleHit>>(new Map());
   const [hideSkipped, setHideSkipped] = useState(true);
-  // Collapse the diet chip row to just the user's own preference by default.
-  // A vegan user shouldn't see "Non-veg" staring at them; they can expand if curious.
   const [showAllDiets, setShowAllDiets] = useState(false);
 
   // Load user's diet preference + auto-select conditions from profile.
   useEffect(() => {
     if (!user || conditionsSynced) return;
     (async () => {
-      const [dietRes, profRes] = await Promise.all([
+      const [dietRes, profRes, catalog] = await Promise.all([
         supabase.from("user_diet_profiles").select("diet_preference").eq("user_id", user.id).maybeSingle(),
         supabase.from("profiles").select("deep_profiling, lifestyle").eq("user_id", user.id).maybeSingle(),
+        fetchFoodConditions(),
       ]);
+      setConditionCatalog(catalog);
+      const metaMap = Object.fromEntries(catalog.map((c) => [c.key, { label: c.label, emoji: c.emoji }]));
       const lifestyleDiet = (profRes.data as any)?.lifestyle?.diet as string | undefined;
       const pref =
         normalizePref(dietRes.data?.diet_preference as string) ??
         normalizePref(lifestyleDiet);
       if (pref) { setProfilePref(pref); setDiet(pref); }
-      const conds = deriveActiveConditions((profRes.data as any)?.deep_profiling);
+      const conds = deriveActiveConditions((profRes.data as any)?.deep_profiling, metaMap);
       if (conds.length) setConditionKeys(new Set(conds.map((c) => c.key)));
       setConditionsSynced(true);
     })();

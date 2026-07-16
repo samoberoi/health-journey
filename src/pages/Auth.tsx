@@ -10,7 +10,7 @@ import { fetchProfile, loadProfileToLocal } from "@/lib/profileService";
 import { fetchActiveSubscription } from "@/lib/subscriptionService";
 import { isCoachUser, isAdminUser } from "@/lib/roleService";
 import { isChannelPartner } from "@/lib/channelPartnerService";
-import { getExistingSessionUnlessLoggedOut, prepareFreshLoginState } from "@/contexts/AuthContext";
+import { EXPLICIT_LOGOUT_KEY, getExistingSessionUnlessLoggedOut, prepareFreshLoginState } from "@/contexts/AuthContext";
 import {
   InputOTP,
   InputOTPGroup,
@@ -89,7 +89,7 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      try { localStorage.removeItem("bb_explicit_logout"); } catch {}
+      try { localStorage.removeItem(EXPLICIT_LOGOUT_KEY); } catch {}
       // Try sign in first (existing user)
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,

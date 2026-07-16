@@ -780,7 +780,7 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
                       avoid={actionKeys.has("avoid") ? buckets.avoid : []}
                       limit={actionKeys.has("limit") ? buckets.limit : []}
                       encourage={actionKeys.has("encourage") ? buckets.encourage : []}
-                      visibleActions={actionKeys}
+                      visibleActions={undefined as any}
                       onOpen={(it) => setOpenItem(it)}
                     />
                   );

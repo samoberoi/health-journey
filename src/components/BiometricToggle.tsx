@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
-import { Switch } from "@/components/ui/switch";
-import { BadgeCheck, LockKeyhole } from "lucide-react";
+import { BadgeCheck, LockKeyhole, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 import {
-  BIOMETRIC_PREFERENCE_CHANGED_EVENT,
   authenticateWithBiometrics,
   getBiometryLabel,
   isBiometricAvailable,
-  isBiometricEnabled,
   isNative,
   setBiometricEnabled,
 } from "@/lib/biometric";
@@ -24,13 +22,12 @@ export default function BiometricToggle() {
   const native = isNative();
   const [supported, setSupported] = useState(false);
   const [checking, setChecking] = useState(native);
-  const [enabled, setEnabled] = useState(false);
+  const [testing, setTesting] = useState(false);
   const [label, setLabel] = useState("Face ID");
 
   useEffect(() => {
     if (!native) {
       setChecking(false);
-      setEnabled(false);
       return;
     }
     void (async () => {
@@ -42,23 +39,12 @@ export default function BiometricToggle() {
       } catch {
         setSupported(false);
       } finally {
-        setEnabled(ok && isBiometricEnabled());
         setChecking(false);
       }
     })();
   }, [native]);
 
-  useEffect(() => {
-    const sync = () => setEnabled(supported && isBiometricEnabled());
-    window.addEventListener(BIOMETRIC_PREFERENCE_CHANGED_EVENT, sync);
-    window.addEventListener("storage", sync);
-    return () => {
-      window.removeEventListener(BIOMETRIC_PREFERENCE_CHANGED_EVENT, sync);
-      window.removeEventListener("storage", sync);
-    };
-  }, [supported]);
-
-  const handleToggle = async (next: boolean) => {
+  const handleTest = async () => {
     if (!native) {
       toast({
         title: "Face ID is native only",
@@ -66,32 +52,25 @@ export default function BiometricToggle() {
       });
       return;
     }
-    if (next) {
-      const ok = await authenticateWithBiometrics(`Enable ${label} for this app`);
-      if (!ok) {
-        toast({
-          title: `${label} not verified`,
-          description: supported
-            ? "Please try again."
-            : "Enroll Face ID and allow it for this app in iPhone Settings, then try again.",
-        });
-        return;
-      }
-      setSupported(true);
-      setBiometricEnabled(true);
-      setEnabled(true);
-      toast({ title: `${label} enabled`, description: "You'll be asked to unlock on launch." });
-    } else {
-      setBiometricEnabled(false);
-      setEnabled(false);
-      toast({ title: `${label} disabled` });
+    setTesting(true);
+    const ok = await authenticateWithBiometrics(`Confirm ${label} for bye bye diabetes`);
+    setTesting(false);
+    if (!ok) {
+      toast({
+        title: `${label} not verified`,
+        description: "Please try again.",
+      });
+      return;
     }
+    setSupported(true);
+    setBiometricEnabled(true);
+    toast({ title: `${label} is active`, description: "You'll be asked to unlock whenever the app opens." });
   };
 
   return (
     <div className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border">
       <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 flex items-center justify-center">
-        {enabled ? <BadgeCheck className="w-5 h-5 text-primary" /> : <LockKeyhole className="w-5 h-5 text-primary" />}
+        {native ? <BadgeCheck className="w-5 h-5 text-primary" /> : <LockKeyhole className="w-5 h-5 text-primary" />}
       </div>
       <div className="pr-3 flex-1 min-w-0">
         <div className="text-sm font-semibold">Unlock with {label}</div>
@@ -101,18 +80,20 @@ export default function BiometricToggle() {
             : checking
             ? "Checking device support…"
             : supported
-              ? enabled
-                ? `${label} is required each time you open the app.`
-                : `Turn this on to require ${label} each time you open the app.`
-              : "Not available on this device. Enroll Face ID in Settings or use a real iPhone (simulator not supported)."}
+              ? `${label} is required automatically whenever the app opens.`
+              : "Required automatically. If Face ID is unavailable, your device passcode can be used."}
         </div>
       </div>
-      <Switch
-        checked={enabled}
-        onCheckedChange={handleToggle}
-        disabled={!native || checking || !supported}
-        className="shrink-0"
-      />
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        onClick={handleTest}
+        disabled={!native || checking || testing}
+        className="shrink-0 rounded-full px-4"
+      >
+        {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Test"}
+      </Button>
     </div>
   );
 }

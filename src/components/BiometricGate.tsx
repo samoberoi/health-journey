@@ -2,13 +2,11 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { App as CapApp } from "@capacitor/app";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  BIOMETRIC_PREFERENCE_CHANGED_EVENT,
   authenticateWithBiometrics,
   isBiometricAvailable,
   isNative,
   getBiometryLabel,
   setBiometricEnabled,
-  shouldRequireBiometricUnlock,
 } from "@/lib/biometric";
 import { Button } from "@/components/ui/button";
 
@@ -27,18 +25,14 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
   const [biometryChecked, setBiometryChecked] = useState<boolean>(false);
   const [biometryAvailable, setBiometryAvailable] = useState<boolean>(false);
   const [label, setLabel] = useState<string>("Face ID");
-  const [preferenceVersion, setPreferenceVersion] = useState(0);
   const lastAuthAt = useRef<number>(0);
   const authenticatingRef = useRef(false);
 
   const native = isNative();
-  const biometricRequired = shouldRequireBiometricUnlock();
-  const startupShield = native && loading && biometricRequired;
-  const shouldPrepareGate = native && !loading && !!session && biometricRequired;
-  const shouldGate = shouldPrepareGate;
+  const startupShield = native && loading;
+  const shouldGate = native && !loading && !!session;
   const gateVisible =
     startupShield ||
-    (shouldPrepareGate && !biometryChecked) ||
     (shouldGate && (locked || authenticating || lastAuthAt.current === 0));
 
   const runAuth = useCallback(async () => {
@@ -46,21 +40,14 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
     authenticatingRef.current = true;
     setLocked(true);
     setAuthenticating(true);
-    setBiometryChecked(false);
+    setLabel(await getBiometryLabel());
     let available = await isBiometricAvailable();
     if (!available) {
-      await new Promise((resolve) => setTimeout(resolve, 450));
+      await new Promise((resolve) => setTimeout(resolve, 350));
       available = await isBiometricAvailable();
     }
     setBiometryAvailable(available);
-    setLabel(await getBiometryLabel());
     setBiometryChecked(true);
-    if (!available) {
-      authenticatingRef.current = false;
-      setAuthenticating(false);
-      setLocked(true);
-      return;
-    }
     const ok = await authenticateWithBiometrics("Unlock bye bye diabetes");
     authenticatingRef.current = false;
     setAuthenticating(false);
@@ -73,19 +60,9 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  useEffect(() => {
-    const syncPreference = () => setPreferenceVersion((value) => value + 1);
-    window.addEventListener(BIOMETRIC_PREFERENCE_CHANGED_EVENT, syncPreference);
-    window.addEventListener("storage", syncPreference);
-    return () => {
-      window.removeEventListener(BIOMETRIC_PREFERENCE_CHANGED_EVENT, syncPreference);
-      window.removeEventListener("storage", syncPreference);
-    };
-  }, []);
-
   // Initial gate when a session appears
   useEffect(() => {
-    if (!shouldPrepareGate) {
+    if (!shouldGate) {
       setLocked(false);
       setAuthenticating(false);
       authenticatingRef.current = false;
@@ -98,12 +75,14 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
     setLocked(true);
     setBiometryChecked(false);
     void (async () => {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      if (cancelled) return;
       await runAuth();
     })();
     return () => {
       cancelled = true;
     };
-  }, [runAuth, shouldPrepareGate, session?.user?.id, preferenceVersion]);
+  }, [runAuth, shouldGate, session?.user?.id]);
 
   // Re-lock whenever the native app leaves the foreground, then prompt on resume.
   useEffect(() => {
@@ -151,7 +130,7 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
           )}
           {biometryChecked && !biometryAvailable && (
             <p className="max-w-xs text-xs leading-relaxed text-muted-foreground">
-              Face ID is not responding. Make sure Face ID is enabled for this app in iPhone Settings, then try again.
+              If Face ID is unavailable, your device passcode can unlock this app.
             </p>
           )}
         </div>

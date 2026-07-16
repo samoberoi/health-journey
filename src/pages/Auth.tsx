@@ -19,6 +19,7 @@ import {
 import logoImg from "@/assets/logo.png";
 import AuthHeroCarousel from "@/components/AuthHeroCarousel";
 import { toast } from "sonner";
+import { syncNativePersistenceFromLocalStorage } from "@/lib/nativePersistence";
 
 const DEFAULT_OTP = "111111";
 
@@ -45,6 +46,14 @@ export default function Auth() {
 
   const email = `${phone}@bbd.app`;
   const password = `bbd_${phone}_secure`;
+
+  const persistNativeSession = async () => {
+    try {
+      await syncNativePersistenceFromLocalStorage();
+    } catch {
+      /* native storage may be unavailable in preview */
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -96,6 +105,7 @@ export default function Auth() {
       });
 
       if (signInData?.user) {
+        await persistNativeSession();
         // Check if this is an admin
         const isAdmin = await isAdminUser(signInData.user.id);
         if (isAdmin) {
@@ -174,6 +184,7 @@ export default function Auth() {
           setStep("otp");
           return;
         }
+        await persistNativeSession();
 
         const signedInNewUser = newSessionData.user;
 
@@ -256,6 +267,7 @@ export default function Auth() {
     if (!user) {
       const { data: sessionData } = await supabase.auth.signInWithPassword({ email, password });
       user = sessionData.user;
+      if (user) await persistNativeSession();
     }
     if (!user) {
       setLoading(false);

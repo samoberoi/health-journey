@@ -40,35 +40,28 @@ export async function getBiometryLabel(): Promise<string> {
       case BiometryType.irisAuthentication:
         return "Iris";
       default:
-        return "Biometrics";
+        return Capacitor.getPlatform() === "ios" ? "Face ID" : "Biometrics";
     }
   } catch {
-    return "Biometrics";
+    return Capacitor.getPlatform() === "ios" ? "Face ID" : "Biometrics";
   }
 }
 
 export function isBiometricEnabled(): boolean {
-  if (!isNative()) return false;
-  return localStorage.getItem(ENABLED_KEY) === "1";
+  return isNative();
 }
 
 export function isBiometricSetupPending(): boolean {
-  if (!isNative()) return false;
-  return localStorage.getItem(ENABLED_KEY) !== "1" && localStorage.getItem(DISABLED_KEY) !== "1";
+  return false;
 }
 
 export function shouldRequireBiometricUnlock(): boolean {
-  return isBiometricEnabled() || isBiometricSetupPending();
+  return isNative();
 }
 
 export function setBiometricEnabled(on: boolean) {
-  if (on) {
-    localStorage.setItem(ENABLED_KEY, "1");
-    localStorage.removeItem(DISABLED_KEY);
-  } else {
-    localStorage.removeItem(ENABLED_KEY);
-    localStorage.setItem(DISABLED_KEY, "1");
-  }
+  localStorage.setItem(ENABLED_KEY, "1");
+  localStorage.removeItem(DISABLED_KEY);
   void syncNativePersistenceFromLocalStorage();
   window.dispatchEvent(new CustomEvent(BIOMETRIC_PREFERENCE_CHANGED_EVENT));
 }

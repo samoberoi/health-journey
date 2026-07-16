@@ -31,6 +31,7 @@ import {
 } from "@/lib/supplementService";
 import { calculateSupplementStreak, checkAndAwardSupplementBadges } from "@/lib/supplementBadgeService";
 import TodayStepsCard from "@/components/TodayStepsCard";
+import AppleHealthSnapshotCard from "@/components/AppleHealthSnapshotCard";
 import { fetchMovementOverview } from "@/lib/movementUserService";
 import { fetchUserStats } from "@/lib/userStatsService";
 import { useColorGauges } from "@/hooks/useColorGauges";

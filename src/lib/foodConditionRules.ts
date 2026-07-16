@@ -199,10 +199,11 @@ export async function fetchFoodConditions(): Promise<
 
 export async function loadUserActiveConditions(userId: string): Promise<ActiveCondition[]> {
   const [profRes, conds] = await Promise.all([
-    supabase.from("profiles").select("deep_profiling").eq("user_id", userId).maybeSingle(),
+    supabase.from("profiles").select("deep_profiling, clinical").eq("user_id", userId).maybeSingle(),
     fetchFoodConditions(),
   ]);
   const metaMap = Object.fromEntries(conds.map((c) => [c.key, { label: c.label, emoji: c.emoji }]));
-  return deriveActiveConditions((profRes.data as any)?.deep_profiling, metaMap);
+  const row: any = profRes.data;
+  return deriveActiveConditions(row?.deep_profiling, metaMap, 7.0, row?.clinical);
 }
 

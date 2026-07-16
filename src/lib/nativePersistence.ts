@@ -1,4 +1,5 @@
 import { Capacitor } from "@capacitor/core";
+import { App as CapApp } from "@capacitor/app";
 import { Preferences } from "@capacitor/preferences";
 
 const KEY_LIST = "bb_native_persisted_keys";
@@ -113,14 +114,24 @@ export function installNativePersistenceMirror() {
 
   Storage.prototype.clear = function clear() {
     if (this === storage) {
-      void (async () => {
+      trackNativeWrite((async () => {
         const keys = await readPersistedKeyList();
         await Promise.all(keys.map((key) => Preferences.remove({ key })));
         await Preferences.remove({ key: KEY_LIST });
-      })();
+      })());
     }
     originalClear.call(this);
   };
+}
+
+export function installNativePersistenceLifecycleFlush() {
+  if (!isNativeApp()) return;
+  void CapApp.addListener("appStateChange", ({ isActive }) => {
+    if (!isActive) void flushNativePersistenceWrites();
+  });
+  void CapApp.addListener("pause", () => {
+    void flushNativePersistenceWrites();
+  });
 }
 
 export async function syncNativePersistenceFromLocalStorage() {

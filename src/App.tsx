@@ -164,7 +164,9 @@ const App = () => (
             <ProfileSyncProvider>
               <ConfirmProvider>
                 <AppErrorBoundary>
-                  <AnimatedRoutes />
+                  <BiometricGate>
+                    <AnimatedRoutes />
+                  </BiometricGate>
                 </AppErrorBoundary>
               </ConfirmProvider>
             </ProfileSyncProvider>

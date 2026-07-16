@@ -152,6 +152,7 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
 @objc(BBDOBridgeViewController)
 class BBDOBridgeViewController: CAPBridgeViewController {
     override func capacitorDidLoad() {
+        super.capacitorDidLoad()
         bridge?.registerPluginInstance(BBDOBiometricsPlugin())
         bridge?.registerPluginInstance(BiometricAuthNative())
         bridge?.registerPluginInstance(AppPlugin())

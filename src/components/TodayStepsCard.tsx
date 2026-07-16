@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { App as CapApp } from "@capacitor/app";
 import { motion } from "framer-motion";
 import { Footprints, Plus, ChevronRight, Flame, RefreshCw, Watch } from "lucide-react";
 import { toast } from "sonner";
@@ -70,6 +71,22 @@ export default function TodayStepsCard({ onOpenMovement }: { onOpenMovement?: ()
     };
     void sync();
   }, [healthStepsAvailable, syncHealthSteps, user]);
+
+  useEffect(() => {
+    if (!user || !healthStepsAvailable) return;
+    const sub = CapApp.addListener("appStateChange", ({ isActive }) => {
+      if (isActive) void syncHealthSteps(false);
+    });
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") void syncHealthSteps(false);
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      void sub.then((s) => s.remove());
+    };
+  }, [healthStepsAvailable, syncHealthSteps, user]);
+
   useEffect(() => {
     const handler = () => load();
     window.addEventListener("health-log-saved", handler);

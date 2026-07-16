@@ -65,6 +65,66 @@ export type Database = {
         }
         Relationships: []
       }
+      apple_health_snapshots: {
+        Row: {
+          active_calories: number | null
+          created_at: string
+          date: string
+          distance_meters: number | null
+          exercise_minutes: number | null
+          glucose_at: string | null
+          glucose_mg_dl: number | null
+          hrv_ms: number | null
+          id: string
+          resting_heart_rate: number | null
+          sleep_hours: number | null
+          steps: number | null
+          synced_at: string
+          updated_at: string
+          user_id: string
+          weight_at: string | null
+          weight_kg: number | null
+        }
+        Insert: {
+          active_calories?: number | null
+          created_at?: string
+          date?: string
+          distance_meters?: number | null
+          exercise_minutes?: number | null
+          glucose_at?: string | null
+          glucose_mg_dl?: number | null
+          hrv_ms?: number | null
+          id?: string
+          resting_heart_rate?: number | null
+          sleep_hours?: number | null
+          steps?: number | null
+          synced_at?: string
+          updated_at?: string
+          user_id: string
+          weight_at?: string | null
+          weight_kg?: number | null
+        }
+        Update: {
+          active_calories?: number | null
+          created_at?: string
+          date?: string
+          distance_meters?: number | null
+          exercise_minutes?: number | null
+          glucose_at?: string | null
+          glucose_mg_dl?: number | null
+          hrv_ms?: number | null
+          id?: string
+          resting_heart_rate?: number | null
+          sleep_hours?: number | null
+          steps?: number | null
+          synced_at?: string
+          updated_at?: string
+          user_id?: string
+          weight_at?: string | null
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string

@@ -30,6 +30,10 @@
 	<string>Read your steps, active calories, exercise, sleep, resting heart rate, HRV, weight and glucose from Apple Health to power your dashboard and trends.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Write weight entries you log in the app back to Apple Health so it stays your single source of truth.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

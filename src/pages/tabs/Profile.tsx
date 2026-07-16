@@ -40,6 +40,7 @@ import BbdoBadgeGrid from "@/components/badges/BbdoBadgeGrid";
 import { playNotificationSound, getMasterVolume, setMasterVolume, getMuted, setMuted } from "@/lib/soundEngine";
 import { getNotificationSoundSettings } from "@/lib/notificationSoundService";
 import { createNotification } from "@/lib/notificationService";
+import { registerNativePushWithToast, isNativePushSupported } from "@/lib/nativePush";
 
 const APP_VERSION = (globalThis as any).__APP_VERSION__ ?? "1.0.0";
 
@@ -891,6 +892,18 @@ export default function Profile({ onClose, isDark = true, onToggleTheme }: Profi
             </div>
           </div>
 
+          {isNativePushSupported() && (
+            <button
+              onClick={() => user?.id && void registerNativePushWithToast(user.id)}
+              className="mt-2 rounded-2xl liquid-glass p-4 flex items-center justify-between gap-3 active:scale-[0.99] transition"
+            >
+              <div className="min-w-0 text-left">
+                <p className="text-foreground font-semibold text-sm">Enable push notifications</p>
+                <p className="text-muted-foreground text-xs">Get alerts even when the app is closed</p>
+              </div>
+              <BellRing className="w-5 h-5 text-primary shrink-0" strokeWidth={1.8} />
+            </button>
+          )}
           <p className="text-muted-foreground text-xs px-1 mt-2">Push notifications require device permission to work.</p>
         </div>
       </SubScreenShell>

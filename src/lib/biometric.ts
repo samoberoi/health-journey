@@ -3,9 +3,12 @@ import {
   BiometricAuth,
   BiometryType,
   BiometryError,
+  AndroidBiometryStrength,
 } from "@aparajita/capacitor-biometric-auth";
 
 const ENABLED_KEY = "bb_biometric_enabled";
+const DISABLED_KEY = "bb_biometric_disabled";
+export const BIOMETRIC_PREFERENCE_CHANGED_EVENT = "bb_biometric_preference_changed";
 
 export function isNative(): boolean {
   return Capacitor.isNativePlatform();
@@ -44,12 +47,19 @@ export async function getBiometryLabel(): Promise<string> {
 }
 
 export function isBiometricEnabled(): boolean {
-  return localStorage.getItem(ENABLED_KEY) === "1";
+  if (!isNative()) return false;
+  return localStorage.getItem(DISABLED_KEY) !== "1";
 }
 
 export function setBiometricEnabled(on: boolean) {
-  if (on) localStorage.setItem(ENABLED_KEY, "1");
-  else localStorage.removeItem(ENABLED_KEY);
+  if (on) {
+    localStorage.setItem(ENABLED_KEY, "1");
+    localStorage.removeItem(DISABLED_KEY);
+  } else {
+    localStorage.removeItem(ENABLED_KEY);
+    localStorage.setItem(DISABLED_KEY, "1");
+  }
+  window.dispatchEvent(new CustomEvent(BIOMETRIC_PREFERENCE_CHANGED_EVENT));
 }
 
 export async function authenticateWithBiometrics(
@@ -64,6 +74,7 @@ export async function authenticateWithBiometrics(
       androidTitle: "Unlock",
       androidSubtitle: reason,
       androidConfirmationRequired: false,
+      androidBiometryStrength: AndroidBiometryStrength.weak,
     });
     return true;
   } catch (err) {

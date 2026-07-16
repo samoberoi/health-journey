@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Clock, ShieldCheck, ClipboardCheck } from "lucide-react";
 import SoundToggle from "@/components/SoundToggle";
 import { setPhase, setIntensity } from "@/lib/musicEngine";
-import { prepareFreshLoginState } from "@/contexts/AuthContext";
+import { getExistingSessionUnlessLoggedOut, prepareFreshLoginState } from "@/contexts/AuthContext";
 
 const features = [
   { icon: Clock, text: "Takes less than\n5 minutes" },
@@ -17,6 +17,11 @@ export default function StartAssessment() {
   useEffect(() => { setPhase("hope"); setIntensity("low"); }, []);
 
   const goToLogin = async () => {
+    const existingSession = await getExistingSessionUnlessLoggedOut();
+    if (existingSession) {
+      navigate("/home", { replace: true });
+      return;
+    }
     await prepareFreshLoginState();
     navigate("/auth", { replace: true });
   };

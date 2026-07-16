@@ -6,7 +6,7 @@ import { HeroCard } from "@/components/ui/HeroCard";
 import { Fab } from "@/components/ui/Fab";
 import SoundToggle from "@/components/SoundToggle";
 import { setPhase } from "@/lib/musicEngine";
-import { prepareFreshLoginState } from "@/contexts/AuthContext";
+import { getExistingSessionUnlessLoggedOut, prepareFreshLoginState } from "@/contexts/AuthContext";
 
 type SymptomItem = { text: string; icon: AppIconName };
 
@@ -26,6 +26,11 @@ export default function RealityHook() {
   useEffect(() => { setPhase("reality"); }, []);
 
   const goToLogin = async () => {
+    const existingSession = await getExistingSessionUnlessLoggedOut();
+    if (existingSession) {
+      navigate("/home", { replace: true });
+      return;
+    }
     await prepareFreshLoginState();
     navigate("/auth", { replace: true });
   };

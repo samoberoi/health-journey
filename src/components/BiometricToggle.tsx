@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import {
+  BIOMETRIC_PREFERENCE_CHANGED_EVENT,
   authenticateWithBiometrics,
   getBiometryLabel,
   isBiometricAvailable,
@@ -21,33 +22,49 @@ import {
 export default function BiometricToggle() {
   const native = isNative();
   const [supported, setSupported] = useState(false);
-  const [checked, setChecked] = useState(true);
+  const [checking, setChecking] = useState(native);
   const [enabled, setEnabled] = useState(false);
   const [label, setLabel] = useState("Face ID");
 
   useEffect(() => {
     if (!native) {
-      setChecked(false);
+      setChecking(false);
+      setEnabled(false);
       return;
     }
     void (async () => {
+      let ok = false;
       try {
-        const ok = await isBiometricAvailable();
+        ok = await isBiometricAvailable();
         setSupported(ok);
         setLabel(await getBiometryLabel());
       } catch {
         setSupported(false);
       } finally {
-        setEnabled(isBiometricEnabled());
-        setChecked(false);
+        setEnabled(ok && isBiometricEnabled());
+        setChecking(false);
       }
     })();
   }, [native]);
 
-  // On the web preview, don't render — biometrics are a native feature.
-  if (!native) return null;
+  useEffect(() => {
+    const sync = () => setEnabled(supported && isBiometricEnabled());
+    window.addEventListener(BIOMETRIC_PREFERENCE_CHANGED_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(BIOMETRIC_PREFERENCE_CHANGED_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, [supported]);
 
   const handleToggle = async (next: boolean) => {
+    if (!native) {
+      toast({
+        title: "Face ID is native only",
+        description: "Open the installed iPhone app to use Face ID unlock.",
+      });
+      return;
+    }
     if (!supported) {
       toast({
         title: "Face ID not available",
@@ -73,21 +90,23 @@ export default function BiometricToggle() {
   };
 
   return (
-    <div className="flex items-center justify-between p-4 rounded-2xl bg-card border">
+    <div className="flex items-center justify-between p-4 rounded-2xl bg-card border border-border">
       <div className="pr-3">
         <div className="text-sm font-semibold">Unlock with {label}</div>
         <div className="text-xs text-muted-foreground mt-0.5">
-          {checked
+          {!native
+            ? "Available in the installed iPhone app."
+            : checking
             ? "Checking device support…"
             : supported
-              ? `Require ${label} each time you open the app.`
+              ? `${label} is on by default and required each time you open the app.`
               : "Not available on this device. Enroll Face ID in Settings or use a real iPhone (simulator not supported)."}
         </div>
       </div>
       <Switch
         checked={enabled}
         onCheckedChange={handleToggle}
-        disabled={checked || !supported}
+        disabled={!native || checking || !supported}
       />
     </div>
   );

@@ -169,6 +169,9 @@ export default function PrivacySecurityPage({ userId, userName, onBack }: Props)
           </div>
         </motion.div>
 
+        {/* Face ID / Biometric unlock */}
+        <BiometricToggle />
+
         {/* Data Categories */}
         <div>
           <p className="text-muted-foreground text-xs font-bold uppercase tracking-wider mb-3">Stored Data</p>
@@ -197,9 +200,6 @@ export default function PrivacySecurityPage({ userId, userName, onBack }: Props)
             })}
           </div>
         </div>
-
-        {/* Face ID / Biometric unlock */}
-        <BiometricToggle />
 
         {/* Export Data */}
         <motion.button

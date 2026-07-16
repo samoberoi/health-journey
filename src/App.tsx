@@ -4,12 +4,14 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
 import AppErrorBoundary from "@/components/AppErrorBoundary";
 import BiometricGate from "@/components/BiometricGate";
+import { isNative } from "@/lib/biometric";
 
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ProfileSyncProvider } from "@/components/ProfileSyncProvider";
 import { ConfirmProvider } from "@/components/ConfirmProvider";
 import { LanguageProvider } from "@/contexts/LanguageContext";
@@ -72,6 +74,34 @@ import CommitmentScreen from "./pages/onboarding/CommitmentScreen";
 
 
 const queryClient = new QueryClient();
+
+const PUBLIC_ENTRY_ROUTES = new Set([
+  "/",
+  "/language",
+  "/reality-hook",
+  "/tension",
+  "/break-pattern",
+  "/transformation",
+  "/authority",
+  "/punch",
+  "/start-assessment",
+  "/auth",
+]);
+
+function NativeSessionRedirect() {
+  const { session, loading } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isNative() || loading || !session) return;
+    if (PUBLIC_ENTRY_ROUTES.has(location.pathname)) {
+      navigate("/home", { replace: true });
+    }
+  }, [loading, location.pathname, navigate, session]);
+
+  return null;
+}
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -165,6 +195,7 @@ const App = () => (
               <ConfirmProvider>
                 <AppErrorBoundary>
                   <BiometricGate>
+                    <NativeSessionRedirect />
                     <AnimatedRoutes />
                   </BiometricGate>
                 </AppErrorBoundary>

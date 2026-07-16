@@ -32,6 +32,7 @@ import {
   TrendingUp,
   User as UserIcon,
   Mail,
+  CalendarDays,
 } from "lucide-react";
 import Avocado from "@/components/icons/Avocado";
 import NotificationCenter from "@/components/NotificationCenter";
@@ -67,6 +68,7 @@ import AdminChannelPartners from "./admin/AdminChannelPartners";
 import AdminExercises from "./admin/AdminExercises";
 import AdminGlobalStreak from "./admin/AdminGlobalStreak";
 import AdminPnl from "./admin/AdminPnl";
+import AdminEvents from "./admin/AdminEvents";
 import NotificationsPanel from "@/components/NotificationsPanel";
 import { useAttentionCounts } from "@/hooks/useAttentionCounts";
 import { RoleBottomNav, RoleTopBar, type RoleNavItem } from "@/components/shared";
@@ -100,6 +102,7 @@ export type AdminTab =
   | "channel_partners"
   | "global_streak"
   | "pnl"
+  | "events"
   | "profile";
 
 
@@ -133,6 +136,7 @@ const navItems: NavItem[] = [
   { kind: "leaf", id: "videos", icon: Video, label: "Stress & Yoga" },
   { kind: "leaf", id: "exercises", icon: Dumbbell, label: "Exercise" },
   { kind: "leaf", id: "community", icon: MessageSquare, label: "Community" },
+  { kind: "leaf", id: "events", icon: CalendarDays, label: "Events" },
   {
     kind: "group",
     id: "control-center",
@@ -189,6 +193,7 @@ const tabContentMap: Record<AdminTab, React.ReactNode> = {
   channel_partners: <AdminChannelPartners />,
   global_streak: <AdminGlobalStreak />,
   pnl: <AdminPnl />,
+  events: <AdminEvents />,
   profile: null,
 };
 
@@ -220,6 +225,7 @@ const adminTabs = new Set<AdminTab>([
   "channel_partners",
   "global_streak",
   "pnl",
+  "events",
   "profile",
 ]);
 

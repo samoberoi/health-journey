@@ -9,6 +9,7 @@ import {
   isNative,
   getBiometryLabel,
 } from "@/lib/biometric";
+import { Button } from "@/components/ui/button";
 
 /**
  * Native-only Face ID / biometric gate.
@@ -77,6 +78,8 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
       return;
     }
     let cancelled = false;
+    setLocked(true);
+    setBiometryChecked(false);
     void (async () => {
       const available = await isBiometricAvailable();
       if (cancelled) return;
@@ -84,7 +87,6 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
       setBiometryChecked(true);
       setLabel(await getBiometryLabel());
       if (cancelled) return;
-      setLocked(true);
       await runAuth();
     })();
     return () => {
@@ -129,12 +131,12 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
             </p>
           </div>
           {biometryChecked && (
-            <button
+            <Button
               onClick={() => void runAuth()}
-              className="px-6 py-3 rounded-full bg-primary text-primary-foreground font-semibold"
+              className="rounded-full px-6 font-semibold"
             >
               Unlock with {label}
-            </button>
+            </Button>
           )}
           {biometryChecked && !biometryAvailable && (
             <p className="max-w-xs text-xs leading-relaxed text-muted-foreground">

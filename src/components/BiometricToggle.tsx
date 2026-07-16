@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Switch } from "@/components/ui/switch";
+import { BadgeCheck, LockKeyhole } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import {
   BIOMETRIC_PREFERENCE_CHANGED_EVENT,
@@ -88,8 +89,11 @@ export default function BiometricToggle() {
   };
 
   return (
-    <div className="flex items-center justify-between p-4 rounded-2xl bg-card border border-border">
-      <div className="pr-3">
+    <div className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border">
+      <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 flex items-center justify-center">
+        {enabled ? <BadgeCheck className="w-5 h-5 text-primary" /> : <LockKeyhole className="w-5 h-5 text-primary" />}
+      </div>
+      <div className="pr-3 flex-1 min-w-0">
         <div className="text-sm font-semibold">Unlock with {label}</div>
         <div className="text-xs text-muted-foreground mt-0.5">
           {!native
@@ -104,7 +108,8 @@ export default function BiometricToggle() {
       <Switch
         checked={enabled}
         onCheckedChange={handleToggle}
-        disabled={!native || checking}
+        disabled={!native || checking || !supported}
+        className="shrink-0"
       />
     </div>
   );

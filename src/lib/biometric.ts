@@ -5,6 +5,7 @@ import {
   BiometryError,
   AndroidBiometryStrength,
 } from "@aparajita/capacitor-biometric-auth";
+import { syncNativePersistenceFromLocalStorage } from "@/lib/nativePersistence";
 
 const ENABLED_KEY = "bb_biometric_enabled";
 const DISABLED_KEY = "bb_biometric_disabled";
@@ -59,6 +60,7 @@ export function setBiometricEnabled(on: boolean) {
     localStorage.removeItem(ENABLED_KEY);
     localStorage.setItem(DISABLED_KEY, "1");
   }
+  void syncNativePersistenceFromLocalStorage();
   window.dispatchEvent(new CustomEvent(BIOMETRIC_PREFERENCE_CHANGED_EVENT));
 }
 

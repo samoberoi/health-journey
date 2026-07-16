@@ -690,7 +690,7 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
                     Personalised for your health
                   </p>
                   <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
-                    Your conditions from Profile. Tap Avoid / Limit / Encourage to focus.
+                    Your conditions from Profile. See what to avoid, limit and encourage below.
                   </p>
                 </div>
                 {skippedCount > 0 && (

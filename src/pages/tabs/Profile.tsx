@@ -818,6 +818,79 @@ export default function Profile({ onClose, isDark = true, onToggleTheme }: Profi
               <Switch className="shrink-0 mt-1" checked={value} onCheckedChange={setter} />
             </div>
           ))}
+
+          {/* Sound preview + test notification */}
+          <div className="liquid-glass rounded-2xl p-4 flex flex-col gap-3 mt-2">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-foreground font-semibold text-sm">Notification Sound</p>
+                <p className="text-muted-foreground text-xs">BBDO signature chime plays on new alerts</p>
+              </div>
+              <Switch
+                checked={!soundMuted}
+                onCheckedChange={(on) => { setMuted(!on); setSoundMutedState(!on); }}
+              />
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-muted-foreground w-14">Volume</span>
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.05}
+                value={soundVolume}
+                onChange={(e) => {
+                  const v = parseFloat(e.target.value);
+                  setMasterVolume(v);
+                  setSoundVolumeState(v);
+                }}
+                className="flex-1 accent-primary"
+              />
+              <span className="text-xs text-foreground w-10 text-right">{Math.round(soundVolume * 100)}%</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <button
+                onClick={async () => {
+                  const s = await getNotificationSoundSettings();
+                  playNotificationSound(s.variant);
+                }}
+                className="rounded-xl liquid-glass py-2.5 text-sm font-semibold text-foreground active:scale-[0.98] transition"
+              >
+                Play sound
+              </button>
+              <button
+                disabled={sendingTest || !user?.id}
+                onClick={async () => {
+                  if (!user?.id) return;
+                  setSendingTest(true);
+                  try {
+                    // Trigger the sound immediately so users hear it even if
+                    // realtime is slow, then insert a real notification row.
+                    const s = await getNotificationSoundSettings();
+                    if (!getMuted()) playNotificationSound(s.variant);
+                    await createNotification({
+                      user_id: user.id,
+                      title: "Test alert",
+                      body: "This is a test notification from BBDO.",
+                      type: "test",
+                      icon: "🔔",
+                    });
+                    toast.success("Test notification sent");
+                  } catch (err: any) {
+                    toast.error(err?.message ?? "Failed to send test");
+                  } finally {
+                    setSendingTest(false);
+                  }
+                }}
+                className="rounded-xl gradient-blue py-2.5 text-sm font-semibold text-primary-foreground active:scale-[0.98] transition disabled:opacity-60"
+              >
+                {sendingTest ? "Sending…" : "Send test notification"}
+              </button>
+            </div>
+          </div>
+
           <p className="text-muted-foreground text-xs px-1 mt-2">Push notifications require device permission to work.</p>
         </div>
       </SubScreenShell>

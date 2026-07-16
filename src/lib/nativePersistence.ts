@@ -2,6 +2,7 @@ import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
 
 const KEY_LIST = "bb_native_persisted_keys";
+const pendingWrites = new Set<Promise<unknown>>();
 
 function isNativeApp() {
   return Capacitor.isNativePlatform();
@@ -34,6 +35,16 @@ async function forgetKey(key: string) {
   const keys = new Set(await readPersistedKeyList());
   keys.delete(key);
   await Preferences.set({ key: KEY_LIST, value: JSON.stringify([...keys]) });
+}
+
+function trackNativeWrite(write: Promise<unknown>) {
+  pendingWrites.add(write);
+  void write.finally(() => pendingWrites.delete(write));
+}
+
+export async function flushNativePersistenceWrites() {
+  if (!isNativeApp() || pendingWrites.size === 0) return;
+  await Promise.allSettled([...pendingWrites]);
 }
 
 export async function hydrateNativePersistence() {
@@ -71,20 +82,20 @@ export function installNativePersistenceMirror() {
 
   Storage.prototype.setItem = function setItem(key: string, value: string) {
     originalSetItem.call(this, key, value);
-    if (this === window.localStorage && shouldPersistKey(key)) {
-      void Preferences.set({ key, value }).then(() => rememberKey(key));
+    if (this === storage && shouldPersistKey(key)) {
+      trackNativeWrite(Preferences.set({ key, value }).then(() => rememberKey(key)));
     }
   };
 
   Storage.prototype.removeItem = function removeItem(key: string) {
     originalRemoveItem.call(this, key);
-    if (this === window.localStorage && shouldPersistKey(key)) {
-      void Preferences.remove({ key }).then(() => forgetKey(key));
+    if (this === storage && shouldPersistKey(key)) {
+      trackNativeWrite(Preferences.remove({ key }).then(() => forgetKey(key)));
     }
   };
 
   Storage.prototype.clear = function clear() {
-    if (this === window.localStorage) {
+    if (this === storage) {
       void (async () => {
         const keys = await readPersistedKeyList();
         await Promise.all(keys.map((key) => Preferences.remove({ key })));
@@ -97,18 +108,26 @@ export function installNativePersistenceMirror() {
 
 export async function syncNativePersistenceFromLocalStorage() {
   if (!isNativeApp()) return;
+  await flushNativePersistenceWrites();
+  const previousKeys = await readPersistedKeyList();
   const keys: string[] = [];
   for (let index = 0; index < localStorage.length; index += 1) {
     const key = localStorage.key(index);
     if (key && shouldPersistKey(key)) keys.push(key);
   }
+  const currentKeys = new Set(keys);
   await Promise.all(
-    keys.map(async (key) => {
-      const value = localStorage.getItem(key);
-      if (value != null) {
-        await Preferences.set({ key, value });
-      }
-    })
+    [
+      ...keys.map(async (key) => {
+        const value = localStorage.getItem(key);
+        if (value != null) {
+          await Preferences.set({ key, value });
+        }
+      }),
+      ...previousKeys
+        .filter((key) => !currentKeys.has(key))
+        .map((key) => Preferences.remove({ key })),
+    ]
   );
   await Preferences.set({ key: KEY_LIST, value: JSON.stringify(keys) });
 }

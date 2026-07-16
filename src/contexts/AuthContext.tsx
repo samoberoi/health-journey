@@ -4,6 +4,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { logAudit } from "@/lib/auditLog";
 import { clearUser } from "@/lib/userStore";
 import { sendWelcomeNotification } from "@/lib/notificationService";
+import { syncNativePersistenceFromLocalStorage } from "@/lib/nativePersistence";
 
 export const EXPLICIT_LOGOUT_KEY = "bb_explicit_logout";
 
@@ -84,15 +85,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (session) {
             localStorage.removeItem(EXPLICIT_LOGOUT_KEY);
           } else {
+            localStorage.removeItem(EXPLICIT_LOGOUT_KEY);
             setSession(null);
             setLoading(false);
             prevUserId.current = null;
+            void syncNativePersistenceFromLocalStorage();
             return;
           }
         }
 
         setSession(session);
         setLoading(false);
+        void syncNativePersistenceFromLocalStorage();
         const newUid = session?.user?.id ?? null;
         if (event === "SIGNED_IN" && newUid && prevUserId.current !== newUid) {
           logAudit({ module: "Auth", action: "login", target_type: "user", target_id: newUid });
@@ -112,9 +116,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (session) {
           localStorage.removeItem(EXPLICIT_LOGOUT_KEY);
         } else {
+          localStorage.removeItem(EXPLICIT_LOGOUT_KEY);
           setSession(null);
           setLoading(false);
           prevUserId.current = null;
+          void syncNativePersistenceFromLocalStorage();
           return;
         }
       }
@@ -122,6 +128,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       prevUserId.current = session?.user?.id ?? null;
       setLoading(false);
+      void syncNativePersistenceFromLocalStorage();
       const uid = session?.user?.id;
       if (uid) {
         setTimeout(() => {

@@ -5,10 +5,12 @@ import {
   BIOMETRIC_PREFERENCE_CHANGED_EVENT,
   authenticateWithBiometrics,
   isBiometricAvailable,
-  isBiometricEnabled,
   isNative,
   getBiometryLabel,
+  setBiometricEnabled,
+  shouldRequireBiometricUnlock,
 } from "@/lib/biometric";
+import { Button } from "@/components/ui/button";
 
 /**
  * Native-only Face ID / biometric gate.
@@ -30,9 +32,9 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
   const authenticatingRef = useRef(false);
 
   const native = isNative();
-  const biometricEnabled = isBiometricEnabled();
-  const startupShield = native && loading && biometricEnabled;
-  const shouldPrepareGate = native && !loading && !!session && biometricEnabled;
+  const biometricRequired = shouldRequireBiometricUnlock();
+  const startupShield = native && loading && biometricRequired;
+  const shouldPrepareGate = native && !loading && !!session && biometricRequired;
   const shouldGate = shouldPrepareGate;
   const gateVisible =
     startupShield ||
@@ -44,10 +46,26 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
     authenticatingRef.current = true;
     setLocked(true);
     setAuthenticating(true);
+    setBiometryChecked(false);
+    let available = await isBiometricAvailable();
+    if (!available) {
+      await new Promise((resolve) => setTimeout(resolve, 450));
+      available = await isBiometricAvailable();
+    }
+    setBiometryAvailable(available);
+    setLabel(await getBiometryLabel());
+    setBiometryChecked(true);
+    if (!available) {
+      authenticatingRef.current = false;
+      setAuthenticating(false);
+      setLocked(true);
+      return;
+    }
     const ok = await authenticateWithBiometrics("Unlock bye bye diabetes");
     authenticatingRef.current = false;
     setAuthenticating(false);
     if (ok) {
+      setBiometricEnabled(true);
       lastAuthAt.current = Date.now();
       setLocked(false);
     } else {
@@ -77,14 +95,9 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
       return;
     }
     let cancelled = false;
+    setLocked(true);
+    setBiometryChecked(false);
     void (async () => {
-      const available = await isBiometricAvailable();
-      if (cancelled) return;
-      setBiometryAvailable(available);
-      setBiometryChecked(true);
-      setLabel(await getBiometryLabel());
-      if (cancelled) return;
-      setLocked(true);
       await runAuth();
     })();
     return () => {
@@ -129,12 +142,12 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
             </p>
           </div>
           {biometryChecked && (
-            <button
+            <Button
               onClick={() => void runAuth()}
-              className="px-6 py-3 rounded-full bg-primary text-primary-foreground font-semibold"
+              className="rounded-full px-6 font-semibold"
             >
               Unlock with {label}
-            </button>
+            </Button>
           )}
           {biometryChecked && !biometryAvailable && (
             <p className="max-w-xs text-xs leading-relaxed text-muted-foreground">

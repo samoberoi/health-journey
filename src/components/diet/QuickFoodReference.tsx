@@ -35,16 +35,11 @@ const CONDITION_ICONS: Record<string, LucideIcon> = {
   iron_deficiency: Droplet,
 };
 
-// Short labels for the chip row. Anything not listed falls back to the DB label.
-const CONDITION_SHORT: Record<string, string> = {
-  hypothyroid: "Thyroid",
-  hyperthyroid: "Hyperthyroid",
-  pcos: "PCOS",
-  ckd: "Kidney",
-  kidney_stone: "Kidney stones",
-  uric_acid: "Uric acid",
-  fatty_liver: "Fatty liver",
-  iron_deficiency: "Iron",
+type ActionKey = "avoid" | "limit" | "encourage";
+const ACTION_META: Record<ActionKey, { label: string; textCls: string; bgCls: string; activeCls: string; dot: string }> = {
+  avoid:     { label: "Avoid",     textCls: "text-rose-700",    bgCls: "bg-rose-500/10 border-rose-500/30",       activeCls: "bg-rose-600 text-white border-rose-600 shadow-sm shadow-rose-600/30",       dot: "bg-rose-600" },
+  limit:     { label: "Limit",     textCls: "text-amber-700",   bgCls: "bg-amber-500/10 border-amber-500/30",     activeCls: "bg-amber-500 text-white border-amber-500 shadow-sm shadow-amber-500/30",   dot: "bg-amber-500" },
+  encourage: { label: "Encourage", textCls: "text-emerald-700", bgCls: "bg-emerald-500/10 border-emerald-500/30", activeCls: "bg-emerald-600 text-white border-emerald-600 shadow-sm shadow-emerald-600/30", dot: "bg-emerald-600" },
 };
 
 const PRESETS: { key: PresetKey; label: string; Icon: typeof Sparkles; tint: string }[] = [

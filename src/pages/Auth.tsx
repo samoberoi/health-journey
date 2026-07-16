@@ -49,17 +49,29 @@ export default function Auth() {
   useEffect(() => {
     let cancelled = false;
 
-    const resetStaleSession = async () => {
+    const prepareSession = async () => {
+      try {
+        const explicitlyLoggedOut = localStorage.getItem(EXPLICIT_LOGOUT_KEY) === "1";
+        if (!explicitlyLoggedOut) {
+          const { data } = await supabase.auth.getSession();
+          if (data.session) {
+            navigate("/home", { replace: true });
+            return;
+          }
+        }
+      } catch {
+        /* fall through to fresh login prep */
+      }
       await prepareFreshLoginState();
       if (!cancelled) setSessionPreparing(false);
     };
 
-    resetStaleSession();
+    prepareSession();
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [navigate]);
 
   const sendOtp = async () => {
     if (phone.length < 10) return;

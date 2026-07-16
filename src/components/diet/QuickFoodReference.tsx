@@ -84,9 +84,16 @@ function normalizePref(p: string | null | undefined): DietKey | null {
   if (v === "vegan") return "vegan";
   if (v === "jain") return "jain";
   if (v === "veg" || v === "vegetarian") return "veg";
-  if (v === "non_veg" || v === "non-veg" || v === "nonveg") return "non_veg";
+  if (v === "non_veg" || v === "non-veg" || v === "nonveg" || v === "non_vegetarian") return "non_veg";
   return null;
 }
+
+const DIET_PREF_LABEL: Record<DietKey, string> = {
+  veg: "Vegetarian",
+  vegan: "Vegan",
+  jain: "Jain",
+  non_veg: "Non-Vegetarian",
+};
 
 export default function QuickFoodReference({ onClose, embedded = false }: { onClose?: () => void; embedded?: boolean }) {
   const { user } = useAuth();

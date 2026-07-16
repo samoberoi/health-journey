@@ -307,7 +307,7 @@ export default function AdminFoodConditionRules() {
               conditionFilter === c.key ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:bg-muted"
             } ${c.is_active ? "" : "opacity-60"}`}
           >
-            {c.emoji} {c.label} · {countsByCondition[c.key] || 0}
+            {c.icon_url ? <img src={c.icon_url} alt="" className="inline w-4 h-4 mr-1 align-text-bottom" /> : c.emoji} {c.label} · {countsByCondition[c.key] || 0}
           </button>
         ))}
       </div>
@@ -357,7 +357,7 @@ export default function AdminFoodConditionRules() {
               const act = ACTIONS.find((a) => a.value === r.action)!;
               return (
                 <TableRow key={r.id} className={r.is_active ? "" : "opacity-50"}>
-                  <TableCell><Badge variant="outline">{cond?.emoji} {cond?.label || r.condition_key}</Badge></TableCell>
+                  <TableCell><Badge variant="outline" className="gap-1">{cond?.icon_url ? <img src={cond.icon_url} alt="" className="w-4 h-4" /> : cond?.emoji} {cond?.label || r.condition_key}</Badge></TableCell>
                   <TableCell><Badge variant="outline" className={act.cls}>{act.label}</Badge></TableCell>
                   <TableCell className="font-mono text-sm">{r.name_pattern}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
@@ -540,7 +540,7 @@ export default function AdminFoodConditionRules() {
                   const uses = countsByCondition[c.key] || 0;
                   return (
                     <TableRow key={c.id} className={c.is_active ? "" : "opacity-60"}>
-                      <TableCell><Badge variant="outline">{c.emoji} {c.label}</Badge></TableCell>
+                      <TableCell><Badge variant="outline" className="gap-1">{c.icon_url ? <img src={c.icon_url} alt="" className="w-4 h-4" /> : c.emoji} {c.label}</Badge></TableCell>
                       <TableCell className="font-mono text-xs text-muted-foreground">{c.key}</TableCell>
                       <TableCell className="text-center">{c.sort_order}</TableCell>
                       <TableCell className="text-center">{uses}</TableCell>

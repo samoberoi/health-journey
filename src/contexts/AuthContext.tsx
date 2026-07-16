@@ -114,11 +114,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
 
+        const previousUid = prevUserId.current;
         applySession(session);
         setLoading(false);
         setReady(true);
         const newUid = session?.user?.id ?? null;
-        if (event === "SIGNED_IN" && newUid && prevUserId.current !== newUid) {
+        if (event === "SIGNED_IN" && newUid && previousUid !== newUid) {
           logAudit({ module: "Auth", action: "login", target_type: "user", target_id: newUid });
           // Idempotent: server-side checks welcome_sent_at and no-ops if already sent.
           setTimeout(() => {

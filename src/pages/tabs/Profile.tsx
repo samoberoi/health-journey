@@ -163,6 +163,9 @@ export default function Profile({ onClose, isDark = true, onToggleTheme }: Profi
   const [notifCommunity, setNotifCommunity] = useState(true);
   const [notifSupplement, setNotifSupplement] = useState(true);
   const [prefsLoaded, setPrefsLoaded] = useState(false);
+  const [soundVolume, setSoundVolumeState] = useState(() => getMasterVolume());
+  const [soundMuted, setSoundMutedState] = useState(() => getMuted());
+  const [sendingTest, setSendingTest] = useState(false);
   const [healthLogs, setHealthLogs] = useState<HealthLog[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
   const [progressSummaries, setProgressSummaries] = useState<ProgressSummary[]>([]);

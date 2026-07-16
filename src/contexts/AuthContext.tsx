@@ -6,6 +6,7 @@ import { clearUser } from "@/lib/userStore";
 import { sendWelcomeNotification } from "@/lib/notificationService";
 import {
   clearNativePersistedAuthState,
+  getNativePersistenceDiagnostics,
   hasNativePersistedAuthSession,
   hydrateNativePersistence,
   persistAuthSessionToNative,
@@ -46,6 +47,48 @@ async function clearAllPersistedAuthState(markLoggedOut = true) {
   await clearNativePersistedAuthState();
 }
 
+function readStoredSessionTokens(): { access_token: string; refresh_token: string } | null {
+  try {
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = localStorage.key(index);
+      if (!key || (!key.startsWith("sb-") && !key.toLowerCase().includes("supabase"))) continue;
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      const parsed = JSON.parse(raw) as {
+        access_token?: unknown;
+        refresh_token?: unknown;
+        currentSession?: { access_token?: unknown; refresh_token?: unknown };
+        session?: { access_token?: unknown; refresh_token?: unknown };
+      };
+      const candidate = parsed.currentSession ?? parsed.session ?? parsed;
+      if (typeof candidate.access_token === "string" && typeof candidate.refresh_token === "string") {
+        return {
+          access_token: candidate.access_token,
+          refresh_token: candidate.refresh_token,
+        };
+      }
+    }
+  } catch {
+    /* ignore malformed storage entries */
+  }
+  return null;
+}
+
+async function recoverNativeStoredSession(): Promise<Session | null> {
+  if (!isNative()) return null;
+  await hydrateNativePersistence();
+  const tokens = readStoredSessionTokens();
+  if (!tokens) return null;
+  try {
+    const { data, error } = await supabase.auth.setSession(tokens);
+    if (error || !data.session) return null;
+    await persistAuthSessionToNative();
+    return data.session;
+  } catch {
+    return null;
+  }
+}
+
 export async function prepareFreshLoginState() {
   await clearAllPersistedAuthState(true);
   try {
@@ -65,9 +108,14 @@ export async function getExistingSessionUnlessLoggedOut() {
       await hydrateNativePersistence();
       const retry = await supabase.auth.getSession();
       data = retry.data;
+      if (!data.session) {
+        const recovered = await recoverNativeStoredSession();
+        if (recovered) data = { session: recovered };
+      }
     }
     if (data.session) {
       localStorage.removeItem(EXPLICIT_LOGOUT_KEY);
+      if (isNative()) void persistAuthSessionToNative();
       return data.session;
     }
     if (localStorage.getItem(EXPLICIT_LOGOUT_KEY) === "1") return null;
@@ -142,11 +190,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     (async () => {
+      if (isNative()) {
+        const diagnostics = await getNativePersistenceDiagnostics();
+        console.info("Native auth storage status", diagnostics);
+      }
       let { data: { session } } = await supabase.auth.getSession();
       if (!session && isNative() && await hasNativePersistedAuthSession()) {
         await hydrateNativePersistence();
         const retry = await supabase.auth.getSession();
         session = retry.data.session;
+        if (!session) {
+          session = await recoverNativeStoredSession();
+        }
       }
       if (localStorage.getItem(EXPLICIT_LOGOUT_KEY) === "1") {
         if (session) {

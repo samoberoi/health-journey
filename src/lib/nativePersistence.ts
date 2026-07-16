@@ -5,7 +5,14 @@ import { Preferences } from "@capacitor/preferences";
 const KEY_LIST = "bb_native_persisted_keys";
 const LAST_HYDRATED_KEY = "bb_native_last_hydrated_at";
 const EXPLICIT_LOGOUT_STORAGE_KEY = "bb_explicit_logout";
+const AUTH_SESSION_BACKUP_KEY = "bb_native_auth_session_backup";
 const pendingWrites = new Set<Promise<unknown>>();
+
+type NativeAuthSessionBackup = {
+  key: string;
+  value: string;
+  savedAt: number;
+};
 
 function isNativeApp() {
   return Capacitor.isNativePlatform();
@@ -20,8 +27,46 @@ function shouldPersistKey(key: string) {
   );
 }
 
+function isAuthStorageKey(key: string) {
+  const lower = key.toLowerCase();
+  return key.startsWith("sb-") || lower.includes("supabase");
+}
+
+function parseAuthBackup(value: string | null): NativeAuthSessionBackup | null {
+  if (!value) return null;
+  try {
+    const parsed = JSON.parse(value) as Partial<NativeAuthSessionBackup>;
+    if (typeof parsed.key === "string" && typeof parsed.value === "string") {
+      return {
+        key: parsed.key,
+        value: parsed.value,
+        savedAt: typeof parsed.savedAt === "number" ? parsed.savedAt : 0,
+      };
+    }
+  } catch {
+    /* ignore corrupt native backup */
+  }
+  return null;
+}
+
+async function saveAuthSessionBackup(key: string, value: string) {
+  if (!isAuthStorageKey(key) || !value) return;
+  const backup: NativeAuthSessionBackup = { key, value, savedAt: Date.now() };
+  await Preferences.set({ key: AUTH_SESSION_BACKUP_KEY, value: JSON.stringify(backup) });
+}
+
+async function readAuthSessionBackup() {
+  try {
+    const { value } = await Preferences.get({ key: AUTH_SESSION_BACKUP_KEY });
+    return parseAuthBackup(value);
+  } catch {
+    return null;
+  }
+}
+
 async function writePersistedKey(key: string, value: string) {
   await Preferences.set({ key, value });
+  await saveAuthSessionBackup(key, value);
   await rememberKey(key);
 }
 
@@ -67,6 +112,12 @@ export async function flushNativePersistenceWrites() {
 export async function hydrateNativePersistence() {
   if (!isNativeApp()) return;
   try {
+    const authBackup = await readAuthSessionBackup();
+    if (authBackup) {
+      localStorage.setItem(authBackup.key, authBackup.value);
+      await rememberKey(authBackup.key);
+    }
+
     const listedKeys = await readPersistedKeyList();
     const { keys: allPreferenceKeys } = await Preferences.keys();
     const keys = new Set([
@@ -75,11 +126,13 @@ export async function hydrateNativePersistence() {
     ]);
 
     for (const key of keys) {
+      if (key === AUTH_SESSION_BACKUP_KEY) continue;
       const { value } = await Preferences.get({ key });
       if (value == null) {
         localStorage.removeItem(key);
       } else {
         localStorage.setItem(key, value);
+        await saveAuthSessionBackup(key, value);
       }
     }
     localStorage.setItem(LAST_HYDRATED_KEY, String(Date.now()));
@@ -91,12 +144,14 @@ export async function hydrateNativePersistence() {
 export async function hasNativePersistedAuthSession(): Promise<boolean> {
   if (!isNativeApp()) return false;
   try {
+    const authBackup = await readAuthSessionBackup();
+    if (authBackup?.value) return true;
+
     const listedKeys = await readPersistedKeyList();
     const { keys: allPreferenceKeys } = await Preferences.keys();
     const keys = new Set([...listedKeys, ...allPreferenceKeys]);
     for (const key of keys) {
-      const lower = key.toLowerCase();
-      if (key.startsWith("sb-") || lower.includes("supabase")) {
+      if (isAuthStorageKey(key)) {
         const { value } = await Preferences.get({ key });
         if (value) return true;
       }
@@ -163,24 +218,21 @@ export async function syncNativePersistenceFromLocalStorage() {
     if (key && shouldPersistKey(key)) keys.push(key);
   }
   const currentKeys = new Set(keys);
-  const hasCurrentAuthKeys = keys.some((key) => {
-    const lower = key.toLowerCase();
-    return key.startsWith("sb-") || lower.includes("supabase");
-  });
+  const hasCurrentAuthKeys = keys.some((key) => isAuthStorageKey(key));
   await Promise.all(
     [
       ...keys.map(async (key) => {
         const value = localStorage.getItem(key);
         if (value != null) {
           await Preferences.set({ key, value });
+          await saveAuthSessionBackup(key, value);
         }
       }),
       ...previousKeys
         .filter((key) => {
           if (currentKeys.has(key)) return false;
-          const lower = key.toLowerCase();
-          const isAuthKey = key.startsWith("sb-") || lower.includes("supabase");
-          return hasCurrentAuthKeys || !isAuthKey;
+          const authKey = isAuthStorageKey(key);
+          return hasCurrentAuthKeys || !authKey;
         })
         .map((key) => Preferences.remove({ key })),
     ]
@@ -188,8 +240,7 @@ export async function syncNativePersistenceFromLocalStorage() {
   const nextKeys = hasCurrentAuthKeys
     ? keys
     : [...new Set([...previousKeys.filter((key) => {
-        const lower = key.toLowerCase();
-        return key.startsWith("sb-") || lower.includes("supabase");
+        return isAuthStorageKey(key);
       }), ...keys])];
   await Preferences.set({ key: KEY_LIST, value: JSON.stringify(nextKeys) });
 }
@@ -201,8 +252,7 @@ export async function persistAuthSessionToNative() {
   for (let index = 0; index < localStorage.length; index += 1) {
     const key = localStorage.key(index);
     if (!key) continue;
-    const lower = key.toLowerCase();
-    if (key.startsWith("sb-") || lower.includes("supabase")) {
+    if (isAuthStorageKey(key)) {
       authKeys.push(key);
     }
   }
@@ -222,9 +272,50 @@ export async function clearNativePersistedAuthState() {
   await flushNativePersistenceWrites();
   const persistedKeys = await readPersistedKeyList();
   const authKeys = persistedKeys.filter((key) => {
-    const lower = key.toLowerCase();
-    return key.startsWith("sb-") || lower.includes("supabase") || key.startsWith("bb_");
+    return isAuthStorageKey(key) || key.startsWith("bb_");
   });
   await Promise.all(authKeys.map((key) => Preferences.remove({ key })));
+  await Preferences.remove({ key: AUTH_SESSION_BACKUP_KEY });
   await Preferences.set({ key: KEY_LIST, value: JSON.stringify(persistedKeys.filter((key) => !authKeys.includes(key))) });
+}
+
+export async function getNativePersistenceDiagnostics() {
+  if (!isNativeApp()) {
+    return {
+      native: false,
+      hasAuthBackup: false,
+      persistedAuthKeys: 0,
+      preferenceKeys: 0,
+      hydratedAt: localStorage.getItem(LAST_HYDRATED_KEY),
+    };
+  }
+
+  try {
+    const [listedKeys, authBackup, preferences] = await Promise.all([
+      readPersistedKeyList(),
+      readAuthSessionBackup(),
+      Preferences.keys(),
+    ]);
+    const persistedAuthKeys = new Set([
+      ...listedKeys.filter(isAuthStorageKey),
+      ...preferences.keys.filter(isAuthStorageKey),
+      ...(authBackup?.key ? [authBackup.key] : []),
+    ]);
+    return {
+      native: true,
+      hasAuthBackup: Boolean(authBackup?.value),
+      persistedAuthKeys: persistedAuthKeys.size,
+      preferenceKeys: preferences.keys.length,
+      hydratedAt: localStorage.getItem(LAST_HYDRATED_KEY),
+    };
+  } catch (error) {
+    return {
+      native: true,
+      hasAuthBackup: false,
+      persistedAuthKeys: 0,
+      preferenceKeys: 0,
+      hydratedAt: localStorage.getItem(LAST_HYDRATED_KEY),
+      error: error instanceof Error ? error.message : "Native Preferences did not respond.",
+    };
+  }
 }

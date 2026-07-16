@@ -744,27 +744,19 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
           {/* Per-condition food breakdown, filtered by the chips + action toggles above. */}
           {conditionBreakdown.length > 0 && (
             <div className="mb-4 space-y-3">
-              {conditionBreakdown
-                .filter((b) => conditionKeys.has(b.condition.key))
-                .map(({ condition, avoid, limit, encourage }) => {
-                  const buckets = { avoid, limit, encourage };
-                  // Skip cards with nothing in any *selected* action.
-                  const totalVisible =
-                    (actionKeys.has("avoid") ? avoid.length : 0) +
-                    (actionKeys.has("limit") ? limit.length : 0) +
-                    (actionKeys.has("encourage") ? encourage.length : 0);
-                  if (totalVisible === 0) return null;
-                  return (
-                    <ConditionBreakdownCard
-                      key={condition.key}
-                      condition={condition}
-                      avoid={actionKeys.has("avoid") ? buckets.avoid : []}
-                      limit={actionKeys.has("limit") ? buckets.limit : []}
-                      encourage={actionKeys.has("encourage") ? buckets.encourage : []}
-                      onOpen={(it) => setOpenItem(it)}
-                    />
-                  );
-                })}
+              {conditionBreakdown.map(({ condition, avoid, limit, encourage }) => {
+                if (!avoid.length && !limit.length && !encourage.length) return null;
+                return (
+                  <ConditionBreakdownCard
+                    key={condition.key}
+                    condition={condition}
+                    avoid={avoid}
+                    limit={limit}
+                    encourage={encourage}
+                    onOpen={(it) => setOpenItem(it)}
+                  />
+                );
+              })}
             </div>
           )}
 

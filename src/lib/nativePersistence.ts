@@ -3,6 +3,7 @@ import { Preferences } from "@capacitor/preferences";
 
 const KEY_LIST = "bb_native_persisted_keys";
 const LAST_HYDRATED_KEY = "bb_native_last_hydrated_at";
+const EXPLICIT_LOGOUT_STORAGE_KEY = "bb_explicit_logout";
 const pendingWrites = new Set<Promise<unknown>>();
 
 function isNativeApp() {
@@ -17,8 +18,6 @@ function shouldPersistKey(key: string) {
     (key.startsWith("bb_") && key !== EXPLICIT_LOGOUT_STORAGE_KEY)
   );
 }
-
-const EXPLICIT_LOGOUT_STORAGE_KEY = "bb_explicit_logout";
 
 async function writePersistedKey(key: string, value: string) {
   await Preferences.set({ key, value });

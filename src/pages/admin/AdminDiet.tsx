@@ -276,25 +276,24 @@ export default function AdminDiet() {
             const Icon = FILTER_ICONS[f.slug] || Leaf;
             const num = f.number_label ?? `F${String(f.order_number ?? idx + 1).padStart(2, "0")}`;
             const count = items.filter(i => i.filter_id === f.id).length;
+            const th = themeFor(activeCatObj?.slug);
             return (
               <motion.button
                 key={f.id}
                 onClick={() => setActiveFilter(f.id)}
                 whileTap={{ scale: 0.98 }}
                 className={`shrink-0 flex items-center gap-2.5 pl-2.5 pr-3.5 py-2 rounded-xl border transition-all ${
-                  active
-                    ? "bg-primary text-primary-foreground border-primary shadow-card"
-                    : "bg-card text-foreground border-border hover:border-primary/40"
+                  active ? th.filterActive : th.filterInactive
                 }`}
               >
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${active ? "bg-primary-foreground/15" : "bg-muted"}`}>
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${active ? th.filterIconBox : "bg-muted"}`}>
                   <Icon className="w-4 h-4" strokeWidth={2} />
                 </div>
                 <div className="text-left">
-                  <p className={`text-[9px] font-mono font-bold leading-none ${active ? "opacity-80" : "opacity-50"}`}>{num}</p>
+                  <p className={`text-[9px] font-mono font-bold leading-none ${active ? "opacity-80" : "opacity-70"}`}>{num}</p>
                   <p className="text-xs font-semibold leading-tight whitespace-nowrap mt-0.5">{f.name}</p>
                 </div>
-                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${active ? "bg-primary-foreground/15" : "bg-muted text-muted-foreground"}`}>{count}</span>
+                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${active ? th.filterCount : "bg-muted text-muted-foreground"}`}>{count}</span>
               </motion.button>
             );
           })}

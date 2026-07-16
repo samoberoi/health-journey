@@ -145,6 +145,22 @@ export default function Events() {
           ))}
         </div>
       )}
+
+      <EventPaymentModal
+        open={!!payFor}
+        amountInr={payFor?.fee_inr ?? 0}
+        title={payFor?.title ?? ""}
+        subtitle={payFor ? formatEventWhen(payFor.starts_at, payFor.timezone) : undefined}
+        onCancel={async () => {
+          // Cancel the pending registration if user backs out.
+          if (payFor) await cancelEventRegistration(payFor.id);
+          setPayFor(null);
+          await load();
+        }}
+        onSuccess={async () => {
+          if (payFor) await confirmPayment(payFor);
+        }}
+      />
     </div>
   );
 }

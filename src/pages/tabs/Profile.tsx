@@ -882,7 +882,7 @@ export default function Profile({ onClose, isDark = true, onToggleTheme }: Profi
                     });
                     if (isNativePushSupported()) {
                       const registration = await registerNativePush(user.id);
-                      if (!registration.ok) {
+                      if (registration.ok === false) {
                         toast.error(registration.reason === "permission_denied" ? "Enable notifications in iOS Settings." : `Push setup failed: ${registration.reason}`);
                       } else if (!registration.token) {
                         toast.warning("iPhone permission is on, but the push token is not ready yet. Try again in a few seconds.");

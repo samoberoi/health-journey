@@ -59,7 +59,7 @@ export function shouldRequireBiometricUnlock(): boolean {
   return isNative();
 }
 
-export function setBiometricEnabled(on: boolean) {
+export function setBiometricEnabled(_on = true) {
   localStorage.setItem(ENABLED_KEY, "1");
   localStorage.removeItem(DISABLED_KEY);
   void syncNativePersistenceFromLocalStorage();

@@ -82,20 +82,20 @@ export function installNativePersistenceMirror() {
 
   Storage.prototype.setItem = function setItem(key: string, value: string) {
     originalSetItem.call(this, key, value);
-    if (this === window.localStorage && shouldPersistKey(key)) {
+    if (this === storage && shouldPersistKey(key)) {
       trackNativeWrite(Preferences.set({ key, value }).then(() => rememberKey(key)));
     }
   };
 
   Storage.prototype.removeItem = function removeItem(key: string) {
     originalRemoveItem.call(this, key);
-    if (this === window.localStorage && shouldPersistKey(key)) {
+    if (this === storage && shouldPersistKey(key)) {
       trackNativeWrite(Preferences.remove({ key }).then(() => forgetKey(key)));
     }
   };
 
   Storage.prototype.clear = function clear() {
-    if (this === window.localStorage) {
+    if (this === storage) {
       void (async () => {
         const keys = await readPersistedKeyList();
         await Promise.all(keys.map((key) => Preferences.remove({ key })));

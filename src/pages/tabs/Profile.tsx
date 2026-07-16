@@ -40,6 +40,7 @@ import BbdoBadgeGrid from "@/components/badges/BbdoBadgeGrid";
 import { playNotificationSound, getMasterVolume, setMasterVolume, getMuted, setMuted } from "@/lib/soundEngine";
 import { getNotificationSoundSettings } from "@/lib/notificationSoundService";
 import { createNotification } from "@/lib/notificationService";
+import { registerNativePushWithToast, isNativePushSupported } from "@/lib/nativePush";
 
 const APP_VERSION = (globalThis as any).__APP_VERSION__ ?? "1.0.0";
 

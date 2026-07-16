@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Home, Play, Users, Stethoscope, Zap, Timer, Pill, FlaskConical, LogOut, Footprints, Compass, Dumbbell, MessageCircle, Plus } from "lucide-react";
+import { Home, Play, Users, Stethoscope, Zap, Timer, Pill, FlaskConical, LogOut, Footprints, Compass, Dumbbell, MessageCircle, Plus, CalendarDays } from "lucide-react";
 import Avocado from "@/components/icons/Avocado";
 import BbdoWordmark from "@/components/BbdoWordmark";
 import SoundToggle from "@/components/SoundToggle";
@@ -20,6 +20,7 @@ import Messages from "./tabs/Messages";
 import Consult from "./tabs/Consult";
 import LabTestsTab from "./tabs/LabTests";
 import Diet from "./tabs/Diet";
+import Events from "./tabs/Events";
 import UserFasting from "@/components/UserFasting";
 import UserSupplements from "@/components/UserSupplements";
 import NotificationsPanel from "@/components/NotificationsPanel";

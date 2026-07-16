@@ -307,7 +307,7 @@ export default function AdminFoodConditionRules() {
               conditionFilter === c.key ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:bg-muted"
             } ${c.is_active ? "" : "opacity-60"}`}
           >
-            {c.icon_url ? <img src={c.icon_url} alt="" className="inline w-4 h-4 mr-1 align-text-bottom" /> : c.emoji} {c.label} · {countsByCondition[c.key] || 0}
+            {c.icon_url && <img src={c.icon_url} alt="" className="inline w-4 h-4 mr-1 align-text-bottom" />} {c.label} · {countsByCondition[c.key] || 0}
           </button>
         ))}
       </div>
@@ -357,7 +357,7 @@ export default function AdminFoodConditionRules() {
               const act = ACTIONS.find((a) => a.value === r.action)!;
               return (
                 <TableRow key={r.id} className={r.is_active ? "" : "opacity-50"}>
-                  <TableCell><Badge variant="outline" className="gap-1">{cond?.icon_url ? <img src={cond.icon_url} alt="" className="w-4 h-4" /> : cond?.emoji} {cond?.label || r.condition_key}</Badge></TableCell>
+                  <TableCell><Badge variant="outline" className="gap-1">{cond?.icon_url && <img src={cond.icon_url} alt="" className="w-4 h-4" />} {cond?.label || r.condition_key}</Badge></TableCell>
                   <TableCell><Badge variant="outline" className={act.cls}>{act.label}</Badge></TableCell>
                   <TableCell className="font-mono text-sm">{r.name_pattern}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
@@ -393,7 +393,7 @@ export default function AdminFoodConditionRules() {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {activeConditions.map((c) => (
-                      <SelectItem key={c.key} value={c.key}>{c.emoji} {c.label}</SelectItem>
+                      <SelectItem key={c.key} value={c.key}>{c.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -540,7 +540,7 @@ export default function AdminFoodConditionRules() {
                   const uses = countsByCondition[c.key] || 0;
                   return (
                     <TableRow key={c.id} className={c.is_active ? "" : "opacity-60"}>
-                      <TableCell><Badge variant="outline" className="gap-1">{c.icon_url ? <img src={c.icon_url} alt="" className="w-4 h-4" /> : c.emoji} {c.label}</Badge></TableCell>
+                      <TableCell><Badge variant="outline" className="gap-1">{c.icon_url && <img src={c.icon_url} alt="" className="w-4 h-4" />} {c.label}</Badge></TableCell>
                       <TableCell className="font-mono text-xs text-muted-foreground">{c.key}</TableCell>
                       <TableCell className="text-center">{c.sort_order}</TableCell>
                       <TableCell className="text-center">{uses}</TableCell>
@@ -607,11 +607,10 @@ export default function AdminFoodConditionRules() {
                 <div className="w-14 h-14 rounded-lg border border-border bg-muted/30 flex items-center justify-center overflow-hidden">
                   {condForm.icon_url ? (
                     <img src={condForm.icon_url} alt="" className="w-full h-full object-contain" />
-                  ) : condForm.emoji ? (
-                    <span className="text-2xl">{condForm.emoji}</span>
                   ) : (
                     <span className="text-[10px] text-muted-foreground">No icon</span>
                   )}
+
                 </div>
                 <div className="flex-1 space-y-2">
                   <Input
@@ -647,24 +646,15 @@ export default function AdminFoodConditionRules() {
                 Recommended: square PNG on transparent background, at least 256×256.
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>Emoji (fallback)</Label>
-                <Input
-                  value={condForm.emoji || ""}
-                  onChange={(e) => setCondForm((f) => ({ ...f, emoji: e.target.value }))}
-                  placeholder="🩸"
-                />
-              </div>
-              <div>
-                <Label>Sort order</Label>
-                <Input
-                  type="number"
-                  value={condForm.sort_order}
-                  onChange={(e) => setCondForm((f) => ({ ...f, sort_order: Number(e.target.value) }))}
-                />
-              </div>
+            <div>
+              <Label>Sort order</Label>
+              <Input
+                type="number"
+                value={condForm.sort_order}
+                onChange={(e) => setCondForm((f) => ({ ...f, sort_order: Number(e.target.value) }))}
+              />
             </div>
+
 
             <div className="flex items-center gap-2">
               <Switch

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight } from "lucide-react";
-import { prepareFreshLoginState } from "@/contexts/AuthContext";
+import { getExistingSessionUnlessLoggedOut, prepareFreshLoginState } from "@/contexts/AuthContext";
 
 const slides = [
   {
@@ -30,6 +30,11 @@ export default function Onboarding() {
   const navigate = useNavigate();
 
   const goToLogin = async () => {
+    const existingSession = await getExistingSessionUnlessLoggedOut();
+    if (existingSession) {
+      navigate("/home", { replace: true });
+      return;
+    }
     await prepareFreshLoginState();
     navigate("/auth", { replace: true });
   };

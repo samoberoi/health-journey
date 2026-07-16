@@ -44,6 +44,16 @@ export async function prepareFreshLoginState() {
   }
 }
 
+export async function getExistingSessionUnlessLoggedOut() {
+  if (localStorage.getItem(EXPLICIT_LOGOUT_KEY) === "1") return null;
+  try {
+    const { data } = await supabase.auth.getSession();
+    return data.session ?? null;
+  } catch {
+    return null;
+  }
+}
+
 interface AuthContextType {
   session: Session | null;
   user: User | null;

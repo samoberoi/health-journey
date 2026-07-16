@@ -10,7 +10,7 @@ import { fetchProfile, loadProfileToLocal } from "@/lib/profileService";
 import { fetchActiveSubscription } from "@/lib/subscriptionService";
 import { isCoachUser, isAdminUser } from "@/lib/roleService";
 import { isChannelPartner } from "@/lib/channelPartnerService";
-import { EXPLICIT_LOGOUT_KEY, prepareFreshLoginState } from "@/contexts/AuthContext";
+import { getExistingSessionUnlessLoggedOut, prepareFreshLoginState } from "@/contexts/AuthContext";
 import {
   InputOTP,
   InputOTPGroup,
@@ -51,13 +51,10 @@ export default function Auth() {
 
     const prepareSession = async () => {
       try {
-        const explicitlyLoggedOut = localStorage.getItem(EXPLICIT_LOGOUT_KEY) === "1";
-        if (!explicitlyLoggedOut) {
-          const { data } = await supabase.auth.getSession();
-          if (data.session) {
-            navigate("/home", { replace: true });
-            return;
-          }
+        const existingSession = await getExistingSessionUnlessLoggedOut();
+        if (existingSession) {
+          navigate("/home", { replace: true });
+          return;
         }
       } catch {
         /* fall through to fresh login prep */
@@ -92,7 +89,7 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      try { localStorage.removeItem(EXPLICIT_LOGOUT_KEY); } catch {}
+      try { localStorage.removeItem("bb_explicit_logout"); } catch {}
       // Try sign in first (existing user)
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,

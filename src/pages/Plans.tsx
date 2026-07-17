@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Check, ChevronRight, Star, Loader2, ShieldCheck } from "lucide-react";
+import { Check, ChevronRight, Star, Loader2, ShieldCheck, AlertTriangle } from "lucide-react";
 import SoundToggle from "@/components/SoundToggle";
 import { setPhase } from "@/lib/musicEngine";
 import {
@@ -13,7 +13,13 @@ import {
   type BillingCycle,
   type PackageWithPricing,
 } from "@/lib/packageService";
-import { fetchActiveSubscription, normalizePlanKey } from "@/lib/subscriptionService";
+import {
+  fetchActiveSubscription,
+  fetchLatestSubscription,
+  isSubscriptionExpired,
+  normalizePlanKey,
+  type Subscription,
+} from "@/lib/subscriptionService";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 

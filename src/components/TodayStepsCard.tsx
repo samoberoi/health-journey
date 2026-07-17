@@ -20,7 +20,7 @@ export default function TodayStepsCard({ onOpenMovement }: { onOpenMovement?: ()
   const [saving, setSaving] = useState(false);
   const [syncingHealth, setSyncingHealth] = useState(false);
   const [healthSyncError, setHealthSyncError] = useState<string | null>(null);
-  const healthStepsAvailable = canUseAppleHealthSteps();
+  const healthStepsAvailable = canUseNativeHealth();
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -44,19 +44,19 @@ export default function TodayStepsCard({ onOpenMovement }: { onOpenMovement?: ()
     setSyncingHealth(true);
     setHealthSyncError(null);
     try {
-      const steps = await syncTodayStepsFromAppleHealth();
+      const steps = await syncTodaySteps();
       if (steps == null) {
-        const message = "Apple Health is not available on this iPhone";
+        const message = "`${healthSourceLabel()} is not available on this device`";
         setHealthSyncError(message);
         if (showToast) toast.error(message);
         return;
       }
       await logTodaySteps(user.id, steps);
-      if (showToast) toast.success(`Synced ${steps.toLocaleString("en-IN")} Apple Health steps`);
+      if (showToast) toast.success(``Synced ${steps.toLocaleString("en-IN")} ${healthSourceLabel()} steps``);
       window.dispatchEvent(new CustomEvent("health-log-saved"));
       await load();
     } catch (error: any) {
-      const message = error?.message || "Couldn't sync Apple Health steps";
+      const message = error?.message || "`Couldn't sync ${healthSourceLabel()} steps`";
       setHealthSyncError(message);
       if (showToast) toast.error(message);
       console.warn("Apple Health steps sync failed", error);
@@ -177,14 +177,14 @@ export default function TodayStepsCard({ onOpenMovement }: { onOpenMovement?: ()
             <div className="flex min-w-0 items-center gap-2">
               <Watch className="h-4 w-4 shrink-0 text-primary" />
               <p className="truncate text-[12px] font-semibold text-muted-foreground">
-                Apple Health steps sync automatically
+                `${healthSourceLabel()} steps sync automatically`
               </p>
             </div>
             <button
               type="button"
               onClick={handleHealthSync}
               disabled={syncingHealth}
-              aria-label="Sync Apple Health steps"
+              aria-label="`Sync ${healthSourceLabel()} steps`"
               className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-card text-primary disabled:opacity-60"
             >
               <RefreshCw className={`h-4 w-4 ${syncingHealth ? "animate-spin" : ""}`} />

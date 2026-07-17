@@ -182,7 +182,7 @@ export default function AppleHealthSnapshotCard() {
       )}
 
       <p className="mt-3 text-[10px] leading-snug text-muted-foreground">
-        {syncedLabel ?? "Data syncs automatically from your iPhone, Apple Watch and connected apps."}
+        {syncedLabel ?? `Data syncs automatically from your ${phoneLabel()}, ${wearableLabel()} and connected apps.`}
       </p>
     </motion.div>
   );

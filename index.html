@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <link rel="icon" href="/favicon.png" type="image/png">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- YouTube IFrame API requires a Referer header; suppress via strict-origin-when-cross-origin.
+         Without this, YouTube throws Error 153 (embedder.identity.missing.referrer) inside
+         Capacitor / Android WebViews where the default referrer policy strips the Referer. -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <title>Bye Bye Diabetes — Reverse Diabetes, Restore Life</title>
     <meta name="description" content="A science-backed metabolic correction system to reverse diabetes and restore your health.">
     <meta name="author" content="Gautam Guha" />

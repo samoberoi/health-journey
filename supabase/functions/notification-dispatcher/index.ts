@@ -184,6 +184,18 @@ Deno.serve(async (req) => {
         const incomplete = !p.name || !p.age || !p.weight || !p.height || !p.gender;
         if (!incomplete) return false;
       }
+      if (f.expiring_in_15d) {
+        const d = daysToExpiry.get(userId);
+        if (d == null || d > 15 || d < 11) return false;
+      }
+      if (f.expiring_in_7d) {
+        const d = daysToExpiry.get(userId);
+        if (d == null || d > 7 || d < 4) return false;
+      }
+      if (f.expiring_in_3d) {
+        const d = daysToExpiry.get(userId);
+        if (d == null || d > 3 || d < 0) return false;
+      }
       return true;
     }
 

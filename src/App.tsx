@@ -158,10 +158,12 @@ function SubscriptionGate({ children }: { children: ReactNode }) {
         if (cancelled) return;
         if (!decision.allowed) {
           navigate(decision.redirectTo ?? "/plans", { replace: true });
+          return;
         }
+        setChecking(false);
       })
-      .finally(() => {
-        if (!cancelled) setChecking(false);
+      .catch(() => {
+        if (!cancelled) navigate("/plans", { replace: true });
       });
 
     return () => {

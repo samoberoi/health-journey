@@ -132,11 +132,13 @@ function SubscriptionGate({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [checking, setChecking] = useState(false);
+  const [allowedPath, setAllowedPath] = useState<string | null>(null);
   const paidRoute = PAID_APP_ROUTES.has(location.pathname);
 
   useEffect(() => {
     if (!paidRoute) {
       setChecking(false);
+      setAllowedPath(null);
       return;
     }
 
@@ -147,6 +149,7 @@ function SubscriptionGate({ children }: { children: ReactNode }) {
 
     if (!session) {
       setChecking(false);
+      setAllowedPath(null);
       navigate("/auth", { replace: true });
       return;
     }
@@ -157,13 +160,18 @@ function SubscriptionGate({ children }: { children: ReactNode }) {
       .then((decision) => {
         if (cancelled) return;
         if (!decision.allowed) {
+          setAllowedPath(null);
           navigate(decision.redirectTo ?? "/plans", { replace: true });
           return;
         }
+        setAllowedPath(location.pathname);
         setChecking(false);
       })
       .catch(() => {
-        if (!cancelled) navigate("/plans", { replace: true });
+        if (!cancelled) {
+          setAllowedPath(null);
+          navigate("/plans", { replace: true });
+        }
       });
 
     return () => {
@@ -171,7 +179,7 @@ function SubscriptionGate({ children }: { children: ReactNode }) {
     };
   }, [loading, navigate, paidRoute, ready, session, location.pathname]);
 
-  if (paidRoute && (loading || !ready || checking)) {
+  if (paidRoute && (loading || !ready || checking || !session || allowedPath !== location.pathname)) {
     return (
       <div className="min-h-dvh w-full bg-background flex items-center justify-center text-foreground">
         <div className="h-6 w-6 rounded-full border-2 border-primary/25 border-t-primary animate-spin" />

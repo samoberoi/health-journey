@@ -258,11 +258,11 @@ export default function AdminDiet() {
           const th = themeFor(c.slug);
           const count = items.filter(i => filters.some(f => f.id === i.filter_id && f.category_id === c.id)).length;
           return (
-            <motion.button
+            <motion.div
               key={c.id}
-              onClick={() => setActiveCat(c.id)}
               whileTap={{ scale: 0.99 }}
-              className={`text-left p-5 rounded-2xl border transition-all ${active ? th.tileActive : th.tileInactive}`}
+              className={`relative text-left p-5 rounded-2xl border transition-all cursor-pointer ${active ? th.tileActive : th.tileInactive}`}
+              onClick={() => setActiveCat(c.id)}
             >
               <div className="flex items-start justify-between mb-2">
                 <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-md ${active ? th.chip : "bg-muted text-muted-foreground"}`}>
@@ -270,9 +270,24 @@ export default function AdminDiet() {
                 </span>
                 <span className="text-[10px] text-muted-foreground font-mono">{count} items</span>
               </div>
-              <h3 className={`text-base font-bold leading-tight ${active ? th.title : "text-foreground"}`}>{c.name}</h3>
-              {c.description && <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">{c.description}</p>}
-            </motion.button>
+              <div className="flex items-start gap-3">
+                {c.image_url && (
+                  <img src={c.image_url} alt={c.name} className="w-14 h-14 rounded-xl object-cover border border-border shrink-0" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <h3 className={`text-base font-bold leading-tight ${active ? th.title : "text-foreground"}`}>{c.name}</h3>
+                  {c.description && <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">{c.description}</p>}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setEditingCategory(c); }}
+                className="absolute bottom-2 right-2 inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md bg-background/80 backdrop-blur border border-border hover:bg-background"
+                title="Edit category image"
+              >
+                <Pencil className="w-3 h-3" /> Image
+              </button>
+            </motion.div>
           );
         })}
       </div>

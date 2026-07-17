@@ -71,6 +71,15 @@ Deno.serve(async (req) => {
       .gt("expires_at", new Date().toISOString());
 
     const activeUserIds = Array.from(new Set((activeSubs ?? []).map((s: any) => s.user_id)));
+
+    // Compute days-until-expiry per user for expiring_in_* audience filters.
+    const daysToExpiry = new Map<string, number>();
+    for (const s of activeSubs ?? []) {
+      const ms = new Date((s as any).expires_at).getTime() - Date.now();
+      const days = Math.ceil(ms / (24 * 3600 * 1000));
+      const prev = daysToExpiry.get((s as any).user_id);
+      if (prev == null || days < prev) daysToExpiry.set((s as any).user_id, days);
+    }
     if (activeUserIds.length === 0) {
       return new Response(JSON.stringify({ ok: true, dispatched: 0, note: "no active users" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -174,6 +183,18 @@ Deno.serve(async (req) => {
         if (!p) return false;
         const incomplete = !p.name || !p.age || !p.weight || !p.height || !p.gender;
         if (!incomplete) return false;
+      }
+      if (f.expiring_in_15d) {
+        const d = daysToExpiry.get(userId);
+        if (d == null || d > 15 || d < 11) return false;
+      }
+      if (f.expiring_in_7d) {
+        const d = daysToExpiry.get(userId);
+        if (d == null || d > 7 || d < 4) return false;
+      }
+      if (f.expiring_in_3d) {
+        const d = daysToExpiry.get(userId);
+        if (d == null || d > 3 || d < 0) return false;
       }
       return true;
     }

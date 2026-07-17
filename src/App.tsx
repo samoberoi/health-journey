@@ -16,7 +16,10 @@ import { ProfileSyncProvider } from "@/components/ProfileSyncProvider";
 import { ConfirmProvider } from "@/components/ConfirmProvider";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import AutoTranslator from "@/components/AutoTranslator";
-import { subscribeToNotifications } from "@/lib/notificationService";
+import { subscribeToNotifications, fetchUnreadCount } from "@/lib/notificationService";
+import { setAppBadgeCount, clearAppBadge } from "@/lib/appBadge";
+import { App as CapApp } from "@capacitor/app";
+import { PushNotifications } from "@capacitor/push-notifications";
 import { getNotificationSoundSettings } from "@/lib/notificationSoundService";
 import { playNotificationSound } from "@/lib/soundEngine";
 import { fireRealtimeHealthNotificationAlert } from "@/lib/healthAlerts";
@@ -110,9 +113,41 @@ function NativeSessionRedirect() {
 function GlobalRealtimeAlerts() {
   const { user } = useAuth();
 
+  // Keep the iOS/Android app icon badge in sync with the real unread count.
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      void clearAppBadge();
+      return;
+    }
+    let cancelled = false;
+
+    const syncBadge = async () => {
+      try {
+        const count = await fetchUnreadCount(user.id);
+        if (!cancelled) await setAppBadgeCount(count);
+      } catch (error) {
+        console.warn("[badge] unread sync failed", error);
+      }
+    };
+
+    // Initial sync + refresh whenever the app returns to the foreground.
+    void syncBadge();
+    let appListener: { remove: () => void } | null = null;
+    if (isNative()) {
+      void CapApp.addListener("appStateChange", (state) => {
+        if (state.isActive) {
+          // Clear the OS notification tray and resync badge to the real count.
+          void PushNotifications.removeAllDeliveredNotifications().catch(() => {});
+          void syncBadge();
+        }
+      }).then((l) => {
+        appListener = l;
+      });
+    }
+
     const unsub = subscribeToNotifications(user.id, (notification) => {
+      // Any incoming notification → re-fetch true unread count and update badge.
+      void syncBadge();
       void getNotificationSoundSettings().then((settings) => {
         if (!settings.enabled) return;
         if (notification.type === "health_alert") {
@@ -122,7 +157,17 @@ function GlobalRealtimeAlerts() {
         }
       });
     });
-    return unsub;
+
+    // Also resync when the user marks notifications read/cleared elsewhere.
+    const onLocalChange = () => void syncBadge();
+    window.addEventListener("notifications:changed", onLocalChange);
+
+    return () => {
+      cancelled = true;
+      unsub();
+      appListener?.remove();
+      window.removeEventListener("notifications:changed", onLocalChange);
+    };
   }, [user]);
 
   return null;

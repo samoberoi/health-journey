@@ -254,7 +254,7 @@ export default function Plans() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
         >
-          {currentPlanKey ? "Upgrade Plan" : "Start My Journey"} <ChevronRight className="w-5 h-5" strokeWidth={1.5} />
+          {expiredSub ? "Renew Plan" : currentPlanKey ? "Upgrade Plan" : "Start My Journey"} <ChevronRight className="w-5 h-5" strokeWidth={1.5} />
         </motion.button>
         
       </motion.div>

@@ -15,6 +15,8 @@ import { useConfirm } from "@/components/ConfirmProvider";
 import { logAudit } from "@/lib/auditLog";
 import ExportCsvButton from "@/components/admin/ExportCsvButton";
 import ImportCsvButton from "@/components/admin/ImportCsvButton";
+import TaxonomyImageUploader from "@/components/admin/TaxonomyImageUploader";
+import { uploadCategoryImage, uploadFilterImage } from "@/lib/foodTaxonomyImageService";
 import {
   Plus, Pencil, Trash2, AlertTriangle, Sparkles, Search, Leaf, Wheat, Candy, Bean, Milk, Apple,
   Beef, Drumstick, Droplets, Salad, EggFried, Sprout, Nut, FlaskConical, Image as ImageIcon,

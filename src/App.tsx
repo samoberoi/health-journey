@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -24,6 +24,7 @@ import { getNotificationSoundSettings } from "@/lib/notificationSoundService";
 import { playNotificationSound } from "@/lib/soundEngine";
 import { fireRealtimeHealthNotificationAlert } from "@/lib/healthAlerts";
 import { isNativePushSupported } from "@/lib/nativePush";
+import { resolvePostAuthRoute, resolveProtectedAccess } from "@/lib/accessControl";
 
 import Splash from "./pages/Splash";
 import LanguageSelect from "./pages/LanguageSelect";
@@ -96,6 +97,13 @@ const PUBLIC_ENTRY_ROUTES = new Set([
   "/auth",
 ]);
 
+const PAID_APP_ROUTES = new Set([
+  "/home",
+  "/dashboard",
+  "/tour",
+  "/notifications",
+]);
+
 function NativeSessionRedirect() {
   const { session, loading, ready } = useAuth();
   const location = useLocation();
@@ -104,11 +112,72 @@ function NativeSessionRedirect() {
   useEffect(() => {
     if (!isNative() || loading || !ready || !session) return;
     if (PUBLIC_ENTRY_ROUTES.has(location.pathname)) {
-      navigate("/home", { replace: true });
+      let cancelled = false;
+      void resolvePostAuthRoute(session.user.id, { missingProfileRoute: null }).then((route) => {
+        if (!cancelled && route && route !== location.pathname) {
+          navigate(route, { replace: true });
+        }
+      });
+      return () => {
+        cancelled = true;
+      };
     }
   }, [loading, location.pathname, navigate, ready, session]);
 
   return null;
+}
+
+function SubscriptionGate({ children }: { children: ReactNode }) {
+  const { session, loading, ready } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [checking, setChecking] = useState(false);
+  const paidRoute = PAID_APP_ROUTES.has(location.pathname);
+
+  useEffect(() => {
+    if (!paidRoute) {
+      setChecking(false);
+      return;
+    }
+
+    if (loading || !ready) {
+      setChecking(true);
+      return;
+    }
+
+    if (!session) {
+      setChecking(false);
+      navigate("/auth", { replace: true });
+      return;
+    }
+
+    let cancelled = false;
+    setChecking(true);
+    void resolveProtectedAccess(session.user.id)
+      .then((decision) => {
+        if (cancelled) return;
+        if (!decision.allowed) {
+          navigate(decision.redirectTo ?? "/plans", { replace: true });
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setChecking(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [loading, navigate, paidRoute, ready, session, location.pathname]);
+
+  if (paidRoute && (loading || !ready || checking)) {
+    return (
+      <div className="min-h-dvh w-full bg-background flex items-center justify-center text-foreground">
+        <div className="h-6 w-6 rounded-full border-2 border-primary/25 border-t-primary animate-spin" />
+      </div>
+    );
+  }
+
+  return <>{children}</>;
 }
 
 function GlobalRealtimeAlerts() {
@@ -279,13 +348,15 @@ const App = () => (
             <ProfileSyncProvider>
               <ConfirmProvider>
                 <AppErrorBoundary>
-                  <BiometricGate>
-                    <NativeAuthStartupGate>
-                      <NativeSessionRedirect />
-                      <GlobalRealtimeAlerts />
-                      <AnimatedRoutes />
-                    </NativeAuthStartupGate>
-                  </BiometricGate>
+                  <SubscriptionGate>
+                    <BiometricGate>
+                      <NativeAuthStartupGate>
+                        <NativeSessionRedirect />
+                        <GlobalRealtimeAlerts />
+                        <AnimatedRoutes />
+                      </NativeAuthStartupGate>
+                    </BiometricGate>
+                  </SubscriptionGate>
                 </AppErrorBoundary>
               </ConfirmProvider>
             </ProfileSyncProvider>

@@ -133,7 +133,7 @@ function GlobalRealtimeAlerts() {
     // Initial sync + refresh whenever the app returns to the foreground.
     void syncBadge();
     let appListener: { remove: () => void } | null = null;
-    if (isNative()) {
+    if (isNativePushSupported()) {
       void CapApp.addListener("appStateChange", (state) => {
         if (state.isActive) {
           // Clear the OS notification tray and resync badge to the real count.

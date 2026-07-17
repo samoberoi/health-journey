@@ -520,6 +520,7 @@ function FlagBadge({ label, title, tone }: { label: string; title: string; tone:
 
 // ---------- Item editor (full-page dialog) ----------
 function ItemEditor({ item, filterId, filterSlug, onClose, onSaved }: { item: Item | null; filterId: string; filterSlug: string; onClose: () => void; onSaved: () => void; }) {
+  const { types: dietTypes } = useDietTypes(true);
   const [form, setForm] = useState<Partial<Item>>(item || {
     filter_id: filterId, name: "", diet_type: "vegan",
     serving_basis: filterSlug === "milk_and_milk_sugars" ? "per_100ml" : filterSlug === "lean_proteins_non_veg" ? "cooked" : "per_100g",

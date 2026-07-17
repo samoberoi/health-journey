@@ -69,6 +69,7 @@ import AdminChannelPartners from "./admin/AdminChannelPartners";
 import AdminExercises from "./admin/AdminExercises";
 import AdminGlobalStreak from "./admin/AdminGlobalStreak";
 import AdminPnl from "./admin/AdminPnl";
+import AdminDietTypes from "./admin/AdminDietTypes";
 import AdminEvents from "./admin/AdminEvents";
 import NotificationsPanel from "@/components/NotificationsPanel";
 import { useAttentionCounts } from "@/hooks/useAttentionCounts";
@@ -196,6 +197,7 @@ const tabContentMap: Record<AdminTab, React.ReactNode> = {
   channel_partners: <AdminChannelPartners />,
   global_streak: <AdminGlobalStreak />,
   pnl: <AdminPnl />,
+  diet_types: <AdminDietTypes />,
   events: <AdminEvents />,
   profile: null,
 };
@@ -228,6 +230,7 @@ const adminTabs = new Set<AdminTab>([
   "channel_partners",
   "global_streak",
   "pnl",
+  "diet_types",
   "events",
   "profile",
 ]);

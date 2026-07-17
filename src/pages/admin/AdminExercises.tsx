@@ -682,17 +682,69 @@ export default function AdminExercises() {
                     onChange={(e) => setForm({ ...form, sets: e.target.value })}
                   />
                 </div>
-                <div>
-                  <Label>Icon (emoji)</Label>
-                  <Input value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })} />
-                </div>
-                <div>
-                  <Label>Image URL (optional)</Label>
-                  <Input
-                    value={form.image_url}
-                    placeholder="https://…"
-                    onChange={(e) => setForm({ ...form, image_url: e.target.value })}
-                  />
+                <div className="sm:col-span-2">
+                  <Label>Thumbnail</Label>
+                  <div className="mt-1 flex items-start gap-3">
+                    <div
+                      className="relative w-40 shrink-0 rounded-2xl overflow-hidden bg-muted border border-border"
+                      style={{ aspectRatio: "16 / 9" }}
+                    >
+                      {(thumbPreview || form.image_url) ? (
+                        <img
+                          src={thumbPreview || form.image_url}
+                          alt="Thumbnail preview"
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                          <ImageIcon className="w-6 h-6" />
+                        </div>
+                      )}
+                      {thumbUploading && (
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                          <Loader2 className="w-5 h-5 text-white animate-spin" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <input
+                        ref={thumbInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) onSelectThumbFile(f);
+                          e.currentTarget.value = "";
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => thumbInputRef.current?.click()}
+                      >
+                        <Upload className="w-4 h-4 mr-1" />
+                        {(thumbPreview || form.image_url) ? "Replace thumbnail" : "Upload thumbnail"}
+                      </Button>
+                      {(thumbPreview || form.image_url) && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => {
+                            setThumbFile(null);
+                            setThumbPreview(null);
+                            setForm({ ...form, image_url: "" });
+                          }}
+                        >
+                          <X className="w-4 h-4 mr-1" /> Remove
+                        </Button>
+                      )}
+                      <p className="text-[11px] text-muted-foreground">JPG, PNG or WEBP · up to 3MB · 16:9 recommended</p>
+                    </div>
+                  </div>
                 </div>
                 <div className="sm:col-span-2">
                   <Label>YouTube Link</Label>

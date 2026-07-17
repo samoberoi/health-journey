@@ -93,6 +93,9 @@ export default function NotificationsPanel({ onClose, embedded = false }: Notifi
   const unread = items.filter((n) => !n.is_read).length;
   const visible = filter === "unread" ? items.filter((n) => !n.is_read) : items;
 
+  const notifyBadgeSync = () =>
+    window.dispatchEvent(new CustomEvent("notifications:changed"));
+
   const onItemClick = async (n: AppNotification) => {
     // Notifications in the panel are read-only: tapping only marks them read,
     // it does NOT navigate anywhere. (Previously action_url could route users
@@ -100,17 +103,20 @@ export default function NotificationsPanel({ onClose, embedded = false }: Notifi
     if (!n.is_read) {
       await markRead(n.id);
       setItems((prev) => prev.map((x) => (x.id === n.id ? { ...x, is_read: true } : x)));
+      notifyBadgeSync();
     }
   };
 
   const onMarkAllRead = async () => {
     await markAllRead();
     setItems((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    notifyBadgeSync();
   };
 
   const onClearAll = async () => {
     await clearAllNotifications();
     setItems([]);
+    notifyBadgeSync();
   };
 
   const goBack = () => {

@@ -230,6 +230,17 @@ export default function AdminExercises() {
     }
     setSaving(true);
     try {
+      // Upload thumbnail (if user picked one) before saving row
+      let nextImageUrl: string | null = form.image_url?.trim() ? form.image_url.trim() : editing.image_url ?? null;
+      if (thumbFile) {
+        setThumbUploading(true);
+        try {
+          nextImageUrl = await uploadExerciseThumbnail(editing.id === "__new__" ? "new" : editing.id, thumbFile);
+        } finally {
+          setThumbUploading(false);
+        }
+      }
+
       const payload = {
         name: form.name.trim(),
         category_id: form.category_id,
@@ -238,7 +249,7 @@ export default function AdminExercises() {
         reps_duration: form.reps_duration.trim(),
         sets: form.sets.trim(),
         youtube_url: normalizeYoutubeUrl(form.youtube_url),
-        image_url: form.image_url.trim() || null,
+        image_url: nextImageUrl,
         icon: form.icon || "🏋️",
         instructions: form.instructions,
         benefits: form.benefits,

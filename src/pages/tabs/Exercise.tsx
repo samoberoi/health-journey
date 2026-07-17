@@ -59,6 +59,7 @@ function WatchModal({
   const lastReportedSecRef = useRef(0);
   const videoId = extractYoutubeId(exercise.youtube_url);
   const [playerError, setPlayerError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
   const [useSimpleEmbed] = useState(() => isNativeIOSApp());
   const playerSrc = videoId ? youtubePlayerProxyUrl(videoId, { autoplay: true, simple: useSimpleEmbed }) : "";
 
@@ -119,6 +120,7 @@ function WatchModal({
         <div className="relative aspect-video">
           {videoId ? (
             <iframe
+              key={`${videoId}-${retryKey}-${useSimpleEmbed ? "simple" : "tracked"}`}
               ref={iframeRef}
               src={playerSrc}
               title={exercise.name}
@@ -132,7 +134,10 @@ function WatchModal({
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black p-5 text-center">
               <p className="text-sm font-bold text-white">This device blocked the in-app YouTube player. Please close and try again.</p>
               <button
-                onClick={() => setPlayerError(false)}
+                onClick={() => {
+                  setPlayerError(false);
+                  setRetryKey((value) => value + 1);
+                }}
                 className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 text-sm font-black text-black"
               >
                 Retry

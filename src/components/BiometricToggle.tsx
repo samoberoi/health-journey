@@ -49,8 +49,8 @@ export default function BiometricToggle() {
   const handleTest = async () => {
     if (!native) {
       toast({
-        title: "Face ID is native only",
-        description: "Open the installed iPhone app to use Face ID unlock.",
+        title: "Biometric unlock is native only",
+        description: "Open the installed mobile app to use biometric unlock.",
       });
       return;
     }

@@ -30,6 +30,7 @@ import {
   Dumbbell,
   Flame,
   TrendingUp,
+  Salad,
   User as UserIcon,
   Mail,
   CalendarDays,
@@ -68,6 +69,7 @@ import AdminChannelPartners from "./admin/AdminChannelPartners";
 import AdminExercises from "./admin/AdminExercises";
 import AdminGlobalStreak from "./admin/AdminGlobalStreak";
 import AdminPnl from "./admin/AdminPnl";
+import AdminDietTypes from "./admin/AdminDietTypes";
 import AdminEvents from "./admin/AdminEvents";
 import NotificationsPanel from "@/components/NotificationsPanel";
 import { useAttentionCounts } from "@/hooks/useAttentionCounts";
@@ -102,6 +104,7 @@ export type AdminTab =
   | "channel_partners"
   | "global_streak"
   | "pnl"
+  | "diet_types"
   | "events"
   | "profile";
 
@@ -159,6 +162,7 @@ const navItems: NavItem[] = [
       { id: "channel_partners", icon: Handshake, label: "Channel Partners" },
       { id: "global_streak", icon: Flame, label: "Global Streak" },
       { id: "pnl", icon: TrendingUp, label: "P&L Manager" },
+      { id: "diet_types", icon: Salad, label: "Diet Types" },
     ],
   },
 ];
@@ -193,6 +197,7 @@ const tabContentMap: Record<AdminTab, React.ReactNode> = {
   channel_partners: <AdminChannelPartners />,
   global_streak: <AdminGlobalStreak />,
   pnl: <AdminPnl />,
+  diet_types: <AdminDietTypes />,
   events: <AdminEvents />,
   profile: null,
 };
@@ -225,6 +230,7 @@ const adminTabs = new Set<AdminTab>([
   "channel_partners",
   "global_streak",
   "pnl",
+  "diet_types",
   "events",
   "profile",
 ]);
@@ -251,6 +257,7 @@ const controlCenterTabs = new Set<AdminTab>([
   "channel_partners",
   "global_streak",
   "pnl",
+  "diet_types",
 ]);
 
 const supplementTabs = new Set<AdminTab>(["supplements"]);

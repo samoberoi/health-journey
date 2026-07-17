@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   saveHealthSnapshot, fetchLatestHealthSnapshot, type StoredHealthSnapshot,
 } from "@/lib/healthSnapshotService";
+import { healthSourceLabel, phoneLabel, wearableLabel } from "@/lib/platformLabels";
 
 function Tile({
   icon: Icon, label, value, sub,

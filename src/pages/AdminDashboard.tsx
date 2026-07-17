@@ -102,6 +102,7 @@ export type AdminTab =
   | "channel_partners"
   | "global_streak"
   | "pnl"
+  | "diet_types"
   | "events"
   | "profile";
 
@@ -159,6 +160,7 @@ const navItems: NavItem[] = [
       { id: "channel_partners", icon: Handshake, label: "Channel Partners" },
       { id: "global_streak", icon: Flame, label: "Global Streak" },
       { id: "pnl", icon: TrendingUp, label: "P&L Manager" },
+      { id: "diet_types", icon: Salad, label: "Diet Types" },
     ],
   },
 ];

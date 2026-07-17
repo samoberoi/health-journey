@@ -135,6 +135,7 @@ const CAT_THEME: Record<string, {
 const themeFor = (slug?: string) => CAT_THEME[slug || ""] || CAT_THEME.metabolic_essential;
 
 export default function AdminDiet() {
+  const { types: dietTypes } = useDietTypes(true);
   const [categories, setCategories] = useState<Category[]>([]);
   const [filters, setFilters] = useState<Filter[]>([]);
   const [items, setItems] = useState<Item[]>([]);
@@ -582,10 +583,9 @@ function ItemEditor({ item, filterId, filterSlug, onClose, onSaved }: { item: It
                   <Select value={form.diet_type} onValueChange={(v: any) => set("diet_type", v)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="vegan">Vegan (VG)</SelectItem>
-                      <SelectItem value="veg">Vegetarian (V)</SelectItem>
-                      <SelectItem value="non_veg">Non-vegetarian (NV)</SelectItem>
-                      <SelectItem value="jain">Strictly Jain (JN)</SelectItem>
+                      {dietTypes.map(dt => (
+                        <SelectItem key={dt.slug} value={dt.slug}>{dt.label}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </Field>

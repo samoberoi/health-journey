@@ -197,12 +197,29 @@ export default function AdminExercises() {
     setIsNew(false);
     setEditing(e);
     setForm(toForm(e));
+    setThumbFile(null);
+    setThumbPreview(null);
   }
 
   function closeEdit() {
     setEditing(null);
     setForm(null);
     setIsNew(false);
+    setThumbFile(null);
+    setThumbPreview(null);
+  }
+
+  function onSelectThumbFile(file: File) {
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Invalid file", description: "Please upload an image.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      toast({ title: "Too large", description: "Max 3MB.", variant: "destructive" });
+      return;
+    }
+    setThumbFile(file);
+    fileToDataUrl(file).then((url) => setThumbPreview(url));
   }
 
   async function save() {

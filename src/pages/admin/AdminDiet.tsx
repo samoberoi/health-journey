@@ -346,8 +346,12 @@ export default function AdminDiet() {
             <div className="mb-5 p-6 rounded-2xl bg-gradient-to-br from-primary/5 via-card to-card border border-border shadow-card">
               <div className="flex items-start justify-between gap-3 mb-4">
                 <div className="flex items-start gap-4 min-w-0">
-                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
-                    {(() => { const Icon = FILTER_ICONS[activeFilterObj.slug] || Leaf; return <Icon className="w-7 h-7 text-primary" strokeWidth={2} />; })()}
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
+                    {activeFilterObj.image_url ? (
+                      <img src={activeFilterObj.image_url} alt={activeFilterObj.name} className="w-full h-full object-cover" />
+                    ) : (
+                      (() => { const Icon = FILTER_ICONS[activeFilterObj.slug] || Leaf; return <Icon className="w-7 h-7 text-primary" strokeWidth={2} />; })()
+                    )}
                   </div>
                   <div className="min-w-0">
                     <p className="text-[11px] font-mono font-bold text-primary tracking-wider mb-0.5">{activeFilterObj.number_label ?? `F${String(activeFilterObj.order_number ?? 0).padStart(2, "0")}`}</p>

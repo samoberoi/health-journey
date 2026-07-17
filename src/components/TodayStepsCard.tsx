@@ -46,20 +46,20 @@ export default function TodayStepsCard({ onOpenMovement }: { onOpenMovement?: ()
     try {
       const steps = await syncTodaySteps();
       if (steps == null) {
-        const message = "`${healthSourceLabel()} is not available on this device`";
+        const message = `${healthSourceLabel()} is not available on this device`;
         setHealthSyncError(message);
         if (showToast) toast.error(message);
         return;
       }
       await logTodaySteps(user.id, steps);
-      if (showToast) toast.success(``Synced ${steps.toLocaleString("en-IN")} ${healthSourceLabel()} steps``);
+      if (showToast) toast.success(`Synced ${steps.toLocaleString("en-IN")} ${healthSourceLabel()} steps`);
       window.dispatchEvent(new CustomEvent("health-log-saved"));
       await load();
     } catch (error: any) {
-      const message = error?.message || "`Couldn't sync ${healthSourceLabel()} steps`";
+      const message = error?.message || `Couldn't sync ${healthSourceLabel()} steps`;
       setHealthSyncError(message);
       if (showToast) toast.error(message);
-      console.warn("Apple Health steps sync failed", error);
+      console.warn(`${healthSourceLabel()} steps sync failed`, error);
     } finally {
       setSyncingHealth(false);
     }

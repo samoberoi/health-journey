@@ -31,6 +31,13 @@ function normalizePref(p: string): DietPref | null {
 
 export default function DietPreferences({ onBack }: { onBack: () => void }) {
   const { user } = useAuth();
+  const { types: dietTypes } = useDietTypes();
+  const OPTIONS = dietTypes.map(dt => ({
+    value: dt.slug as DietPref,
+    title: dt.label,
+    desc: dt.description || "",
+    icon: ICON_FOR_SLUG[dt.slug] || UtensilsCrossed,
+  }));
   const [prefs, setPrefs] = useState<DietPref[]>([]);
   const [allergies, setAllergies] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);

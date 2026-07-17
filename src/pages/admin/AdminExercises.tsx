@@ -108,6 +108,10 @@ export default function AdminExercises() {
   const [isNew, setIsNew] = useState(false);
   const [form, setForm] = useState<EditForm | null>(null);
   const [saving, setSaving] = useState(false);
+  const [thumbFile, setThumbFile] = useState<File | null>(null);
+  const [thumbPreview, setThumbPreview] = useState<string | null>(null);
+  const [thumbUploading, setThumbUploading] = useState(false);
+  const thumbInputRef = useRef<HTMLInputElement | null>(null);
 
   const [editingBadge, setEditingBadge] = useState<ExerciseBadge | null>(null);
   const [badgeForm, setBadgeForm] = useState<Partial<ExerciseBadge> | null>(null);

@@ -30,6 +30,7 @@ import {
   Dumbbell,
   Flame,
   TrendingUp,
+  Salad,
   User as UserIcon,
   Mail,
   CalendarDays,

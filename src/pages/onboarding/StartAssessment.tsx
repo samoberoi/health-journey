@@ -29,7 +29,7 @@ export default function StartAssessment() {
 
   return (
     <div
-      className="phone-container ob-lock flex flex-col items-center px-5 text-center bg-background overflow-y-auto"
+      className="phone-container flex flex-col items-center px-5 text-center bg-background overflow-y-auto"
       style={{
         minHeight: "100dvh",
         paddingTop: "calc(env(safe-area-inset-top) + 1rem)",

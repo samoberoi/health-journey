@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Capacitor, registerPlugin } from "@capacitor/core";
 import { Maximize2, Play, RotateCcw } from "lucide-react";
-import { isNativeIOSApp, youtubePlayerProxyUrl } from "@/lib/youtubeEmbed";
+import { isNativeAndroidApp, isNativeIOSApp, youtubePlayerProxyUrl } from "@/lib/youtubeEmbed";
 
 type BBDOYouTubePlayerPlugin = {
   open(options: { videoId: string; title?: string; start?: number }): Promise<{ opened: boolean }>;
@@ -27,9 +27,14 @@ export default function NativeYouTubePlayer({
   const [launching, setLaunching] = useState(false);
   const [failed, setFailed] = useState(false);
   const useIOSNativePlayer = isNativeIOSApp();
+  const useAndroidSimpleEmbed = isNativeAndroidApp();
   const playerSrc = useMemo(
-    () => youtubePlayerProxyUrl(videoId, { autoplay: true, start }),
-    [start, videoId],
+    () => youtubePlayerProxyUrl(videoId, {
+      autoplay: !useAndroidSimpleEmbed,
+      start,
+      simple: useAndroidSimpleEmbed,
+    }),
+    [start, useAndroidSimpleEmbed, videoId],
   );
 
   const openIOSPlayer = useCallback(async () => {

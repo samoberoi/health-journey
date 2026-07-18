@@ -27,7 +27,7 @@ import { EmptyState } from "@/components/shared";
 
 import { getTodayExerciseMinutes } from "@/lib/yogaProgressService";
 import NativeYouTubePlayer from "@/components/exercises/NativeYouTubePlayer";
-import { isNativeIOSApp, isYoutubePlayerMessage, youtubePlayerProxyUrl } from "@/lib/youtubeEmbed";
+import { isNativeAndroidApp, isNativeIOSApp, isYoutubePlayerMessage, youtubePlayerProxyUrl } from "@/lib/youtubeEmbed";
 
 interface Props {
   packageKey: string | null;
@@ -62,7 +62,10 @@ function WatchModal({
   const [playerError, setPlayerError] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const [useNativePlayer] = useState(() => isNativeIOSApp());
-  const playerSrc = videoId ? youtubePlayerProxyUrl(videoId, { autoplay: true }) : "";
+  const [useAndroidSimpleEmbed] = useState(() => isNativeAndroidApp());
+  const playerSrc = videoId
+    ? youtubePlayerProxyUrl(videoId, { autoplay: !useAndroidSimpleEmbed, simple: useAndroidSimpleEmbed })
+    : "";
 
   const reportDelta = useCallback(
     (watchedSec: number, durationSec: number, completed: boolean) => {
@@ -76,7 +79,7 @@ function WatchModal({
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
-      if (event.source !== iframeRef.current?.contentWindow) return;
+      if (useAndroidSimpleEmbed || event.source !== iframeRef.current?.contentWindow) return;
       if (!isYoutubePlayerMessage(event.data, videoId || undefined)) return;
 
       if (event.data.type === "error") {
@@ -107,7 +110,7 @@ function WatchModal({
       if (watched > 0) reportDelta(watched, duration, completed);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [videoId]);
+  }, [useAndroidSimpleEmbed, videoId]);
 
   return (
     <div

@@ -13,7 +13,7 @@ import android.webkit.WebSettings;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
-    private static final String BBDO_PUSH_CHANNEL_ID = "bbdo-alerts-v5";
+    private static final String BBDO_PUSH_CHANNEL_ID = "bbdo-alerts-v6";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

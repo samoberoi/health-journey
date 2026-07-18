@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const APP_VERSION = (globalThis as any).__APP_VERSION__ ?? "1.0.0";
-export const BBDO_PUSH_CHANNEL_ID = "bbdo-alerts-v3";
+export const BBDO_PUSH_CHANNEL_ID = "bbdo-alerts-v4";
 
 let registered = false;
 let activeUserId: string | null = null;

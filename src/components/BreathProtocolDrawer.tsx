@@ -6,7 +6,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/u
 import { useAuth } from "@/contexts/AuthContext";
 import { useBreathSessionsToday } from "@/hooks/useBreathSessionsToday";
 import { BREATH_PROTOCOL_VIDEO, getBreathYoutubeId, recordBreathSession } from "@/lib/breathProtocol";
-import { isNativeIOSApp, youtubePlayerProxyUrl } from "@/lib/youtubeEmbed";
+import { youtubePlayerProxyUrl } from "@/lib/youtubeEmbed";
 
 export default function BreathProtocolDrawer({
   open,
@@ -26,12 +26,11 @@ export default function BreathProtocolDrawer({
     return () => { cancelled = true; };
   }, []);
 
-  const embedSrc = useMemo(() => {
-    // iOS WKWebView blocks YT's JS iframe API (error 153). Use the simple
-    // bare-iframe proxy path on native iOS so the video just plays.
-    if (isNativeIOSApp()) return youtubePlayerProxyUrl(videoId, { simple: true });
-    return `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1&enablejsapi=1`;
-  }, [videoId]);
+  // Use the exact same proxy path as yoga/exercise videos (which work on iOS).
+  const embedSrc = useMemo(
+    () => youtubePlayerProxyUrl(videoId, { autoplay: false }),
+    [videoId],
+  );
 
   const onComplete = async () => {
     if (!user) { toast.error("Please sign in"); return; }

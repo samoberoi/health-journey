@@ -5,6 +5,7 @@ import { fetchUnreadCount, subscribeToNotifications } from "@/lib/notificationSe
 import { playNotificationSound } from "@/lib/soundEngine";
 import { getNotificationSoundSettings } from "@/lib/notificationSoundService";
 import { fireRealtimeHealthNotificationAlert } from "@/lib/healthAlerts";
+import { isNativePushSupported } from "@/lib/nativePush";
 import AttentionBadge from "@/components/attention/AttentionBadge";
 
 /**
@@ -21,6 +22,7 @@ export default function NotificationCenter({ unreadCount: controlledCount }: { u
     if (controlledCount == null) fetchUnreadCount(user.id).then(setUnreadCount);
     const unsub = subscribeToNotifications(user.id, (notification) => {
       if (controlledCount == null) fetchUnreadCount(user.id).then(setUnreadCount);
+      if (isNativePushSupported()) return;
       // Play the BBDO signature sound on any new notification, regardless of
       // whether the notifications panel is currently mounted.
       void getNotificationSoundSettings().then((s) => {

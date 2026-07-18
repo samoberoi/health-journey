@@ -384,9 +384,41 @@ export default function LogFAB({ packageKey }: { packageKey?: string | null }) {
                 </span>
               </span>
             </motion.button>
+            <motion.button
+              key="breath-shortcut"
+              onClick={() => {
+                setOpen(false);
+                setTimeout(() => setBreathOpen(true), 180);
+              }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ duration: 0.12, ease: [0.22, 1, 0.36, 1] }}
+              className="no-pill relative flex flex-col items-center justify-center gap-2 rounded-2xl py-4 px-2 bg-card border border-border"
+            >
+              <span
+                className="w-11 h-11 rounded-xl flex items-center justify-center"
+                style={{ background: breathDone ? "#10B981" : "var(--bbdo-blue)" }}
+              >
+                <Wind className="w-5 h-5 text-white" strokeWidth={1.7} />
+              </span>
+              <span className="text-[11px] font-semibold text-foreground text-center leading-none inline-flex items-center gap-1">
+                Breath Protocol
+                <span
+                  className="text-[9px] font-black px-1.5 py-0.5 rounded-md"
+                  style={{
+                    background: breathDone ? "#10B98122" : "var(--bbdo-blue-soft)",
+                    color: breathDone ? "#10B981" : "var(--bbdo-blue)",
+                  }}
+                >
+                  {breathCount}/{breathGoal}
+                </span>
+              </span>
+            </motion.button>
           </div>
         </DrawerContent>
       </Drawer>
+
+      <BreathProtocolDrawer open={breathOpen} onOpenChange={setBreathOpen} />
+
 
 
 

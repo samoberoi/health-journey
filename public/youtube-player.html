@@ -125,7 +125,11 @@
               enablejsapi: "1",
               origin: window.location.origin,
               widget_referrer: window.location.origin,
-              start: params.get("start") || "0"
+              start: params.get("start") || "0",
+              cc_load_policy: 0,
+              cc_lang_pref: "none",
+              hl: "en",
+              iv_load_policy: 3
             },
             events: {
               onReady: function () {

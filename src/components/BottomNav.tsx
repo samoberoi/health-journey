@@ -24,12 +24,19 @@ const ICON_FOR: Record<Tab, AppIconName> = {
 
 // Per-tab accent colors (PUNCH pillars get distinct colors so each section is instantly identifiable)
 const TAB_COLOR: Partial<Record<Tab, string>> = {
+  home: "var(--bbdo-ink)",
   diet: "var(--pillar-diet)",
   habits: "var(--pillar-move)",
   exercise: "var(--pillar-exercise)",
   fasting: "var(--pillar-fasting)",
   supplements: "var(--pillar-supplements)",
+  consult: "var(--bbdo-blue, #3B82F6)",
+  labs: "var(--bbdo-blue, #3B82F6)",
+  videos: "var(--pillar-fasting)",
+  community: "var(--bbdo-red, #EA6A5E)",
+  messages: "var(--bbdo-blue, #3B82F6)",
 };
+
 
 const LABEL_FOR: Partial<Record<Tab, string>> = {
   home: "Home",

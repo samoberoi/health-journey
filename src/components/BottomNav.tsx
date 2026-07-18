@@ -58,10 +58,9 @@ const PRIORITY: Tab[] = [
   "supplements", "consult", "labs", "videos", "community", "messages",
 ];
 
-// Layout: [tab][tab][tab] [ + ] [tab][tab][…]  — plus sign lives in the middle,
-// full-width flat bar uses the entire phone width real estate.
-const PRIMARY_SLOTS = 5;
-const LEFT_SLOTS = 3; // tabs shown to the LEFT of the center FAB
+// Layout: [Home][Food][ + ][Move][…] — full-width and low-height.
+const PRIMARY_SLOTS = 3;
+const LEFT_SLOTS = 2;
 
 
 
@@ -140,16 +139,16 @@ export default function BottomNav({
         key={id}
         onClick={() => setActiveTab(id)}
         aria-label={label}
-        whileTap={{ scale: 0.9 }}
+        whileTap={{ scale: 0.94 }}
         transition={{ duration: 0.14, ease: [0.22, 1, 0.36, 1] }}
-        className="relative flex-1 flex items-center justify-center h-11 rounded-full transition-colors"
+        className="relative flex-1 flex items-center justify-center h-12 rounded-[18px] transition-colors"
         style={
           isActive
-            ? { background: accent, color: "#fff" }
+            ? { background: `${accent}16`, color: accent }
             : { background: "transparent", color: "var(--bbdo-ink-soft)" }
         }
       >
-        <AppIcon name={ICON_FOR[id]} size={22} strokeWidth={isActive ? 2 : 1.7} />
+        <AppIcon name={ICON_FOR[id]} size={23} strokeWidth={isActive ? 2.15 : 1.75} />
         <AttentionBadge count={attentionCounts?.[id] ?? 0} className="absolute right-1 top-1" />
       </motion.button>
     );
@@ -175,31 +174,31 @@ export default function BottomNav({
         </DrawerContent>
       </Drawer>
 
-      {/* Flat full-width dock — slim height, icons use all phone width */}
+      {/* Flat full-width dock — slim, stable, icon-only */}
       <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
         <div
-          className="flex items-center gap-0.5 px-2 pt-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))]"
+          className="grid grid-cols-5 items-center gap-1 px-3 pt-1.5 pb-[max(0.35rem,env(safe-area-inset-bottom))]"
           style={{
             background: "#ffffff",
             borderTop: "1px solid var(--bbdo-line)",
-            boxShadow: "0 -6px 20px -12px rgba(15,26,61,0.18)",
+            boxShadow: "0 -8px 24px -16px rgba(15,26,61,0.2)",
           }}
         >
           {/* Left tabs */}
           {primary.slice(0, LEFT_SLOTS).map((id) => renderTab(id))}
 
-          {/* Center FAB — slightly lifted, doesn't inflate the bar height */}
-          <div className="flex-1 flex items-center justify-center">
+          {/* Center FAB */}
+          <div className="flex items-center justify-center h-12">
             <motion.button
               onClick={onFABPress}
               aria-label="Quick log"
-              whileTap={{ scale: 0.92 }}
+              whileTap={{ scale: 0.94 }}
               transition={{ duration: 0.14, ease: [0.22, 1, 0.36, 1] }}
-              className="shrink-0 w-11 h-11 -mt-3 rounded-full flex items-center justify-center"
+              className="shrink-0 w-12 h-12 -mt-3 rounded-full flex items-center justify-center"
               style={{
                 background: "var(--bbdo-red, #EA6A5E)",
                 color: "#fff",
-                boxShadow: "0 6px 14px -4px rgba(234,106,94,0.55)",
+                boxShadow: "0 8px 18px -8px rgba(234,106,94,0.65)",
                 border: "3px solid #ffffff",
               }}
             >
@@ -210,19 +209,21 @@ export default function BottomNav({
           {/* Right tabs */}
           {primary.slice(LEFT_SLOTS).map((id) => renderTab(id))}
 
-          {hasOverflow && (
+          {hasOverflow ? (
             <motion.button
               key="more"
               onClick={() => setExpanded(true)}
               aria-label="More sections"
-              whileTap={{ scale: 0.9 }}
+              whileTap={{ scale: 0.94 }}
               transition={{ duration: 0.14, ease: [0.22, 1, 0.36, 1] }}
-              className="relative flex-1 h-11 flex items-center justify-center rounded-full"
+              className="relative h-12 flex items-center justify-center rounded-[18px]"
               style={{ color: "var(--bbdo-ink-soft)" }}
             >
-              <MoreHorizontal className="w-5 h-5" strokeWidth={1.9} />
+              <MoreHorizontal className="w-6 h-6" strokeWidth={1.9} />
               <AttentionBadge count={overflowUnread} className="absolute right-1 top-1" />
             </motion.button>
+          ) : (
+            primary.slice(LEFT_SLOTS + 1, LEFT_SLOTS + 2).map((id) => renderTab(id))
           )}
         </div>
       </div>

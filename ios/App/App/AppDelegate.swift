@@ -413,6 +413,10 @@ final class BBDOYouTubePlayerViewController: UIViewController, WKNavigationDeleg
             URLQueryItem(name: "playsinline", value: "0"),
             URLQueryItem(name: "fs", value: "1"),
             URLQueryItem(name: "start", value: String(start)),
+            URLQueryItem(name: "cc_load_policy", value: "0"),
+            URLQueryItem(name: "cc_lang_pref", value: "none"),
+            URLQueryItem(name: "hl", value: "en"),
+            URLQueryItem(name: "iv_load_policy", value: "3"),
             URLQueryItem(name: "origin", value: "https://app.byebyediabetes.com"),
             URLQueryItem(name: "widget_referrer", value: "https://app.byebyediabetes.com")
         ]

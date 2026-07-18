@@ -225,7 +225,7 @@ export default function ExerciseTab({ packageKey }: Props) {
     [user, loadTodayMinutes],
   );
 
-  const [activeTier, setActiveTier] = useState<ExerciseTier>(userTier);
+  const [activeTier, setActiveTier] = useState<ExerciseTier | "all">("all");
   const [activeCat, setActiveCat] = useState<string | "all">("all");
   const [watching, setWatching] = useState<Exercise | null>(null);
   const [todayLogs, setTodayLogs] = useState<LogRow[]>([]);

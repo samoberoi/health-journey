@@ -60,7 +60,11 @@
             modestbranding: params.get("modestbranding") || "1",
             playsinline: params.get("playsinline") || "1",
             fs: params.get("fs") || "1",
-            start: params.get("start") || "0"
+            start: params.get("start") || "0",
+            cc_load_policy: "0",
+            cc_lang_pref: "none",
+            hl: "en",
+            iv_load_policy: "3"
           });
           return "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(videoId) + "?" + embedParams.toString();
         }
@@ -121,12 +125,19 @@
               enablejsapi: "1",
               origin: window.location.origin,
               widget_referrer: window.location.origin,
-              start: params.get("start") || "0"
+              start: params.get("start") || "0",
+              cc_load_policy: 0,
+              cc_lang_pref: "none",
+              hl: "en",
+              iv_load_policy: 3
             },
             events: {
               onReady: function () {
                 var frame = document.querySelector("iframe");
                 if (frame) frame.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+                try { player.unloadModule && player.unloadModule("captions"); } catch (_) {}
+                try { player.unloadModule && player.unloadModule("cc"); } catch (_) {}
+                try { player.setOption && player.setOption("captions", "track", {}); } catch (_) {}
                 document.body.classList.add("ready");
                 post("ready", snapshot());
                 progressTimer = window.setInterval(function () {

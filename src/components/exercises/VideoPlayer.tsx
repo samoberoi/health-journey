@@ -187,18 +187,12 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
     const onNativeClosed = (event: Event) => {
       const detail = (event as CustomEvent).detail as { videoId?: string; watchedSec?: number } | undefined;
       if (detail?.videoId && detail.videoId !== video.youtubeId) return;
-      const watchedSec = Math.max(0, Number(detail?.watchedSec) || 0);
-      const missingSec = Math.max(0, watchedSec - wallClockReportedRef.current);
-      if (missingSec > 0) {
-        watchedSecRef.current += missingSec;
-        wallClockReportedRef.current += missingSec;
-        accumulateWatched(video.id, missingSec, durationRef.current || 0, video.youtubeId);
-      }
       extendNativeVideoSuppression(10);
+      onClose();
     };
     window.addEventListener("bbdo:native-player-close", onNativeClosed);
     return () => window.removeEventListener("bbdo:native-player-close", onNativeClosed);
-  }, [useNativePlayer, video.id, video.youtubeId]);
+  }, [onClose, useNativePlayer, video.youtubeId]);
 
   const handleRestart = () => {
     resetProgress(video.id);

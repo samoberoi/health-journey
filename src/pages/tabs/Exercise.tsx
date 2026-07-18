@@ -120,10 +120,11 @@ function WatchModal({
       const watchedSec = Math.max(0, Number(detail?.watchedSec) || 0);
       if (watchedSec > lastReportedSecRef.current) reportDelta(watchedSec, 0, false);
       extendNativeVideoSuppression(10);
+      onClose();
     };
     window.addEventListener("bbdo:native-player-close", onNativeClosed);
     return () => window.removeEventListener("bbdo:native-player-close", onNativeClosed);
-  }, [onProgress, useNativePlayer, videoId]);
+  }, [onClose, reportDelta, useNativePlayer, videoId]);
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {

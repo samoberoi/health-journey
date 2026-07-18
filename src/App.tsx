@@ -228,6 +228,9 @@ function GlobalRealtimeAlerts() {
     const unsub = subscribeToNotifications(user.id, (notification) => {
       // Any incoming notification → re-fetch true unread count and update badge.
       void syncBadge();
+      // On native apps, the OS notification payload/channel must own the sound.
+      // Do not play delayed WebAudio when the user taps a notification and the app opens.
+      if (isNativePushSupported()) return;
       void getNotificationSoundSettings().then((settings) => {
         if (!settings.enabled) return;
         if (notification.type === "health_alert") {

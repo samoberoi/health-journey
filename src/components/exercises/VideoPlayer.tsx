@@ -16,7 +16,13 @@ import {
   accumulateWatched,
 } from "@/lib/videoProgressStore";
 import NativeYouTubePlayer from "@/components/exercises/NativeYouTubePlayer";
-import { isNativeAndroidApp, isNativeIOSApp, isYoutubePlayerMessage, youtubePlayerProxyUrl } from "@/lib/youtubeEmbed";
+import {
+  extendNativeVideoSuppression,
+  isNativeAndroidApp,
+  isNativeIOSApp,
+  isYoutubePlayerMessage,
+  youtubePlayerProxyUrl,
+} from "@/lib/youtubeEmbed";
 
 const VIDEO_ICON_MAP: Record<string, LucideIcon> = {
   Activity,
@@ -149,6 +155,7 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
   // Wall-clock fallback for iOS native / Android simple (no postMessage).
   useEffect(() => {
     if (!useNativePlayer && !useAndroidSimpleEmbed) return;
+    if (useNativePlayer) extendNativeVideoSuppression(30);
     const startedAt = Date.now();
     let lastAt = startedAt;
     const interval = window.setInterval(() => {
@@ -161,6 +168,7 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
       }
     }, 10000);
     return () => {
+      if (useNativePlayer) extendNativeVideoSuppression(10);
       window.clearInterval(interval);
       const delta = Math.min(3600, (Date.now() - lastAt) / 1000);
       if (delta > 0) {
@@ -170,6 +178,22 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [useNativePlayer, useAndroidSimpleEmbed, video.id, video.youtubeId, restarted]);
+
+  useEffect(() => {
+    if (!useNativePlayer) return;
+    const onNativeClosed = (event: Event) => {
+      const detail = (event as CustomEvent).detail as { videoId?: string; watchedSec?: number } | undefined;
+      if (detail?.videoId && detail.videoId !== video.youtubeId) return;
+      const watchedSec = Math.max(0, Number(detail?.watchedSec) || 0);
+      if (watchedSec > 0) {
+        watchedSecRef.current += watchedSec;
+        accumulateWatched(video.id, watchedSec, durationRef.current || 0, video.youtubeId);
+      }
+      extendNativeVideoSuppression(10);
+    };
+    window.addEventListener("bbdo:native-player-close", onNativeClosed);
+    return () => window.removeEventListener("bbdo:native-player-close", onNativeClosed);
+  }, [useNativePlayer, video.id, video.youtubeId]);
 
   const handleRestart = () => {
     resetProgress(video.id);

@@ -27,7 +27,13 @@ import { EmptyState } from "@/components/shared";
 
 import { getTodayExerciseMinutes } from "@/lib/yogaProgressService";
 import NativeYouTubePlayer from "@/components/exercises/NativeYouTubePlayer";
-import { isNativeAndroidApp, isNativeIOSApp, isYoutubePlayerMessage, youtubePlayerProxyUrl } from "@/lib/youtubeEmbed";
+import {
+  extendNativeVideoSuppression,
+  isNativeAndroidApp,
+  isNativeIOSApp,
+  isYoutubePlayerMessage,
+  youtubePlayerProxyUrl,
+} from "@/lib/youtubeEmbed";
 
 interface Props {
   packageKey: string | null;
@@ -86,6 +92,7 @@ function WatchModal({
 
   useEffect(() => {
     if (!noPostMessagePath) return;
+    if (useNativePlayer) extendNativeVideoSuppression(30);
     // Periodically credit seconds while the video is open.
     const interval = window.setInterval(() => {
       const now = Date.now();
@@ -96,6 +103,7 @@ function WatchModal({
       }
     }, 10000);
     return () => {
+      if (useNativePlayer) extendNativeVideoSuppression(10);
       window.clearInterval(interval);
       const now = Date.now();
       const delta = Math.floor((now - wallClockLastReportedAtRef.current) / 1000);
@@ -103,6 +111,19 @@ function WatchModal({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [noPostMessagePath]);
+
+  useEffect(() => {
+    if (!useNativePlayer) return;
+    const onNativeClosed = (event: Event) => {
+      const detail = (event as CustomEvent).detail as { videoId?: string; watchedSec?: number } | undefined;
+      if (detail?.videoId && detail.videoId !== videoId) return;
+      const watchedSec = Math.max(0, Number(detail?.watchedSec) || 0);
+      if (watchedSec > 0) onProgress(watchedSec, 0, false);
+      extendNativeVideoSuppression(10);
+    };
+    window.addEventListener("bbdo:native-player-close", onNativeClosed);
+    return () => window.removeEventListener("bbdo:native-player-close", onNativeClosed);
+  }, [onProgress, useNativePlayer, videoId]);
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {

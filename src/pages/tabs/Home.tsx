@@ -366,7 +366,10 @@ function TodayFocusBoard({ items }: { items: HomeFocusItem[] }) {
               className="no-pill w-full rounded-[22px] border border-border/60 bg-background p-3.5 text-left transition-colors hover:border-primary/25"
             >
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl" style={{ background: `${item.accent}16`, color: item.accent }}>
+                <div
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
+                  style={{ background: `color-mix(in srgb, ${item.accent} 14%, transparent)`, color: item.accent }}
+                >
                   <Icon className="h-5 w-5" strokeWidth={2} />
                 </div>
                 <div className="min-w-0 flex-1">

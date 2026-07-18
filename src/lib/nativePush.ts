@@ -15,8 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const APP_VERSION = (globalThis as any).__APP_VERSION__ ?? "1.0.0";
-export const BBDO_PUSH_CHANNEL_ID = "bbdo-push-v2";
-export const BBDO_PUSH_SOUND = "bbdo_chime.wav";
+export const BBDO_PUSH_CHANNEL_ID = "bbdo-alerts-v4";
 
 let registered = false;
 let activeUserId: string | null = null;
@@ -127,20 +126,21 @@ export async function registerNativePush(userId: string): Promise<
     }
 
     // Android channels are immutable after first creation. Use a fresh channel
-    // id for the loud BBDO chime so previously-created silent channels do not
-    // keep muting lock-screen pushes after an app update.
+    // id and the phone's default notification sound so lock-screen pushes beep
+    // reliably instead of depending on a custom file/channel created earlier.
     if (currentPlatform() === "android") {
       try {
-        await LocalNotifications.createChannel({
+        const channel = {
           id: BBDO_PUSH_CHANNEL_ID,
           name: "BBDO notifications",
           description: "Reminders, coach messages, and health nudges",
           importance: 5,
           visibility: 1,
-          sound: BBDO_PUSH_SOUND,
           vibration: true,
           lights: true,
-        });
+        } as const;
+        await PushNotifications.createChannel(channel);
+        await LocalNotifications.createChannel(channel);
       } catch (err) {
         console.warn("[push] android channel setup failed", err);
       }

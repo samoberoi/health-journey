@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { createNotification } from "@/lib/notificationService";
 import { getNotificationSoundSettings } from "@/lib/notificationSoundService";
-import { BBDO_PUSH_CHANNEL_ID, BBDO_PUSH_SOUND } from "@/lib/nativePush";
+import { BBDO_PUSH_CHANNEL_ID } from "@/lib/nativePush";
 import {
   playCriticalHealthAlert,
   playNotificationSound,
@@ -127,7 +127,6 @@ async function ensureAndroidAlertChannel() {
       description: "Reminders, coach messages, and health nudges",
       importance: 5,
       visibility: 1,
-      sound: BBDO_PUSH_SOUND,
       vibration: true,
       lights: true,
     });
@@ -149,7 +148,6 @@ export async function sendLocalHealthAlert(title: string, body: string): Promise
           title,
           body,
           schedule: { at: new Date(Date.now() + 350) },
-          sound: BBDO_PUSH_SOUND,
           channelId: BBDO_PUSH_CHANNEL_ID,
           interruptionLevel: "timeSensitive",
           relevanceScore: 1,

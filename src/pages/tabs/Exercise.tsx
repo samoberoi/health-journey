@@ -24,7 +24,7 @@ import {
 } from "@/lib/exerciseService";
 import { useDailyExerciseGoal } from "@/hooks/useAppSettings";
 import { EmptyState } from "@/components/shared";
-import SessionBreakdownCard from "@/components/shared/SessionBreakdownCard";
+
 import { getTodayExerciseMinutes } from "@/lib/yogaProgressService";
 import NativeYouTubePlayer from "@/components/exercises/NativeYouTubePlayer";
 import { isNativeIOSApp, isYoutubePlayerMessage, youtubePlayerProxyUrl } from "@/lib/youtubeEmbed";

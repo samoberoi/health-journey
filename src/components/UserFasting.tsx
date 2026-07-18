@@ -449,17 +449,14 @@ export default function UserFasting({ packageKey }: { packageKey?: string | null
       }
     };
     return (
-      <div className="p-6 space-y-5">
-        {allBadges.length > 0 && (
-          <BadgeSection allBadges={allBadges} earnedBadges={earnedBadges} badgeLevel={badgeLevel} streak={streak} />
-        )}
-        <div className="liquid-glass rounded-3xl p-8 space-y-4">
+      <div className="p-4 md:p-6 space-y-5">
+        <div className="liquid-glass rounded-3xl p-6 md:p-8 space-y-4">
           <div className="text-center space-y-2">
             <Timer className="w-12 h-12 text-primary mx-auto" />
-            <h3 className="text-lg font-bold text-foreground">
+            <h3 className="text-lg font-bold text-foreground break-words">
               {isFoundation ? "Start your fasting journey" : "Awaiting meeting with your coach"}
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground break-words">
               {isFoundation
                 ? "Pick a plan to begin your 24-week protocol. You can change it later."
                 : "Your coach will design your personalised fasting protocol during your first one-on-one consultation. You'll see the full plan here right after the meeting."}
@@ -471,9 +468,9 @@ export default function UserFasting({ packageKey }: { packageKey?: string | null
                 const isStarting = startingProtoId === p.id;
                 return (
                   <div key={p.id} className="rounded-2xl bg-muted/40 p-3 flex items-center justify-between gap-3">
-                    <div className="min-w-0 text-left">
+                    <div className="min-w-0 text-left flex-1">
                       <p className="text-sm font-bold text-foreground truncate">{p.protocol_name}</p>
-                      <p className="text-[10px] text-muted-foreground">{p.total_weeks} weeks · starts with 12:12 (FMOD 7 AM · LMOD 7 PM)</p>
+                      <p className="text-[10px] text-muted-foreground break-words">{p.total_weeks} weeks · starts with 12:12 (FMOD 7 AM · LMOD 7 PM)</p>
                     </div>
                     <button
                       onClick={() => handleStart(p.id)}
@@ -488,6 +485,9 @@ export default function UserFasting({ packageKey }: { packageKey?: string | null
             </div>
           )}
         </div>
+        {allBadges.length > 0 && (
+          <BadgeSection allBadges={allBadges} earnedBadges={earnedBadges} badgeLevel={badgeLevel} streak={streak} />
+        )}
       </div>
     );
   }

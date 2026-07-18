@@ -298,15 +298,16 @@ export default function ExerciseTab({ packageKey }: Props) {
   }, [accessibleExercises, allLogs]);
 
   useEffect(() => {
-    if (!visibleTiers.includes(activeTier)) setActiveTier(visibleTiers[0] ?? 1);
+    if (activeTier !== "all" && !visibleTiers.includes(activeTier)) setActiveTier("all");
   }, [visibleTiers, activeTier]);
 
   const filtered = useMemo(() => {
     return exercises
-      .filter((e) => e.tier === activeTier)
+      .filter((e) => visibleTiers.includes(e.tier as ExerciseTier))
+      .filter((e) => (activeTier === "all" ? true : e.tier === activeTier))
       .filter((e) => (activeCat === "all" ? true : e.category_id === activeCat))
-      .sort((a, b) => a.sort_order - b.sort_order);
-  }, [exercises, activeTier, activeCat]);
+      .sort((a, b) => (a.tier - b.tier) || (a.sort_order - b.sort_order));
+  }, [exercises, activeTier, activeCat, visibleTiers]);
 
   // Daily goal is admin-configured MINUTES of exercise watch time (default 30).
   const dailyGoalMinutes = useDailyExerciseGoal(DAILY_EXERCISE_GOAL);

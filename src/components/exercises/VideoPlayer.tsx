@@ -16,7 +16,7 @@ import {
   accumulateWatched,
 } from "@/lib/videoProgressStore";
 import NativeYouTubePlayer from "@/components/exercises/NativeYouTubePlayer";
-import { isNativeIOSApp, isYoutubePlayerMessage, youtubePlayerProxyUrl } from "@/lib/youtubeEmbed";
+import { isNativeAndroidApp, isNativeIOSApp, isYoutubePlayerMessage, youtubePlayerProxyUrl } from "@/lib/youtubeEmbed";
 
 const VIDEO_ICON_MAP: Record<string, LucideIcon> = {
   Activity,
@@ -50,6 +50,7 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
   const [restarted, setRestarted] = useState(false);
   const [playerError, setPlayerError] = useState(false);
   const [useNativePlayer] = useState(() => isNativeIOSApp());
+  const [useAndroidSimpleEmbed] = useState(() => isNativeAndroidApp());
 
   // Read prior progress once on open — seed accumulator so resumes don't lose credit
   useEffect(() => {
@@ -64,8 +65,9 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
   }, [video.id]);
 
   const playerSrc = youtubePlayerProxyUrl(video.youtubeId, {
-    autoplay: true,
+    autoplay: !useAndroidSimpleEmbed,
     start: restarted ? 0 : resumeFrom,
+    simple: useAndroidSimpleEmbed,
   });
 
   const handleProgressSnapshot = (currentTime?: number, duration?: number) => {
@@ -96,7 +98,7 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
-      if (event.source !== iframeRef.current?.contentWindow) return;
+      if (useAndroidSimpleEmbed || event.source !== iframeRef.current?.contentWindow) return;
       if (!isYoutubePlayerMessage(event.data, video.youtubeId)) return;
 
       if (event.data.type === "error") {
@@ -142,7 +144,7 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
       lastTickRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [video.id, video.youtubeId, restarted]);
+  }, [useAndroidSimpleEmbed, video.id, video.youtubeId, restarted]);
 
   const handleRestart = () => {
     resetProgress(video.id);

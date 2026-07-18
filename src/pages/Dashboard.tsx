@@ -295,7 +295,7 @@ export default function Dashboard() {
     labs: <LabTestsTab foundationMode={packageKey === "foundation"} />,
     diet: <Diet />,
     messages: <Messages />,
-    events: <Events />,
+    
   };
 
   return (

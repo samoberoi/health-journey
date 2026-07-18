@@ -12,8 +12,9 @@ function yogaVideoIds(): Set<string> {
 
 function watchedSeconds(row: { progress_sec?: number | null; duration_sec?: number | null }) {
   const progress = Math.max(0, Number(row.progress_sec) || 0);
-  const duration = Math.max(0, Number(row.duration_sec) || 0);
-  return duration > 0 ? Math.min(progress, duration) : progress;
+  // `progress_sec` is now the watched-seconds accumulator for today's goals.
+  // Do not cap it by duration; replaying a short video should still add time.
+  return progress;
 }
 
 function secondsToMinutes(seconds: number): number {

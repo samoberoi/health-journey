@@ -6,7 +6,8 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/u
 import { useAuth } from "@/contexts/AuthContext";
 import { useBreathSessionsToday } from "@/hooks/useBreathSessionsToday";
 import { BREATH_PROTOCOL_VIDEO, getBreathYoutubeId, recordBreathSession } from "@/lib/breathProtocol";
-import { youtubePlayerProxyUrl } from "@/lib/youtubeEmbed";
+import { isNativeIOSApp, youtubePlayerProxyUrl } from "@/lib/youtubeEmbed";
+import NativeYouTubePlayer from "@/components/exercises/NativeYouTubePlayer";
 
 export default function BreathProtocolDrawer({
   open,

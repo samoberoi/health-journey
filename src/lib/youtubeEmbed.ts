@@ -57,3 +57,13 @@ export function isNativeIOSApp() {
     return /iphone|ipad|ipod/i.test(window.navigator.userAgent) && isNativeMobileApp();
   }
 }
+
+export function isNativeAndroidApp() {
+  if (typeof window === "undefined") return false;
+  const cap = (window as any).Capacitor;
+  try {
+    return Boolean(cap?.isNativePlatform?.() && cap?.getPlatform?.() === "android");
+  } catch {
+    return /android/i.test(window.navigator.userAgent) && isNativeMobileApp();
+  }
+}

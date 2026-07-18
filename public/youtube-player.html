@@ -135,6 +135,9 @@
               onReady: function () {
                 var frame = document.querySelector("iframe");
                 if (frame) frame.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+                try { player.unloadModule && player.unloadModule("captions"); } catch (_) {}
+                try { player.unloadModule && player.unloadModule("cc"); } catch (_) {}
+                try { player.setOption && player.setOption("captions", "track", {}); } catch (_) {}
                 document.body.classList.add("ready");
                 post("ready", snapshot());
                 progressTimer = window.setInterval(function () {

@@ -146,6 +146,31 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [useAndroidSimpleEmbed, video.id, video.youtubeId, restarted]);
 
+  // Wall-clock fallback for iOS native / Android simple (no postMessage).
+  useEffect(() => {
+    if (!useNativePlayer && !useAndroidSimpleEmbed) return;
+    const startedAt = Date.now();
+    let lastAt = startedAt;
+    const interval = window.setInterval(() => {
+      const now = Date.now();
+      const delta = (now - lastAt) / 1000;
+      lastAt = now;
+      if (delta > 0 && delta < 60) {
+        watchedSecRef.current += delta;
+        accumulateWatched(video.id, delta, durationRef.current || 0, video.youtubeId);
+      }
+    }, 10000);
+    return () => {
+      window.clearInterval(interval);
+      const delta = Math.min(3600, (Date.now() - lastAt) / 1000);
+      if (delta > 0) {
+        watchedSecRef.current += delta;
+        accumulateWatched(video.id, delta, durationRef.current || 0, video.youtubeId);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [useNativePlayer, useAndroidSimpleEmbed, video.id, video.youtubeId, restarted]);
+
   const handleRestart = () => {
     resetProgress(video.id);
     setResumeFrom(0);

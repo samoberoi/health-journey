@@ -49,6 +49,15 @@ async function upsertToken(userId: string, token: string) {
       { onConflict: "user_id,token" },
     );
   if (error) throw error;
+
+  // Prevent duplicate native banners caused by old tokens remaining valid after
+  // app reinstalls/upgrades. Keep the newest token per user per OS.
+  await (supabase as any)
+    .from("device_push_tokens")
+    .delete()
+    .eq("user_id", userId)
+    .eq("platform", platform)
+    .neq("token", token);
 }
 
 async function fetchStoredToken(userId: string): Promise<string | null> {

@@ -60,7 +60,11 @@
             modestbranding: params.get("modestbranding") || "1",
             playsinline: params.get("playsinline") || "1",
             fs: params.get("fs") || "1",
-            start: params.get("start") || "0"
+            start: params.get("start") || "0",
+            cc_load_policy: "0",
+            cc_lang_pref: "none",
+            hl: "en",
+            iv_load_policy: "3"
           });
           return "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(videoId) + "?" + embedParams.toString();
         }

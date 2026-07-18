@@ -11,7 +11,7 @@ const APNS_PRIVATE_KEY = Deno.env.get("APNS_PRIVATE_KEY") ?? "";
 const APNS_BUNDLE_ID = Deno.env.get("APNS_BUNDLE_ID") ?? "app.lovable.byebyediabetes";
 const APNS_ENVIRONMENT = (Deno.env.get("APNS_ENVIRONMENT") ?? "sandbox").toLowerCase();
 const FCM_SERVICE_ACCOUNT_JSON = Deno.env.get("FCM_SERVICE_ACCOUNT_JSON") ?? "";
-const BBDO_PUSH_CHANNEL_ID = "bbdo-alerts-v4";
+const BBDO_PUSH_CHANNEL_ID = "bbdo-alerts-v5";
 const BBDO_PUSH_SOUND = "default";
 
 type ApnsAttempt = {
@@ -27,6 +27,7 @@ type PushBody = {
   actionUrl?: unknown;
   notificationId?: unknown;
   backendDispatch?: unknown;
+  delaySeconds?: unknown;
 };
 
 function json(status: number, payload: Record<string, unknown>) {
@@ -94,6 +95,11 @@ function validUuid(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const clean = value.trim();
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(clean) ? clean : null;
+}
+
+function validDelaySeconds(value: unknown): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(20, Math.round(value)));
 }
 
 function parseApnsResponse(text: string): Record<string, unknown> | null {
@@ -241,6 +247,7 @@ Deno.serve(async (req) => {
     let title: string;
     let body: string;
     let actionUrl = "/home?tab=profile";
+    const delaySeconds = validDelaySeconds(raw?.delaySeconds);
 
     if (raw?.backendDispatch === true) {
       if (bearer !== ANON_KEY) return json(401, { ok: false, error: "Invalid backend dispatch token" });
@@ -315,6 +322,10 @@ Deno.serve(async (req) => {
     const iosTokens = activeTokens.filter((t) => t.platform === "ios");
     const androidTokens = activeTokens.filter((t) => t.platform === "android");
 
+    if (delaySeconds > 0) {
+      await new Promise((resolve) => setTimeout(resolve, delaySeconds * 1000));
+    }
+
     const jwt = iosTokens.length ? await createApnsJwt() : "";
     const hosts = apnsHosts();
     const apnsPayload = {
@@ -361,12 +372,19 @@ Deno.serve(async (req) => {
     }));
 
     const results = [...iosResults, ...androidResults];
+    const senderMismatch = androidResults.some((r) => {
+      const resp = r.response as any;
+      return resp?.error?.status === "PERMISSION_DENIED"
+        || resp?.error?.message === "SenderId mismatch"
+        || resp?.error?.details?.some?.((d: any) => d?.errorCode === "SENDER_ID_MISMATCH");
+    });
 
     return json(200, {
       ok: results.some((r) => r.ok),
       sent: results.filter((r) => r.ok).length,
       attempted: results.length,
       environment: APNS_ENVIRONMENT,
+      note: senderMismatch ? "Android push credentials mismatch. Update the backend FCM service account to match the Android app Firebase file, then reinstall/register once." : undefined,
       results,
     });
   } catch (error) {

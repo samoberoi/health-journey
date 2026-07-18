@@ -344,12 +344,15 @@ final class BBDOYouTubePlayerViewController: UIViewController, WKNavigationDeleg
     private let videoId: String
     private let videoTitle: String
     private let start: Int
+    private let onClose: (Int) -> Void
     private var webView: WKWebView?
+    private let openedAt = Date()
 
-    init(videoId: String, title: String, start: Int) {
+    init(videoId: String, title: String, start: Int, onClose: @escaping (Int) -> Void) {
         self.videoId = videoId
         self.videoTitle = title
         self.start = max(0, start)
+        self.onClose = onClose
         super.init(nibName: nil, bundle: nil)
         modalPresentationStyle = .fullScreen
     }
@@ -404,33 +407,24 @@ final class BBDOYouTubePlayerViewController: UIViewController, WKNavigationDeleg
     }
 
     private func loadVideo() {
-        guard var components = URLComponents(string: "https://www.youtube.com/embed/\(videoId)") else { return }
-        components.queryItems = [
-            URLQueryItem(name: "autoplay", value: "1"),
-            URLQueryItem(name: "controls", value: "1"),
-            URLQueryItem(name: "rel", value: "0"),
-            URLQueryItem(name: "modestbranding", value: "1"),
-            URLQueryItem(name: "playsinline", value: "0"),
-            URLQueryItem(name: "fs", value: "1"),
-            URLQueryItem(name: "start", value: String(start)),
-            URLQueryItem(name: "cc_load_policy", value: "0"),
-            URLQueryItem(name: "cc_lang_pref", value: "none"),
-            URLQueryItem(name: "hl", value: "en"),
-            URLQueryItem(name: "iv_load_policy", value: "3"),
-            URLQueryItem(name: "origin", value: "https://app.byebyediabetes.com"),
-            URLQueryItem(name: "widget_referrer", value: "https://app.byebyediabetes.com")
-        ]
-        guard let url = components.url else { return }
-        var request = URLRequest(url: url)
-        request.setValue("https://app.byebyediabetes.com/", forHTTPHeaderField: "Referer")
-        request.setValue("https://app.byebyediabetes.com", forHTTPHeaderField: "Origin")
-        webView?.load(request)
+        let html = """
+        <!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="referrer" content="strict-origin-when-cross-origin"><style>html,body,#player{margin:0;width:100%;height:100%;background:#000;overflow:hidden}#player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}</style></head><body><div id="player"></div><script>
+        var player;
+        function disableCaptions(){try{player&&player.unloadModule&&player.unloadModule('captions')}catch(e){}try{player&&player.unloadModule&&player.unloadModule('cc')}catch(e){}try{player&&player.setOption&&player.setOption('captions','track',{})}catch(e){}try{player&&player.setOption&&player.setOption('captions','fontSize',-1)}catch(e){}}
+        window.onYouTubeIframeAPIReady=function(){player=new YT.Player('player',{host:'https://www.youtube-nocookie.com',videoId:'\(videoId)',playerVars:{autoplay:'1',controls:'1',rel:'0',modestbranding:'1',playsinline:'0',fs:'1',start:'\(start)',cc_load_policy:'0',cc_lang_pref:'en',hl:'en',iv_load_policy:'3',origin:'https://app.byebyediabetes.com',widget_referrer:'https://app.byebyediabetes.com'},events:{onReady:function(){disableCaptions();setInterval(disableCaptions,750);try{player.playVideo()}catch(e){}},onStateChange:function(e){if(e.data===1||e.data===2||e.data===3)disableCaptions()},onApiChange:disableCaptions}})};
+        var s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';s.async=true;document.head.appendChild(s);
+        </script></body></html>
+        """
+        webView?.loadHTMLString(html, baseURL: URL(string: "https://app.byebyediabetes.com")!)
     }
 
     @objc private func closePlayer() {
+        let watchedSec = max(0, Int(Date().timeIntervalSince(openedAt).rounded()))
         webView?.stopLoading()
         webView = nil
-        dismiss(animated: true)
+        dismiss(animated: true) { [onClose] in
+            onClose(watchedSec)
+        }
     }
 }
 
@@ -455,10 +449,10 @@ public class BBDOYouTubePlayerPlugin: CAPPlugin, CAPBridgedPlugin {
                 call.reject("Player is unavailable", "playerUnavailable")
                 return
             }
-            let player = BBDOYouTubePlayerViewController(videoId: videoId, title: title, start: start)
-            presenter.present(player, animated: true) {
-                call.resolve(["opened": true])
+            let player = BBDOYouTubePlayerViewController(videoId: videoId, title: title, start: start) { watchedSec in
+                call.resolve(["opened": true, "watchedSec": watchedSec])
             }
+            presenter.present(player, animated: true)
         }
     }
 }

@@ -42,7 +42,7 @@ import BbdoBadgeGrid from "@/components/badges/BbdoBadgeGrid";
 import { playNotificationSound, getMasterVolume, setMasterVolume, getMuted, setMuted } from "@/lib/soundEngine";
 import { getNotificationSoundSettings } from "@/lib/notificationSoundService";
 import { registerNativePush, registerNativePushWithToast, isNativePushSupported } from "@/lib/nativePush";
-import { sendRemoteHealthPushResult } from "@/lib/healthAlerts";
+import { sendLocalHealthAlert, sendRemoteHealthPushResult } from "@/lib/healthAlerts";
 
 const APP_VERSION = (globalThis as any).__APP_VERSION__ ?? "1.0.0";
 
@@ -879,8 +879,17 @@ export default function Profile({ onClose, isDark = true, onToggleTheme }: Profi
             <div className="grid grid-cols-2 gap-2 pt-1">
               <button
                 onClick={async () => {
+                  setMuted(false);
+                  setSoundMutedState(false);
+                  if (soundVolume < 0.8) {
+                    setMasterVolume(0.8);
+                    setSoundVolumeState(0.8);
+                  }
                   const s = await getNotificationSoundSettings();
                   playNotificationSound(s.variant);
+                  if (isNativePushSupported()) {
+                    void sendLocalHealthAlert("BBDO sound check", "This is the phone notification sound preview.");
+                  }
                 }}
                 className="rounded-xl liquid-glass py-2.5 text-sm font-semibold text-foreground active:scale-[0.98] transition"
               >
@@ -900,9 +909,9 @@ export default function Profile({ onClose, isDark = true, onToggleTheme }: Profi
                         toast.warning("Phone permission is on, but the push token is not ready yet. Try again in a few seconds.");
                       }
 
-                      const remote = await sendRemoteHealthPushResult("BBDO push test", "Lock your phone — this should beep when it arrives.");
+                      const remote = await sendRemoteHealthPushResult("BBDO push test", "Lock your phone — this should beep when it arrives.", { delaySeconds: 8 });
                       if (remote.ok) {
-                        toast.success(`Phone push sent (${remote.sent ?? 0}/${remote.attempted ?? 0})`);
+                        toast.success(`Phone push queued — lock the phone now (${remote.sent ?? 0}/${remote.attempted ?? 0})`);
                       } else {
                         toast.error(remote.note ?? remote.error ?? "Phone push was not accepted yet");
                       }

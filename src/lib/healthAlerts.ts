@@ -174,11 +174,11 @@ export function fireRealtimeHealthNotificationAlert(notification: RealtimeHealth
   void sendLocalHealthAlert(notification.title, notification.body);
 }
 
-export async function sendRemoteHealthPushResult(title: string, body: string): Promise<RemoteHealthPushResult> {
+export async function sendRemoteHealthPushResult(title: string, body: string, opts: { delaySeconds?: number } = {}): Promise<RemoteHealthPushResult> {
   if (!Capacitor.isNativePlatform()) return { ok: false, note: "not_native" };
   try {
     const { data, error } = await supabase.functions.invoke("send-health-push", {
-      body: { title, body, actionUrl: "/home?tab=profile" },
+      body: { title, body, actionUrl: "/home?tab=profile", delaySeconds: opts.delaySeconds ?? 0 },
     });
     if (error) {
       console.warn("remote health push failed", error);

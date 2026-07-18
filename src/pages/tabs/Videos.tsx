@@ -52,7 +52,9 @@ export default function Videos() {
   const { getStatus, watched } = useVideoProgress();
 
   const allResolved = useMemo(
-    () => [...videos.map(resolveVideo), ...customVideos].filter((v) => !disabledIds.has(v.id) && v.youtubeId),
+    () => [...videos.map(resolveVideo), ...customVideos].filter(
+      (v) => !disabledIds.has(v.id) && v.youtubeId && v.youtubeId !== BREATH_PROTOCOL_VIDEO.youtubeId,
+    ),
     [resolveVideo, customVideos, disabledIds],
   );
 

@@ -78,6 +78,7 @@ export default function AdminControlCenter({ initialTab = "rbac" }: { initialTab
           {tab === "global_streak" && <AdminGlobalStreak />}
           {tab === "pnl" && <AdminPnl />}
           {tab === "diet_types" && <AdminDietTypes />}
+          {tab === "sound" && <div className="px-4 sm:px-6"><SoundManagerCard /></div>}
         </motion.div>
       </AnimatePresence>
     </div>

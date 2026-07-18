@@ -216,6 +216,7 @@ type HomeFocusItem = {
   ratio: number;
   icon: React.ElementType;
   accent: string;
+  accentSoft: string;
   onClick?: () => void;
 };
 
@@ -269,6 +270,7 @@ function HomeHeroPanel({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
       className="relative overflow-hidden rounded-[30px] border border-primary/15 bg-primary p-5 text-primary-foreground shadow-hero md:p-6"
+      style={{ boxShadow: "var(--shadow-hero)" }}
     >
       <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
         <div className="min-w-0">
@@ -368,7 +370,7 @@ function TodayFocusBoard({ items }: { items: HomeFocusItem[] }) {
               <div className="flex items-start gap-3">
                 <div
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
-                  style={{ background: `color-mix(in srgb, ${item.accent} 14%, transparent)`, color: item.accent }}
+                  style={{ background: item.accentSoft, color: item.accent }}
                 >
                   <Icon className="h-5 w-5" strokeWidth={2} />
                 </div>
@@ -1453,6 +1455,7 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
       ratio: fastingRatio,
       icon: Timer,
       accent: "var(--pillar-fasting)",
+      accentSoft: "var(--pillar-fasting-soft)",
       onClick: fastingState === "none" ? () => openMealTimePicker("fmod") : fastingState === "eating" ? () => openMealTimePicker("lmod") : undefined,
     });
   }
@@ -1464,6 +1467,7 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
     ratio: movementRatio,
     icon: Footprints,
     accent: "var(--pillar-diet)",
+    accentSoft: "var(--pillar-diet-soft)",
     onClick: () => goToTab("habits"),
   });
   homeFocusItems.push({
@@ -1474,6 +1478,7 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
     ratio: exerciseRatio,
     icon: Dumbbell,
     accent: "var(--bbdo-blue)",
+    accentSoft: "var(--bbdo-blue-soft)",
     onClick: () => goToTab("exercise"),
   });
   homeFocusItems.push({
@@ -1484,6 +1489,7 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
     ratio: yogaRatio,
     icon: Wind,
     accent: "var(--bbdo-violet)",
+    accentSoft: "var(--bbdo-violet-soft)",
     onClick: () => goToTab("videos"),
   });
   if (hasActiveSupplements) {
@@ -1495,6 +1501,7 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
       ratio: suppTotalCount > 0 ? suppTakenCount / suppTotalCount : 0,
       icon: Pill,
       accent: "var(--bbdo-amber)",
+      accentSoft: "var(--bbdo-amber-soft)",
       onClick: () => goToTab("supplements"),
     });
   }
@@ -1506,6 +1513,7 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
     ratio: waterRatio,
     icon: Droplets,
     accent: "var(--bbdo-teal)",
+    accentSoft: "var(--bbdo-teal-soft)",
     onClick: openQuickLog,
   });
   if (hasDiabetesFlag) {
@@ -1517,6 +1525,7 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
       ratio: hasTodayDiabetesLog ? (diabetesMorningDone && diabetesEveningDone ? 1 : 0.5) : 0,
       icon: Activity,
       accent: "var(--bbdo-red)",
+      accentSoft: "var(--bbdo-red-soft)",
       onClick: openQuickLog,
     });
   }

@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useConfirm } from "@/components/ConfirmProvider";
 import { toast } from "sonner";
-import { getFoodImageUrl, primeFoodImages } from "@/lib/foodImageService";
+import { getFoodImageUrl, primeFoodImages, getCachedFoodImageUrl, subscribeFoodImages } from "@/lib/foodImageService";
 import FoodItemDetail from "./FoodItemDetail";
 import {
   type FoodCategory, type FoodFilter, type FoodItem, type DietType, type Recommendation,

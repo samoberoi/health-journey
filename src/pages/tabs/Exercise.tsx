@@ -24,7 +24,7 @@ import {
 } from "@/lib/exerciseService";
 import { useDailyExerciseGoal } from "@/hooks/useAppSettings";
 import { EmptyState } from "@/components/shared";
-import SessionBreakdownCard from "@/components/shared/SessionBreakdownCard";
+
 import { getTodayExerciseMinutes } from "@/lib/yogaProgressService";
 import NativeYouTubePlayer from "@/components/exercises/NativeYouTubePlayer";
 import { isNativeIOSApp, isYoutubePlayerMessage, youtubePlayerProxyUrl } from "@/lib/youtubeEmbed";
@@ -447,14 +447,8 @@ export default function ExerciseTab({ packageKey }: Props) {
         </div>
       </motion.div>
 
-      {/* Ideal daily plan (admin-configured) */}
-      <SessionBreakdownCard
-        totalKey="exercise_daily_minutes"
-        sessionsKey="exercise_sessions"
-        moduleLabel="exercise"
-        accent="var(--pillar-exercise)"
-        progressMinutes={todayMinutes}
-      />
+      {/* Fasting-window session breakdown removed for end users —
+          the live daily-goal ring already reflects the active fasting protocol. */}
 
       {/* Tier tabs */}
       {visibleTiers.length >= 1 && (

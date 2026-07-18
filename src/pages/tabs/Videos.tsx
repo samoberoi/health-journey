@@ -14,7 +14,7 @@ import { useYouTubeDurationPrefetch } from "@/hooks/useYouTubeDurationPrefetch";
 import { formatDuration } from "@/lib/videoProgressStore";
 import YogaUpsell from "@/components/YogaUpsell";
 import { useDailyYogaMinutes } from "@/hooks/useAppSettings";
-import SessionBreakdownCard from "@/components/shared/SessionBreakdownCard";
+
 import BreathProtocolDrawer from "@/components/BreathProtocolDrawer";
 import { useBreathSessionsToday } from "@/hooks/useBreathSessionsToday";
 import { BREATH_PROTOCOL_VIDEO } from "@/lib/breathProtocol";
@@ -174,16 +174,8 @@ export default function Videos() {
         </div>
       </motion.div>
 
-      {/* Ideal daily plan (admin-configured) */}
-      <div className="mx-5">
-        <SessionBreakdownCard
-          totalKey="yoga_stress_daily_minutes"
-          sessionsKey="yoga_stress_sessions"
-          moduleLabel="yoga & stress"
-          accent="var(--bbdo-blue)"
-          progressMinutes={yogaMinutesToday}
-        />
-      </div>
+      {/* Fasting-window session breakdown removed for end users —
+          the live daily-goal ring already reflects the active fasting protocol. */}
 
       {/* Pinned: BBDO Daily Breath Protocol — #1 video, ritual 4×/day */}
       <div className="mx-5">

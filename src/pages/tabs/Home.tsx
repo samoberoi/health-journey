@@ -258,6 +258,8 @@ function HomeHeroPanel({
   secondaryAction?: { label: string; icon: React.ElementType; onClick: () => void };
 }) {
   const HealthToneIcon = healthDelta != null && healthDelta < 0 ? TrendingDown : TrendingUp;
+  const PrimaryIcon = primaryAction?.icon;
+  const SecondaryIcon = secondaryAction?.icon;
   const weightText = weight == null || weight === "—" ? "—" : `${weight} kg`;
   const glucoseText = glucose == null || glucose === "—" ? "—" : `${glucose} mg/dL`;
 
@@ -298,7 +300,7 @@ function HomeHeroPanel({
                   onClick={primaryAction.onClick}
                   className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary-foreground px-4 text-sm font-semibold text-primary shadow-card active:scale-[0.98] transition-transform"
                 >
-                  <primaryAction.icon className="h-4 w-4" strokeWidth={2} />
+                  {PrimaryIcon && <PrimaryIcon className="h-4 w-4" strokeWidth={2} />}
                   {primaryAction.label}
                 </button>
               )}
@@ -308,7 +310,7 @@ function HomeHeroPanel({
                   onClick={secondaryAction.onClick}
                   className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-primary-foreground/25 bg-primary-foreground/10 px-4 text-sm font-semibold text-primary-foreground active:scale-[0.98] transition-transform"
                 >
-                  <secondaryAction.icon className="h-4 w-4" strokeWidth={2} />
+                  {SecondaryIcon && <SecondaryIcon className="h-4 w-4" strokeWidth={2} />}
                   {secondaryAction.label}
                 </button>
               )}

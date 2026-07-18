@@ -15,6 +15,9 @@ import { formatDuration } from "@/lib/videoProgressStore";
 import YogaUpsell from "@/components/YogaUpsell";
 import { useDailyYogaMinutes } from "@/hooks/useAppSettings";
 import SessionBreakdownCard from "@/components/shared/SessionBreakdownCard";
+import BreathProtocolDrawer from "@/components/BreathProtocolDrawer";
+import { useBreathSessionsToday } from "@/hooks/useBreathSessionsToday";
+import { BREATH_PROTOCOL_VIDEO } from "@/lib/breathProtocol";
 
 const VIDEO_ICON_MAP: Record<string, LucideIcon> = {
   Activity,
@@ -42,6 +45,8 @@ export default function Videos() {
   const [tag, setTag] = useState<(typeof videoTagFilters)[number]["id"]>("all");
   const [query, setQuery] = useState("");
   const [active, setActive] = useState<VideoEntry | null>(null);
+  const [breathOpen, setBreathOpen] = useState(false);
+  const { count: breathCount, goal: breathGoal, completed: breathDone } = useBreathSessionsToday();
   const { resolve, loading: thumbnailsLoading } = useVideoThumbnails();
   const { resolveVideo, customVideos, disabledIds, loading: metadataLoading } = useVideoMetadata();
   const { getStatus, watched } = useVideoProgress();
@@ -177,6 +182,68 @@ export default function Videos() {
           progressMinutes={yogaMinutesToday}
         />
       </div>
+
+      {/* Pinned: BBDO Daily Breath Protocol — #1 video, ritual 4×/day */}
+      <div className="mx-5">
+        <motion.button
+          onClick={() => setBreathOpen(true)}
+          whileTap={{ scale: 0.985 }}
+          className="no-pill w-full text-left rounded-2xl overflow-hidden shadow-card relative"
+          style={{ background: "linear-gradient(135deg, #0F1A3D 0%, #1E3A8A 55%, #2563EB 100%)" }}
+        >
+          <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+          <div className="relative p-4 md:p-5 flex gap-3 items-stretch">
+            <div className="relative shrink-0 rounded-xl overflow-hidden bg-black/40 ring-1 ring-white/20" style={{ width: 128, aspectRatio: "16 / 9" }}>
+              <img
+                src={`https://i.ytimg.com/vi/${BREATH_PROTOCOL_VIDEO.youtubeId}/hqdefault.jpg`}
+                alt="BBDO Daily Breath Protocol"
+                loading="lazy"
+                className="absolute inset-0 w-full h-full object-cover opacity-80"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-11 h-11 rounded-full bg-white/95 text-foreground flex items-center justify-center shadow-lift">
+                  <Play className="w-5 h-5 ml-0.5" fill="currentColor" />
+                </div>
+              </div>
+              <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded-md bg-black/70 text-white text-[10px] font-black">76s</div>
+            </div>
+            <div className="min-w-0 flex-1 text-white">
+              <div className="flex items-center gap-1.5">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/15 text-white text-[10px] font-black uppercase tracking-[0.14em]">
+                  <Wind className="w-3 h-3" /> BBDO Ritual
+                </span>
+                {breathDone && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black" style={{ background: "#10B981", color: "#fff" }}>
+                    <CheckCircle2 className="w-3 h-3" /> Done today
+                  </span>
+                )}
+              </div>
+              <h2 className="text-[15px] md:text-lg font-black leading-tight mt-1.5 truncate">BBDO Daily Breath Protocol</h2>
+              <p className="text-[11px] md:text-xs text-white/85 mt-1 line-clamp-2 leading-snug">
+                BBDO 76 seconds daily breath protocol · 4-7-8 breathing. Complete 4 rounds every day.
+              </p>
+              <div className="mt-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-[0.14em] text-white/80">Today</span>
+                  <span className="text-[11px] font-black tabular-nums">{breathCount}/{breathGoal} rounds</span>
+                </div>
+                <div className="mt-1 h-1.5 rounded-full bg-white/20 overflow-hidden">
+                  <motion.div
+                    initial={false}
+                    animate={{ width: `${Math.min(100, (breathCount / breathGoal) * 100)}%` }}
+                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                    className="h-full rounded-full"
+                    style={{ background: breathDone ? "#10B981" : "#FFFFFF" }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.button>
+      </div>
+
+
 
 
 
@@ -389,6 +456,8 @@ export default function Videos() {
       <AnimatePresence>
         {active && <VideoPlayer video={active} onClose={() => setActive(null)} />}
       </AnimatePresence>
+
+      <BreathProtocolDrawer open={breathOpen} onOpenChange={setBreathOpen} />
     </div>
   );
 }

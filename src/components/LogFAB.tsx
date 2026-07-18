@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Activity, Heart, Scale, Droplets, Camera, Loader2, Clock, Dumbbell, Sunrise, Sun, Moon } from "lucide-react";
+import { Activity, Heart, Scale, Droplets, Camera, Loader2, Clock, Dumbbell, Sunrise, Sun, Moon, Wind } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -10,6 +10,8 @@ import { insertHealthLog, fetchHealthLogs, formatLogDate } from "@/lib/healthLog
 import { toast } from "sonner";
 import { useUserStore } from "@/hooks/useUserStore";
 import { useDailyExerciseGoal } from "@/hooks/useAppSettings";
+import { useBreathSessionsToday } from "@/hooks/useBreathSessionsToday";
+import BreathProtocolDrawer from "@/components/BreathProtocolDrawer";
 
 type LogType = "diabetes" | "bp" | "weight" | "water" | null;
 type TimeOfDay = "morning" | "afternoon" | "evening";
@@ -50,6 +52,8 @@ export default function LogFAB({ packageKey }: { packageKey?: string | null }) {
   });
   const [open, setOpen] = useState(false);
   const [activeLog, setActiveLog] = useState<LogType>(null);
+  const [breathOpen, setBreathOpen] = useState(false);
+  const { count: breathCount, goal: breathGoal, completed: breathDone } = useBreathSessionsToday();
   const [saving, setSaving] = useState(false);
   const [currentDateTime, setCurrentDateTime] = useState(formatCurrentDateTime());
   const [keyboardInset, setKeyboardInset] = useState(0);
@@ -380,9 +384,41 @@ export default function LogFAB({ packageKey }: { packageKey?: string | null }) {
                 </span>
               </span>
             </motion.button>
+            <motion.button
+              key="breath-shortcut"
+              onClick={() => {
+                setOpen(false);
+                setTimeout(() => setBreathOpen(true), 180);
+              }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ duration: 0.12, ease: [0.22, 1, 0.36, 1] }}
+              className="no-pill relative flex flex-col items-center justify-center gap-2 rounded-2xl py-4 px-2 bg-card border border-border"
+            >
+              <span
+                className="w-11 h-11 rounded-xl flex items-center justify-center"
+                style={{ background: breathDone ? "#10B981" : "var(--bbdo-blue)" }}
+              >
+                <Wind className="w-5 h-5 text-white" strokeWidth={1.7} />
+              </span>
+              <span className="text-[11px] font-semibold text-foreground text-center leading-none inline-flex items-center gap-1">
+                Breath Protocol
+                <span
+                  className="text-[9px] font-black px-1.5 py-0.5 rounded-md"
+                  style={{
+                    background: breathDone ? "#10B98122" : "var(--bbdo-blue-soft)",
+                    color: breathDone ? "#10B981" : "var(--bbdo-blue)",
+                  }}
+                >
+                  {breathCount}/{breathGoal}
+                </span>
+              </span>
+            </motion.button>
           </div>
         </DrawerContent>
       </Drawer>
+
+      <BreathProtocolDrawer open={breathOpen} onOpenChange={setBreathOpen} />
+
 
 
 

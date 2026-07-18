@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
     const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
 
     // Preload signals used by audience filters.
-    const [suppPlans, suppTracking, movementProgress, fasting, mealPhotos, dietPref, protocols, videoProgress, profiles] = await Promise.all([
+    const [suppPlans, suppTracking, movementProgress, fasting, mealPhotos, dietPref, protocols, videoProgress, profiles, breathSessions] = await Promise.all([
       supabase.from("user_supplement_plans").select("user_id").in("user_id", patientUserIds),
       supabase.from("user_supplement_tracking").select("user_id, taken_at").gte("taken_at", startOfDay).in("user_id", patientUserIds),
       supabase.from("user_movement_progress").select("user_id, log_date, steps, target_steps").eq("log_date", startOfDay.slice(0, 10)).in("user_id", patientUserIds),
@@ -113,6 +113,7 @@ Deno.serve(async (req) => {
       supabase.from("user_protocols").select("user_id, is_active").eq("is_active", true).in("user_id", patientUserIds),
       supabase.from("video_progress").select("user_id, last_watched_at").gte("last_watched_at", startOfDay).in("user_id", patientUserIds),
       supabase.from("profiles").select("user_id, name, age, weight, height, gender, clinical, deep_profiling").in("user_id", patientUserIds),
+      supabase.from("user_breath_sessions").select("user_id, session_at").gte("session_at", startOfDay).in("user_id", patientUserIds),
     ]);
 
     const hasSuppPlan = new Set((suppPlans.data ?? []).map((r: any) => r.user_id));
@@ -124,6 +125,11 @@ Deno.serve(async (req) => {
     const hasDietPlan = new Set((dietPref.data ?? []).map((r: any) => r.user_id));
     const hasFastingProtocol = new Set((protocols.data ?? []).map((r: any) => r.user_id));
     const watchedVideoToday = new Set((videoProgress.data ?? []).map((r: any) => r.user_id));
+    const breathCountByUser = new Map<string, number>();
+    for (const r of breathSessions.data ?? []) {
+      breathCountByUser.set(r.user_id, (breathCountByUser.get(r.user_id) ?? 0) + 1);
+    }
+    const BREATH_GOAL = 4;
     const profileMap = new Map<string, any>();
     for (const p of profiles.data ?? []) profileMap.set(p.user_id, p);
 
@@ -166,6 +172,10 @@ Deno.serve(async (req) => {
       if (f.missed_fasting_today && fastedToday.has(userId)) return false;
       if (f.missed_yoga_today && watchedVideoToday.has(userId)) return false;
       if (f.missed_meal_log_today && loggedMealToday.has(userId)) return false;
+      if (f.missed_breath_today) {
+        const c = breathCountByUser.get(userId) ?? 0;
+        if (c >= BREATH_GOAL) return false;
+      }
       if (f.has_diet_plan && !hasDietPlan.has(userId)) return false;
       if (f.needs_bp_tracking) {
         if (!userNeedsBpTracking(userId)) return false;

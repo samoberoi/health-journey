@@ -52,6 +52,7 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
   const lastPosRef = useRef<number>(0);
   const currentTimeRef = useRef<number>(0);
   const durationRef = useRef<number>(0);
+  const wallClockReportedRef = useRef<number>(0);
   const [resumeFrom, setResumeFrom] = useState<number>(0);
   const [restarted, setRestarted] = useState(false);
   const [playerError, setPlayerError] = useState(false);
@@ -164,6 +165,7 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
       lastAt = now;
       if (delta > 0 && delta < 60) {
         watchedSecRef.current += delta;
+        wallClockReportedRef.current += delta;
         accumulateWatched(video.id, delta, durationRef.current || 0, video.youtubeId);
       }
     }, 10000);
@@ -173,6 +175,7 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
       const delta = Math.min(3600, (Date.now() - lastAt) / 1000);
       if (delta > 0) {
         watchedSecRef.current += delta;
+        wallClockReportedRef.current += delta;
         accumulateWatched(video.id, delta, durationRef.current || 0, video.youtubeId);
       }
     };
@@ -185,9 +188,11 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
       const detail = (event as CustomEvent).detail as { videoId?: string; watchedSec?: number } | undefined;
       if (detail?.videoId && detail.videoId !== video.youtubeId) return;
       const watchedSec = Math.max(0, Number(detail?.watchedSec) || 0);
-      if (watchedSec > 0) {
-        watchedSecRef.current += watchedSec;
-        accumulateWatched(video.id, watchedSec, durationRef.current || 0, video.youtubeId);
+      const missingSec = Math.max(0, watchedSec - wallClockReportedRef.current);
+      if (missingSec > 0) {
+        watchedSecRef.current += missingSec;
+        wallClockReportedRef.current += missingSec;
+        accumulateWatched(video.id, missingSec, durationRef.current || 0, video.youtubeId);
       }
       extendNativeVideoSuppression(10);
     };

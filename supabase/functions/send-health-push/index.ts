@@ -333,7 +333,7 @@ Deno.serve(async (req) => {
         alert: { title, body },
         sound: BBDO_PUSH_SOUND,
         badge: 1,
-        "interruption-level": "active",
+        "interruption-level": "time-sensitive",
         "relevance-score": 1,
       },
       action_url: actionUrl,

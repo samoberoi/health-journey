@@ -37,6 +37,7 @@ import { fetchMovementOverview } from "@/lib/movementUserService";
 import { fetchUserStats } from "@/lib/userStatsService";
 import { useColorGauges } from "@/hooks/useColorGauges";
 import HealthScoreRing from "@/components/HealthScoreRing";
+import DailyActivityDial, { type DialRingItem as HeartRingItem } from "@/components/DailyActivityDial";
 import TodaysYogaClass from "@/components/home/TodaysYogaClass";
 import GlobalStreakCard from "@/components/home/GlobalStreakCard";
 import { Wind } from "lucide-react";
@@ -127,7 +128,7 @@ function MetricRing({
 
   return (
     <motion.div
-      className="rounded-[22px] bg-background/70 border border-border/50 p-3 w-full min-w-0 flex flex-col items-center justify-between gap-1.5 shadow-sm"
+      className="liquid-glass-strong rounded-[24px] p-3.5 w-full h-[204px] min-w-0 flex flex-col items-center justify-between gap-2"
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
@@ -205,191 +206,6 @@ function MetricRing({
       </div>
 
     </motion.div>
-  );
-}
-
-type HomeFocusItem = {
-  key: string;
-  title: string;
-  value: string;
-  hint: string;
-  ratio: number;
-  icon: React.ElementType;
-  accent: string;
-  accentSoft: string;
-  onClick?: () => void;
-};
-
-function ClampProgress({ value, accent }: { value: number; accent: string }) {
-  const pct = Math.max(0, Math.min(100, Math.round(value * 100)));
-  return (
-    <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-      <motion.div
-        className="h-full rounded-full"
-        style={{ background: accent }}
-        initial={{ width: 0 }}
-        animate={{ width: `${pct}%` }}
-        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-      />
-    </div>
-  );
-}
-
-function HomeHeroPanel({
-  greeting,
-  firstName,
-  dateLabel,
-  healthScore,
-  healthDelta,
-  completionPct,
-  weight,
-  glucose,
-  primaryAction,
-  secondaryAction,
-}: {
-  greeting: string;
-  firstName: string;
-  dateLabel: string;
-  healthScore: number;
-  healthDelta: number | null;
-  completionPct: number;
-  weight: number | string | null;
-  glucose: number | string | null;
-  primaryAction?: { label: string; icon: React.ElementType; onClick: () => void };
-  secondaryAction?: { label: string; icon: React.ElementType; onClick: () => void };
-}) {
-  const HealthToneIcon = healthDelta != null && healthDelta < 0 ? TrendingDown : TrendingUp;
-  const PrimaryIcon = primaryAction?.icon;
-  const SecondaryIcon = secondaryAction?.icon;
-  const weightText = weight == null || weight === "—" ? "—" : `${weight} kg`;
-  const glucoseText = glucose == null || glucose === "—" ? "—" : `${glucose} mg/dL`;
-
-  return (
-    <motion.section
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-      className="relative overflow-hidden rounded-[30px] border border-primary/15 bg-primary p-5 text-primary-foreground shadow-hero md:p-6"
-      style={{ boxShadow: "var(--shadow-hero)" }}
-    >
-      <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
-        <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary-foreground/70">
-            {dateLabel}
-          </p>
-          <h1 className="mt-2 text-[31px] leading-[1.04] font-semibold tracking-normal text-primary-foreground sm:text-[38px]">
-            {greeting || "Good morning"}, {firstName} <span aria-hidden>👋</span>
-          </h1>
-          <div className="mt-5 grid grid-cols-3 gap-2.5">
-            <div className="rounded-2xl bg-primary-foreground/12 px-3 py-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-primary-foreground/60">Day</p>
-              <p className="mt-1 text-xl font-semibold leading-none tabular-nums">{completionPct}%</p>
-            </div>
-            <div className="rounded-2xl bg-primary-foreground/12 px-3 py-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-primary-foreground/60">Weight</p>
-              <p className="mt-1 truncate text-lg font-semibold leading-none tabular-nums">{weightText}</p>
-            </div>
-            <div className="rounded-2xl bg-primary-foreground/12 px-3 py-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-primary-foreground/60">Sugar</p>
-              <p className="mt-1 truncate text-lg font-semibold leading-none tabular-nums">{glucoseText}</p>
-            </div>
-          </div>
-          {(primaryAction || secondaryAction) && (
-            <div className="mt-5 flex flex-wrap gap-2.5">
-              {primaryAction && (
-                <button
-                  type="button"
-                  onClick={primaryAction.onClick}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary-foreground px-4 text-sm font-semibold text-primary shadow-card active:scale-[0.98] transition-transform"
-                >
-                  {PrimaryIcon && <PrimaryIcon className="h-4 w-4" strokeWidth={2} />}
-                  {primaryAction.label}
-                </button>
-              )}
-              {secondaryAction && (
-                <button
-                  type="button"
-                  onClick={secondaryAction.onClick}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-primary-foreground/25 bg-primary-foreground/10 px-4 text-sm font-semibold text-primary-foreground active:scale-[0.98] transition-transform"
-                >
-                  {SecondaryIcon && <SecondaryIcon className="h-4 w-4" strokeWidth={2} />}
-                  {secondaryAction.label}
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-        <div className="mx-auto flex w-full max-w-[210px] flex-col items-center rounded-[28px] bg-primary-foreground p-4 text-foreground shadow-lift md:w-[210px]">
-          <HealthScoreRing
-            score={healthScore}
-            size={146}
-            thickness={11}
-            showSubtitle={false}
-            scoreClassName="text-[42px]"
-          />
-          <div className="mt-2 flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-[11px] font-semibold text-muted-foreground">
-            <HealthToneIcon className="h-3.5 w-3.5" strokeWidth={2} />
-            {healthDelta == null ? "Health score" : healthDelta === 0 ? "No change" : `${healthDelta > 0 ? "+" : ""}${healthDelta} points`}
-          </div>
-        </div>
-      </div>
-    </motion.section>
-  );
-}
-
-function TodayFocusBoard({ items }: { items: HomeFocusItem[] }) {
-  const done = items.filter((item) => item.ratio >= 1).length;
-  const displayItems = items.slice(0, 6);
-
-  return (
-    <motion.section
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-      className="rounded-[28px] border border-border/60 bg-card p-4 shadow-card md:p-5"
-    >
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Today</p>
-          <h2 className="text-[19px] font-semibold leading-tight tracking-normal text-foreground">Your next best moves</h2>
-        </div>
-        <div className="rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary tabular-nums">
-          {done}/{items.length}
-        </div>
-      </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {displayItems.map((item) => {
-          const Icon = item.icon;
-          const Wrapper = item.onClick ? motion.button : motion.div;
-          return (
-            <Wrapper
-              key={item.key}
-              {...(item.onClick ? { type: "button", onClick: item.onClick, whileTap: { scale: 0.985 } } : {})}
-              className="no-pill w-full rounded-[22px] border border-border/60 bg-background p-3.5 text-left transition-colors hover:border-primary/25"
-            >
-              <div className="flex items-start gap-3">
-                <div
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
-                  style={{ background: item.accentSoft, color: item.accent }}
-                >
-                  <Icon className="h-5 w-5" strokeWidth={2} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="truncate text-sm font-semibold leading-tight text-foreground">{item.title}</p>
-                    <span className="shrink-0 text-xs font-semibold tabular-nums" style={{ color: item.accent }}>{item.value}</span>
-                  </div>
-                  <p className="mt-1 truncate text-[11px] font-medium text-muted-foreground">{item.hint}</p>
-                  <div className="mt-3">
-                    <ClampProgress value={item.ratio} accent={item.accent} />
-                  </div>
-                </div>
-              </div>
-            </Wrapper>
-          );
-        })}
-      </div>
-    </motion.section>
   );
 }
 
@@ -1415,138 +1231,8 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
     );
   };
 
-  const openQuickLog = () => {
-    const fabBtn = document.querySelector('[data-fab-trigger]') as HTMLButtonElement | null;
-    fabBtn?.click();
-  };
-
-  const goToTab = (tab: string) => {
-    window.dispatchEvent(new CustomEvent("nav:set-tab", { detail: tab }));
-  };
-
-  const fastingRatio = isFastingDone
-    ? 1
-    : fastingTarget > 0
-      ? Math.min(1, fastingElapsedStatic / fastingTarget)
-      : 0;
-  const waterRatio = Math.min(1, waterGlasses / 8);
-  const exerciseRatio = EXERCISE_DAILY_GOAL > 0
-    ? Math.min(1, completedExercisesToday / EXERCISE_DAILY_GOAL)
-    : 0;
-  const yogaRatio = YOGA_DAILY_MINUTES > 0
-    ? Math.min(1, yogaMinutesToday / YOGA_DAILY_MINUTES)
-    : 0;
-  const dayCompletionPct = habits.length > 0
-    ? Math.round((completedVisibleHabits / habits.length) * 100)
-    : 0;
-  const todayDateLabel = new Date().toLocaleDateString("en-IN", {
-    weekday: "long",
-    day: "numeric",
-    month: "short",
-  });
-
-  const homeFocusItems: HomeFocusItem[] = [];
-  if (fastingState !== "no_plan" && fastingState !== "loading") {
-    homeFocusItems.push({
-      key: "fasting",
-      title: fastingState === "fasting" ? "Fasting active" : fastingState === "eating" ? "Eating window" : fastingState === "done" ? "Fast complete" : "Start fasting",
-      value: fastingState === "done" ? "Done" : fastingTarget ? `${Math.min(fastingElapsedStatic, fastingTarget).toFixed(1)}h` : "Ready",
-      hint: fastingState === "fasting" ? `${fastingTarget || 0}h target` : fastingState === "eating" ? "Log last meal when done" : fastingLabel,
-      ratio: fastingRatio,
-      icon: Timer,
-      accent: "var(--pillar-fasting)",
-      accentSoft: "var(--pillar-fasting-soft)",
-      onClick: fastingState === "none" ? () => openMealTimePicker("fmod") : fastingState === "eating" ? () => openMealTimePicker("lmod") : undefined,
-    });
-  }
-  homeFocusItems.push({
-    key: "movement",
-    title: "Movement",
-    value: `${Math.round(movementRatio * 100)}%`,
-    hint: movementHint || "Phone activity",
-    ratio: movementRatio,
-    icon: Footprints,
-    accent: "var(--pillar-diet)",
-    accentSoft: "var(--pillar-diet-soft)",
-    onClick: () => goToTab("habits"),
-  });
-  homeFocusItems.push({
-    key: "exercise",
-    title: "Exercise",
-    value: `${Math.min(completedExercisesToday, EXERCISE_DAILY_GOAL).toLocaleString("en-IN", { maximumFractionDigits: 1 })}m`,
-    hint: `${EXERCISE_DAILY_GOAL} min goal`,
-    ratio: exerciseRatio,
-    icon: Dumbbell,
-    accent: "var(--bbdo-blue)",
-    accentSoft: "var(--bbdo-blue-soft)",
-    onClick: () => goToTab("exercise"),
-  });
-  homeFocusItems.push({
-    key: "yoga",
-    title: "Stress & yoga",
-    value: `${Math.min(yogaMinutesToday, YOGA_DAILY_MINUTES).toLocaleString("en-IN", { maximumFractionDigits: 1 })}m`,
-    hint: `${YOGA_DAILY_MINUTES} min goal`,
-    ratio: yogaRatio,
-    icon: Wind,
-    accent: "var(--bbdo-violet)",
-    accentSoft: "var(--bbdo-violet-soft)",
-    onClick: () => goToTab("videos"),
-  });
-  if (hasActiveSupplements) {
-    homeFocusItems.push({
-      key: "supplements",
-      title: "Supplements",
-      value: `${suppTakenCount}/${suppTotalCount}`,
-      hint: allSuppsTaken ? "All taken" : `${Math.max(0, suppTotalCount - suppTakenCount)} remaining`,
-      ratio: suppTotalCount > 0 ? suppTakenCount / suppTotalCount : 0,
-      icon: Pill,
-      accent: "var(--bbdo-amber)",
-      accentSoft: "var(--bbdo-amber-soft)",
-      onClick: () => goToTab("supplements"),
-    });
-  }
-  homeFocusItems.push({
-    key: "water",
-    title: "Water",
-    value: `${waterGlasses}/8`,
-    hint: waterDone ? "Hydration complete" : "Glasses today",
-    ratio: waterRatio,
-    icon: Droplets,
-    accent: "var(--bbdo-teal)",
-    accentSoft: "var(--bbdo-teal-soft)",
-    onClick: openQuickLog,
-  });
-  if (hasDiabetesFlag) {
-    homeFocusItems.push({
-      key: "diabetes",
-      title: "Blood sugar",
-      value: diabetesMorningDone && diabetesEveningDone ? "2/2" : diabetesMorningDone || diabetesEveningDone ? "1/2" : "0/2",
-      hint: hasTodayDiabetesLog ? "Logged today" : "Log morning or evening",
-      ratio: hasTodayDiabetesLog ? (diabetesMorningDone && diabetesEveningDone ? 1 : 0.5) : 0,
-      icon: Activity,
-      accent: "var(--bbdo-red)",
-      accentSoft: "var(--bbdo-red-soft)",
-      onClick: openQuickLog,
-    });
-  }
-
-  const heroPrimaryAction = fastingState === "none"
-    ? { label: packageKey === "foundation" ? "Log first meal" : "Build my plate", icon: UtensilsCrossed, onClick: () => openMealTimePicker("fmod") }
-    : fastingState === "eating"
-      ? { label: packageKey === "foundation" ? "Log last meal" : "Build my plate", icon: UtensilsCrossed, onClick: () => openMealTimePicker("lmod") }
-      : { label: "Track now", icon: Plus, onClick: openQuickLog };
-
-  const heroSecondaryAction = {
-    label: "Food guide",
-    icon: BookOpen,
-    onClick: () => {
-      try { localStorage.setItem("bbdo:openReference", "1"); } catch {}
-      goToTab("diet");
-    },
-  };
-
   return (
-    <div className="flex flex-col gap-4 px-4 md:px-8 xl:px-10 pt-3 md:pt-6 pb-6">
+    <div className="flex flex-col gap-6 px-5 md:px-8 xl:px-10 pt-3 md:pt-6 pb-6">
       {/* Override Alert */}
       {overrideTriggered && (
         <motion.div
@@ -1562,18 +1248,28 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
         </motion.div>
       )}
 
-      <HomeHeroPanel
-        greeting={greeting || "Good morning"}
-        firstName={firstName}
-        dateLabel={todayDateLabel}
-        healthScore={healthScore}
-        healthDelta={initialScore != null ? healthScore - initialScore : null}
-        completionPct={dayCompletionPct}
-        weight={latestWeight ?? (user.bodyMetrics.weight ?? "—")}
-        glucose={latestGlucose ?? "—"}
-        primaryAction={heroPrimaryAction}
-        secondaryAction={heroSecondaryAction}
-      />
+      {/* Hero greeting — simple, warm, breathing room */}
+      <motion.div
+        className="pt-3 pb-2"
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <h1 className="text-[30px] sm:text-[34px] leading-[1.1] font-semibold tracking-[-0.03em] text-foreground">
+          {greeting || "Hello"}, {firstName} <span className="inline-block">👋</span>
+        </h1>
+      </motion.div>
+
+
+
+      {/* BBDO Global Streak */}
+      <GlobalStreakCard />
+
+      {/* Today's Yoga Class reminder */}
+      <TodaysYogaClass />
+
+
+
 
       {/* ─── Awaiting Coach Meeting banner (paid plans, no upcoming meeting) ─── */}
       {packageKey && packageKey !== "foundation" && !nextMeeting && !hasCompletedMeeting && (
@@ -1686,11 +1382,111 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
         );
       })()}
 
-      <TodayFocusBoard items={homeFocusItems} />
+      {/* ─── Daily activity heart (hero) — single source of truth for today's habits ─── */}
+      {(() => {
+        const suppTaken = suppTakenCount;
+        const suppTotal = suppTotalCount;
+        const fastingRatio = isFastingDone
+          ? 1
+          : fastingTarget > 0
+            ? Math.min(1, fastingElapsedStatic / fastingTarget)
+            : 0;
+        const waterRatio = Math.min(1, waterGlasses / 8);
+        const exerciseRatio = EXERCISE_DAILY_GOAL > 0
+          ? Math.min(1, completedExercisesToday / EXERCISE_DAILY_GOAL)
+          : 0;
+        const yogaRatio = YOGA_DAILY_MINUTES > 0
+          ? Math.min(1, yogaMinutesToday / YOGA_DAILY_MINUTES)
+          : 0;
+        const rings: HeartRingItem[] = [];
+        if (fastingState !== "no_plan" && fastingState !== "loading") {
+          rings.push({
+            key: "fasting",
+            label: "Fasting",
+            ratio: fastingRatio,
+            color: "#0F1A3D",
+            hint: fastingTarget ? `${Math.min(fastingElapsedStatic, fastingTarget).toFixed(1)} / ${fastingTarget}h` : undefined,
+          });
+        }
+        if (hasActiveSupplements) {
+          rings.push({
+            key: "supplements",
+            label: "Supplements",
+            ratio: suppTaken / suppTotal,
+            color: "#F59E0B",
+            hint: `${suppTaken} / ${suppTotal} taken`,
+          });
+        }
+        rings.push({
+          key: "movement",
+          label: "Movement",
+          ratio: movementRatio,
+          color: "#10B981",
+          hint: movementHint || undefined,
+        });
+        rings.push({
+          key: "exercise",
+          label: "Exercise",
+          ratio: exerciseRatio,
+          color: "#248CCB",
+            hint: `${Math.min(completedExercisesToday, EXERCISE_DAILY_GOAL).toLocaleString("en-IN", { maximumFractionDigits: 1 })} / ${EXERCISE_DAILY_GOAL} min`,
+        });
+        // Yoga only if the user has a yoga booking on file OR a foundation-level plan expectation.
+        rings.push({
+          key: "yoga",
+          label: "Yoga & Stress",
+          ratio: yogaRatio,
+          color: "#8B5CF6",
+            hint: `${Math.min(yogaMinutesToday, YOGA_DAILY_MINUTES).toLocaleString("en-IN", { maximumFractionDigits: 1 })} / ${YOGA_DAILY_MINUTES} min`,
+        });
+        rings.push({
+          key: "water",
+          label: "Water",
+          ratio: waterRatio,
+          color: "#38BDF8",
+          hint: `${waterGlasses} / 8 glasses`,
+        });
+        if (hasDiabetesFlag) {
+          rings.push({
+            key: "diabetes",
+            label: "Blood sugar log",
+            ratio: hasTodayDiabetesLog ? 1 : 0,
+            color: "#E00101",
+            hint: hasTodayDiabetesLog ? "Logged today" : "Not logged yet",
+          });
+        }
+        return <DailyActivityDial items={rings} title="Close your rings" size="lg" />;
+      })()}
 
-      <TodaysYogaClass />
+      {/* ─── 3 Metric Rings: Health Score, Weight, Sugar ─── */}
+      <div className="grid grid-cols-3 gap-3">
 
-      <GlobalStreakCard />
+        <MetricRing
+          value={healthScore}
+          label="Health"
+          delta={initialScore != null ? healthScore - initialScore : null}
+          ringColor={getRingColor("Health", healthScore, initialScore)}
+          dangerColor={getRingColor("Health", healthScore, initialScore)}
+        />
+        <MetricRing
+          value={latestWeight ?? (user.bodyMetrics.weight ?? "—")}
+          label="Weight"
+          unit="kg"
+          delta={initialWeight != null && latestWeight != null ? Math.round((latestWeight - initialWeight) * 10) / 10 : null}
+          ringColor={getRingColor("Weight", typeof latestWeight === "number" ? latestWeight : (user.bodyMetrics.weight ?? NaN), initialWeight)}
+          dangerColor={getRingColor("Weight", typeof latestWeight === "number" ? latestWeight : (user.bodyMetrics.weight ?? NaN), initialWeight)}
+        />
+
+        <MetricRing
+          value={latestGlucose ?? "—"}
+          label="Blood Glucose"
+          unit="mg/dL"
+          delta={initialGlucose != null && latestGlucose != null ? Math.round(latestGlucose - initialGlucose) : null}
+          ringColor={getRingColor("Blood Glucose", typeof latestGlucose === "number" ? latestGlucose : NaN, initialGlucose)}
+          dangerColor={getRingColor("Blood Glucose", typeof latestGlucose === "number" ? latestGlucose : NaN, initialGlucose)}
+        />
+
+      </div>
 
 
       {/* Health Markers from lab reports */}

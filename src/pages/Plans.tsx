@@ -53,7 +53,6 @@ export default function Plans() {
         }
       }
       setPkgs(visible);
-      const activeKey = normalizePlanKey(activeSub?.plan_id);
       setCurrentPlanKey(activeKey);
       const expired = !activeSub && isSubscriptionExpired(latestSub) ? latestSub : null;
       setExpiredSub(expired);

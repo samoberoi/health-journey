@@ -430,15 +430,7 @@ export default function PatientLabTests({ alwaysShow = false, foundationMode = f
 
   const FoundationStrip = foundationMode && foundationTests.length > 0 ? (
     <div className="space-y-5">
-      <div className="flex items-start gap-2 px-1">
-        <FlaskConical className="w-4 h-4 text-[var(--bbdo-red)] mt-0.5 shrink-0" />
-        <div>
-          <h3 className="text-sm font-black uppercase tracking-[0.12em]">Day-1 Lab Test</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            A lab test is critical to personalise your plan. We strongly recommend <span className="font-bold text-foreground">BBDO Basic</span> to establish your baseline — you can always add the other panels later.
-          </p>
-        </div>
-      </div>
+
 
       {basicTest && (() => {
         const { price, original, showStrike } = renderPriceRow(basicTest);

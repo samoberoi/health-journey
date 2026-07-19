@@ -20,7 +20,12 @@ export default function LabTestsTab({ foundationMode = false }: { foundationMode
             ? "A lab test is critical to personalise your plan. We strongly recommend BBDO Basic to lock in your baseline. Once your report is in, your Health Profile & body map unlock on Home."
             : "Tests recommended by your coach plus all your past reports in one place."}
         </p>
+        <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/15 backdrop-blur px-2.5 py-1 ring-1 ring-white/25">
+          <span className="text-[9px] font-black tracking-[0.18em] text-white/70 uppercase">Powered by</span>
+          <span className="text-[11px] font-black tracking-tight text-white">Thyrocare</span>
+        </div>
       </div>
+
       <AppErrorBoundary
         fallbackTitle="Lab tests need a refresh"
         fallbackMessage="Please refresh once. Your bookings are saved and will appear here after the screen reloads."

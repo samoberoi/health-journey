@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FlaskConical, ChevronRight, X, Sparkles } from "lucide-react";
+import { FlaskConical, ChevronRight, X, Activity, Heart, Droplet, Beaker } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import LabHistorySection from "@/components/lab/LabHistorySection";
 import ThyrocarePoweredBy from "@/components/lab/ThyrocarePoweredBy";
@@ -9,6 +9,8 @@ import LabBookingDialog from "@/components/lab/LabBookingDialog";
 interface Props {
   userId: string;
 }
+
+type KeyMarker = { code: string; label: string; value: number; unit: string; status: string; icon: any };
 
 /**
  * Foundation-tier "Day-1 lab" card shown on Home.

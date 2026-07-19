@@ -254,7 +254,22 @@ function GlobalRealtimeAlerts() {
 }
 
 function NativeAuthStartupGate({ children }: { children: ReactNode }) {
-  const { loading, ready } = useAuth();
+  const { loading, ready, session } = useAuth();
+
+  // Prefetch the heavy Dashboard/Plans chunks as soon as we have a session,
+  // so onboarding → Home doesn't stall on chunk download after the lazy split.
+  useEffect(() => {
+    if (!session) return;
+    const idle = (cb: () => void) =>
+      (window as any).requestIdleCallback
+        ? (window as any).requestIdleCallback(cb, { timeout: 1500 })
+        : setTimeout(cb, 300);
+    idle(() => {
+      void import("./pages/Dashboard");
+      void import("./pages/Plans");
+      void import("./pages/NotificationsPage");
+    });
+  }, [session]);
 
   if (isNative() && !isNativeVideoTransitionActive() && (loading || !ready)) {
     return (
@@ -266,6 +281,7 @@ function NativeAuthStartupGate({ children }: { children: ReactNode }) {
 
   return <>{children}</>;
 }
+
 
 function AnimatedRoutes() {
   const location = useLocation();

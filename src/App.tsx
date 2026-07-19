@@ -344,9 +344,11 @@ function AnimatedRoutes() {
 
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
+      </Suspense>
     </AnimatePresence>
   );
 }
+
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

@@ -912,14 +912,14 @@ export default function EditProfile({ onBack }: EditProfileProps) {
         >
           <h3 className="text-foreground font-bold text-sm leading-tight break-words">Personal Information</h3>
           <Field label="Full Name" icon={User} value={name} onChange={setName} placeholder="Your name" />
-          <div className="space-y-1.5">
-            <Label className="text-muted-foreground text-xs flex items-start gap-1.5 leading-tight break-words">
+          <div className="space-y-1 min-w-0">
+            <Label className="text-muted-foreground text-[11px] font-medium flex items-center gap-1.5 leading-tight">
               <Phone className="w-3.5 h-3.5 shrink-0" strokeWidth={1.8} />
               Phone
             </Label>
             <div className="flex gap-2 min-w-0">
               <Select value={countryCode} onValueChange={setCountryCode}>
-                <SelectTrigger className="bg-accent/50 border-border/50 text-foreground rounded-xl h-11 w-28">
+                <SelectTrigger className="bg-white border border-border/70 text-foreground text-sm rounded-lg h-10 w-24 shrink-0 shadow-none">
                   <SelectValue placeholder="+91" />
                 </SelectTrigger>
                 <SelectContent className="max-h-72">
@@ -936,7 +936,7 @@ export default function EditProfile({ onBack }: EditProfileProps) {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
                 placeholder="Phone number"
-                className="flex-1 min-w-0 bg-accent/50 border-border/50 text-foreground rounded-xl h-11"
+                className="flex-1 min-w-0 bg-white border border-border/70 text-foreground text-sm rounded-lg h-10 px-3 py-2 shadow-none"
               />
             </div>
           </div>

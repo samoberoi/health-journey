@@ -345,11 +345,13 @@ final class BBDOYouTubePlayerViewController: UIViewController, WKNavigationDeleg
     private let videoTitle: String
     private let start: Int
     private var webView: WKWebView?
+    private var onClose: (() -> Void)?
 
-    init(videoId: String, title: String, start: Int) {
+    init(videoId: String, title: String, start: Int, onClose: (() -> Void)? = nil) {
         self.videoId = videoId
         self.videoTitle = title
         self.start = max(0, start)
+        self.onClose = onClose
         super.init(nibName: nil, bundle: nil)
         modalPresentationStyle = .fullScreen
     }
@@ -430,7 +432,11 @@ final class BBDOYouTubePlayerViewController: UIViewController, WKNavigationDeleg
     @objc private func closePlayer() {
         webView?.stopLoading()
         webView = nil
-        dismiss(animated: true)
+        let callback = onClose
+        onClose = nil
+        dismiss(animated: true) {
+            callback?()
+        }
     }
 }
 
@@ -455,10 +461,10 @@ public class BBDOYouTubePlayerPlugin: CAPPlugin, CAPBridgedPlugin {
                 call.reject("Player is unavailable", "playerUnavailable")
                 return
             }
-            let player = BBDOYouTubePlayerViewController(videoId: videoId, title: title, start: start)
-            presenter.present(player, animated: true) {
-                call.resolve(["opened": true])
+            let player = BBDOYouTubePlayerViewController(videoId: videoId, title: title, start: start) {
+                call.resolve(["closed": true])
             }
+            presenter.present(player, animated: true)
         }
     }
 }

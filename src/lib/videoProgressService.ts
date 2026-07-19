@@ -1,6 +1,6 @@
 // Sync local video watch state with backend so it persists across logins/devices.
 import { supabase } from "@/integrations/supabase/client";
-import { loadWatched, saveWatched, type WatchRecord } from "@/lib/videoProgressStore";
+import { getVideoProgressTodayKey, saveWatched, type WatchRecord } from "@/lib/videoProgressStore";
 
 type Row = {
   video_id: string;
@@ -21,12 +21,19 @@ export async function fetchVideoProgress(userId: string): Promise<Record<string,
     return {};
   }
   const map: Record<string, WatchRecord> = {};
+  const today = getVideoProgressTodayKey();
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
   for (const r of (data || []) as Row[]) {
+    const watchedAt = new Date(r.watched_at).getTime();
+    const watchedToday = watchedAt >= todayStart.getTime();
     map[r.video_id] = {
-      watchedAt: new Date(r.watched_at).getTime(),
+      watchedAt,
       progressSec: r.progress_sec || 0,
       durationSec: r.duration_sec || 0,
       completed: !!r.completed,
+      sessionDate: watchedToday ? today : undefined,
+      todayWatchedSec: watchedToday ? (r.progress_sec || 0) : 0,
     };
   }
   return map;
@@ -47,12 +54,15 @@ export async function upsertVideoProgress(
   rec: WatchRecord,
   youtubeId?: string,
 ) {
+  const todayProgressSec = rec.sessionDate === getVideoProgressTodayKey() && typeof rec.todayWatchedSec === "number" && rec.todayWatchedSec > 0
+    ? Math.round(rec.todayWatchedSec)
+    : Math.round(rec.progressSec || 0);
   const { error } = await supabase.from("video_progress").upsert(
     {
       user_id: userId,
       video_id: videoId,
       youtube_id: youtubeId ?? null,
-      progress_sec: Math.round(rec.progressSec || 0),
+      progress_sec: todayProgressSec,
       duration_sec: Math.round(rec.durationSec || 0),
       completed: !!rec.completed,
       watched_at: new Date(rec.watchedAt || Date.now()).toISOString(),

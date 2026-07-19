@@ -28,6 +28,7 @@ import { EmptyState } from "@/components/shared";
 import { getTodayExerciseMinutes } from "@/lib/yogaProgressService";
 import NativeYouTubePlayer from "@/components/exercises/NativeYouTubePlayer";
 import { isNativeAndroidApp, isNativeIOSApp, isYoutubePlayerMessage, youtubePlayerProxyUrl } from "@/lib/youtubeEmbed";
+import { accumulateWatched, markCompleted, saveDuration } from "@/lib/videoProgressStore";
 
 interface Props {
   packageKey: string | null;
@@ -80,7 +81,6 @@ function WatchModal({
   // Wall-clock fallback: iOS native player and Android simple embed do not
   // post progress events, so we track elapsed time while the modal is open
   // and credit it on close (capped to avoid runaway values).
-  const wallClockOpenedAtRef = useRef<number>(Date.now());
   const wallClockLastReportedAtRef = useRef<number>(Date.now());
   const noPostMessagePath = useNativePlayer || useAndroidSimpleEmbed;
 
@@ -92,9 +92,9 @@ function WatchModal({
       const delta = Math.floor((now - wallClockLastReportedAtRef.current) / 1000);
       if (delta > 0) {
         wallClockLastReportedAtRef.current = now;
-        onProgress(delta, 0, false);
+        if (delta < 30) onProgress(delta, 0, false);
       }
-    }, 10000);
+    }, 1000);
     return () => {
       window.clearInterval(interval);
       const now = Date.now();
@@ -151,7 +151,7 @@ function WatchModal({
         <div className="relative aspect-video">
           {videoId ? (
             useNativePlayer ? (
-              <NativeYouTubePlayer key={`${videoId}-${retryKey}`} videoId={videoId} title={exercise.name} />
+              <NativeYouTubePlayer key={`${videoId}-${retryKey}`} videoId={videoId} title={exercise.name} onNativeClose={onClose} />
             ) : (
               <iframe
                 key={`${videoId}-${retryKey}`}
@@ -210,7 +210,6 @@ export default function ExerciseTab({ packageKey }: Props) {
   const [earnedKeys, setEarnedKeys] = useState<Set<string>>(new Set());
   const [todayMinutes, setTodayMinutes] = useState(0);
   const [loading, setLoading] = useState(true);
-  const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
 
   /** Sum today's watched seconds from video_progress (exercise-namespaced). */
   const loadTodayMinutes = useCallback(async () => {
@@ -218,39 +217,18 @@ export default function ExerciseTab({ packageKey }: Props) {
     setTodayMinutes(await getTodayExerciseMinutes(user.id));
   }, [user]);
 
-  /** Upsert watched seconds for an exercise into video_progress. */
+  /** Save watched seconds locally first, then let the shared video sync push it to the backend. */
   const saveWatchProgress = useCallback(
     async (ex: Exercise, deltaSec: number, durationSec: number, completed: boolean) => {
       if (!user || deltaSec < 1) return;
-      const task = saveQueueRef.current.then(async () => {
-        const videoKey = `exercise:${ex.id}`;
-        const youtube = extractYoutubeId(ex.youtube_url) || null;
-        const { data: existing } = await (supabase as any)
-          .from("video_progress")
-          .select("progress_sec, duration_sec, completed")
-          .eq("user_id", user.id)
-          .eq("video_id", videoKey)
-          .gte("watched_at", startOfTodayISO())
-          .maybeSingle();
-        const prevSec = Math.max(0, Number(existing?.progress_sec) || 0);
-        const nextSec = prevSec + Math.round(deltaSec);
-        await (supabase as any).from("video_progress").upsert(
-          {
-            user_id: user.id,
-            video_id: videoKey,
-            youtube_id: youtube,
-            progress_sec: nextSec,
-            duration_sec: Math.round(durationSec || existing?.duration_sec || 0),
-            completed: completed || !!existing?.completed,
-            watched_at: new Date().toISOString(),
-          },
-          { onConflict: "user_id,video_id" },
-        );
-        window.dispatchEvent(new CustomEvent("bbdo:video-progress-changed"));
-        await loadTodayMinutes();
-      });
-      saveQueueRef.current = task.catch(() => {});
-      await task;
+      const videoKey = `exercise:${ex.id}`;
+      const youtube = extractYoutubeId(ex.youtube_url) || undefined;
+      const roundedDelta = Math.max(1, Math.round(deltaSec));
+      if (youtube && durationSec > 0) saveDuration(youtube, durationSec);
+      accumulateWatched(videoKey, roundedDelta, durationSec, youtube);
+      if (completed) markCompleted(videoKey, Math.max(durationSec, roundedDelta), youtube);
+      setTodayMinutes((prev) => prev + roundedDelta / 60);
+      window.setTimeout(() => void loadTodayMinutes(), 1800);
     },
     [user, loadTodayMinutes],
   );

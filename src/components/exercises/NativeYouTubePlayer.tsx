@@ -4,7 +4,7 @@ import { Maximize2, Play, RotateCcw } from "lucide-react";
 import { isNativeAndroidApp, isNativeIOSApp, youtubePlayerProxyUrl } from "@/lib/youtubeEmbed";
 
 type BBDOYouTubePlayerPlugin = {
-  open(options: { videoId: string; title?: string; start?: number }): Promise<{ opened: boolean }>;
+  open(options: { videoId: string; title?: string; start?: number }): Promise<{ opened?: boolean; closed?: boolean }>;
 };
 
 const BBDOYouTubePlayer = registerPlugin<BBDOYouTubePlayerPlugin>("BBDOYouTubePlayer");
@@ -14,6 +14,7 @@ type NativeYouTubePlayerProps = {
   title: string;
   start?: number;
   autoOpen?: boolean;
+  onNativeClose?: () => void;
 };
 
 export default function NativeYouTubePlayer({
@@ -21,6 +22,7 @@ export default function NativeYouTubePlayer({
   title,
   start = 0,
   autoOpen = true,
+  onNativeClose,
 }: NativeYouTubePlayerProps) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const openedRef = useRef(false);
@@ -41,11 +43,12 @@ export default function NativeYouTubePlayer({
     if (!videoId || launching) return;
     setLaunching(true);
     setFailed(false);
+    let completedNativeSession = false;
     try {
       // Suppress biometric re-lock for a generous window; the fullscreen
       // native player briefly resigns the WKWebView. We don't want Face ID
       // to fire when the user closes the video.
-      (window as any).__bbdoBiometricSuppressUntil = Date.now() + 30 * 60 * 1000;
+      (window as any).__bbdoBiometricSuppressUntil = Date.now() + 45 * 60 * 1000;
       // Announce open so JS parents can record start time for wall-clock credit.
       window.dispatchEvent(new CustomEvent("bbdo:native-player-open", { detail: { videoId } }));
       await BBDOYouTubePlayer.open({
@@ -53,14 +56,18 @@ export default function NativeYouTubePlayer({
         title,
         start: Math.max(0, Math.floor(start || 0)),
       });
+      completedNativeSession = true;
+      (window as any).__bbdoBiometricSuppressUntil = Date.now() + 45 * 60 * 1000;
+      window.dispatchEvent(new CustomEvent("bbdo:native-player-close", { detail: { videoId } }));
       openedRef.current = true;
     } catch (error) {
       console.error("[native-youtube] iOS player failed", error);
       setFailed(true);
     } finally {
       setLaunching(false);
+      if (completedNativeSession) onNativeClose?.();
     }
-  }, [launching, start, title, videoId]);
+  }, [launching, onNativeClose, start, title, videoId]);
 
   useEffect(() => {
     if (!useIOSNativePlayer || !autoOpen || openedRef.current) return;

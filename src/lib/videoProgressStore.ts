@@ -27,6 +27,10 @@ function todayKey(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+export function getVideoProgressTodayKey(): string {
+  return todayKey();
+}
+
 export function loadWatched(): WatchMap {
   if (typeof window === "undefined") return {};
   return safeParse<WatchMap>(localStorage.getItem(WATCHED_KEY), {});
@@ -71,6 +75,7 @@ export function accumulateWatched(videoId: string, deltaSec: number, durationSec
   const prev = map[videoId];
   const day = todayKey();
   const sameDay = prev?.sessionDate === day;
+  const todayWatchedSec = (sameDay ? (prev?.todayWatchedSec ?? 0) : 0) + deltaSec;
   const next: WatchRecord = {
     watchedAt: Date.now(),
     progressSec: prev?.progressSec ?? 0,
@@ -78,7 +83,7 @@ export function accumulateWatched(videoId: string, deltaSec: number, durationSec
     completed: !!prev?.completed,
     totalWatchedSec: (prev?.totalWatchedSec ?? 0) + deltaSec,
     sessionDate: day,
-    todayWatchedSec: (sameDay ? (prev?.todayWatchedSec ?? 0) : 0) + deltaSec,
+    todayWatchedSec,
   };
   map[videoId] = next;
   saveWatched(map);

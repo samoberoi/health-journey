@@ -179,7 +179,8 @@ export default function AppleHealthSnapshotCard() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-4 gap-1.5">
+
           <Tile
             icon={Flame}
             label="Active kcal"

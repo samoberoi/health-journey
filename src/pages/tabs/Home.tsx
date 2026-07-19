@@ -1998,32 +1998,32 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
 
       {/* ─── Diabetes Check-in Card ─── */}
       <motion.div
-        className="liquid-glass rounded-3xl p-5 relative overflow-hidden"
+        className="liquid-glass rounded-2xl p-3.5 relative overflow-hidden"
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.27 }}
       >
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Activity className="w-5 h-5 text-primary" strokeWidth={1.6} />
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Activity className="w-4 h-4 text-primary" strokeWidth={1.6} />
             </div>
-            <div>
-              <span className="text-foreground font-bold text-sm">Diabetes Check-in</span>
+            <div className="min-w-0">
+              <span className="text-foreground font-bold text-[13px]">Diabetes Check-in</span>
               <p className="text-muted-foreground text-[10px] font-medium">
                 {diabetesMorningDone && diabetesEveningDone ? "2/2 logged" : diabetesMorningDone || diabetesEveningDone ? "1/2 logged" : "0/2 logged"}
               </p>
             </div>
           </div>
-          <span className={`px-3 py-1.5 rounded-xl font-bold text-xs ${
+          <span className={`px-2.5 py-1 rounded-lg font-bold text-[10px] shrink-0 ${
             diabetesMorningDone && diabetesEveningDone ? "bg-primary/15 text-primary" :
             diabetesMorningDone || diabetesEveningDone ? "bg-warning-soft text-warning" :
             "bg-muted text-muted-foreground"
           }`}>
-            {diabetesMorningDone && diabetesEveningDone ? "Complete" : diabetesMorningDone || diabetesEveningDone ? "Incomplete" : "Pending"}
+            {diabetesMorningDone && diabetesEveningDone ? "Complete" : diabetesMorningDone || diabetesEveningDone ? "Partial" : "Pending"}
           </span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2">
           <DiabetesSlot
             slot="morning"
             done={diabetesMorningDone}

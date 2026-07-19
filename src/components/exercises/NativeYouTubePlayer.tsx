@@ -61,44 +61,41 @@ export default function NativeYouTubePlayer({
     if (!videoId || launching) return;
     setLaunching(true);
     setFailed(false);
-    // Fire open event so BiometricGate suppresses the Face ID re-prompt.
-    markNativePlayerOpen();
-    window.dispatchEvent(new CustomEvent("bbdo:native-player-open", { detail: { videoId } }));
-    // Unmount the React video modal immediately — the native VC now covers
-    // the whole screen, so there is nothing useful behind it. This prevents
-    // the "spinning empty screen" the user sees after dismissing the native
-    // player: on dismiss they land straight on the underlying app page.
-    const notifyParent = onNativeClose;
-    let parentNotified = false;
+    let didLaunch = false;
+    let closeNotified = false;
     const notifyClosed = () => {
-      if (parentNotified) return;
-      parentNotified = true;
+      if (closeNotified) return;
+      closeNotified = true;
       markNativePlayerClosed();
       window.dispatchEvent(new CustomEvent("bbdo:native-player-close", { detail: { videoId } }));
-    };
-    // Kick off the native VC. The promise resolves when the user dismisses
-    // it — we use that only to re-arm the biometric suppression window.
-    // The React overlay is torn down right away, regardless of when the
-    // promise resolves, so no spinner is left behind.
-    BBDOYouTubePlayer.open({
-      videoId,
-      title,
-      start: Math.max(0, Math.floor(start || 0)),
-    })
-      .catch((error) => {
-        console.error("[native-youtube] iOS player failed", error);
-      })
-      .finally(() => {
-        notifyClosed();
-      });
-    // Give the native VC one frame to present, then unmount the React modal.
-    // Using rAF avoids a visual flicker where the modal disappears before the
-    // native VC has fully covered the screen.
-    requestAnimationFrame(() => {
       setLaunching(false);
-      notifyParent?.();
-    });
+      // Unmount the React video modal immediately so the user lands on the
+      // underlying app page — no spinner / empty screen while React catches up.
+      onNativeClose?.();
+    };
+    try {
+      markNativePlayerOpen();
+      window.dispatchEvent(new CustomEvent("bbdo:native-player-open", { detail: { videoId } }));
+      await BBDOYouTubePlayer.open({
+        videoId,
+        title,
+        start: Math.max(0, Math.floor(start || 0)),
+      });
+      didLaunch = true;
+      openedRef.current = true;
+    } catch (error) {
+      console.error("[native-youtube] iOS player failed", error);
+      setFailed(true);
+    } finally {
+      if (didLaunch) notifyClosed();
+      else {
+        markNativePlayerClosed();
+        window.dispatchEvent(new CustomEvent("bbdo:native-player-close", { detail: { videoId } }));
+        setLaunching(false);
+      }
+    }
   }, [launching, onNativeClose, start, title, videoId]);
+
 
 
   useEffect(() => {

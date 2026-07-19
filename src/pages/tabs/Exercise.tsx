@@ -28,7 +28,7 @@ import { EmptyState } from "@/components/shared";
 import { getTodayExerciseMinutes } from "@/lib/yogaProgressService";
 import NativeYouTubePlayer from "@/components/exercises/NativeYouTubePlayer";
 import { isNativeAndroidApp, isNativeIOSApp, isYoutubePlayerMessage, youtubePlayerProxyUrl } from "@/lib/youtubeEmbed";
-import { accumulateWatched, markCompleted, recordProgress, saveDuration } from "@/lib/videoProgressStore";
+import { accumulateWatched, loadWatched, markCompleted, recordProgress, saveDuration } from "@/lib/videoProgressStore";
 
 const FALLBACK_SHORT_VIDEO_SEC = 120;
 
@@ -235,16 +235,25 @@ export default function ExerciseTab({ packageKey }: Props) {
 
   /** Save watched seconds locally first, then let the shared video sync push it to the backend. */
   const saveWatchProgress = useCallback(
-    async (ex: Exercise, deltaSec: number, durationSec: number, completed: boolean) => {
-      if (!user || deltaSec < 1) return;
+    async (ex: Exercise, deltaSec: number, durationSec: number, completed: boolean, flush = false) => {
+      if (!user) return;
       const videoKey = `exercise:${ex.id}`;
       const youtube = extractYoutubeId(ex.youtube_url) || undefined;
-      const roundedDelta = Math.max(1, Math.round(deltaSec));
-      if (youtube && durationSec > 0) saveDuration(youtube, durationSec);
-      accumulateWatched(videoKey, roundedDelta, durationSec, youtube);
-      if (completed) markCompleted(videoKey, Math.max(durationSec, roundedDelta), youtube);
+      const previous = loadWatched()[videoKey];
+      const safeDuration = Math.max(durationSec || 0, previous?.durationSec || 0, FALLBACK_SHORT_VIDEO_SEC);
+      const roundedDelta = Math.max(0, Math.round(deltaSec));
+      if (youtube && safeDuration > 0) saveDuration(youtube, safeDuration);
+      if (roundedDelta < 1) {
+        if (flush && previous) {
+          recordProgress(videoKey, previous.progressSec || previous.todayWatchedSec || 0, safeDuration, youtube, { flush: true });
+        }
+        return;
+      }
+      accumulateWatched(videoKey, roundedDelta, safeDuration, youtube, { flush });
+      recordProgress(videoKey, Math.min(safeDuration, (previous?.progressSec ?? 0) + roundedDelta), safeDuration, youtube, { flush });
+      if (completed) markCompleted(videoKey, safeDuration, youtube, { flush });
       setTodayMinutes((prev) => prev + roundedDelta / 60);
-      window.setTimeout(() => void loadTodayMinutes(), 1800);
+      window.setTimeout(() => void loadTodayMinutes(), flush ? 250 : 1800);
     },
     [user, loadTodayMinutes],
   );
@@ -744,8 +753,8 @@ export default function ExerciseTab({ packageKey }: Props) {
             setWatching(null);
             void logSetFromWatch(ex);
           }}
-          onProgress={(watchedSec, durationSec, completed) => {
-            void saveWatchProgress(watching, watchedSec, durationSec, completed);
+          onProgress={(watchedSec, durationSec, completed, flush) => {
+            void saveWatchProgress(watching, watchedSec, durationSec, completed, flush);
           }}
         />
       )}

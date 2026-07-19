@@ -20,24 +20,42 @@ import { toast } from "sonner";
 import { fetchUserResults } from "@/lib/labResultsService";
 import { inferConditionsFromLabs } from "@/lib/labInferConditions";
 
-const Field = ({ label, icon: Icon, value, onChange, placeholder, type = "text" }: {
+const Field = ({ label, icon: Icon, value, onChange, placeholder, type = "text", readOnly, hint }: {
   label: string; icon: React.ElementType; value: string;
   onChange: (v: string) => void; placeholder: string; type?: string;
+  readOnly?: boolean; hint?: string;
 }) => (
-  <div className="min-w-0 space-y-1">
+  <div className="min-w-0 space-y-1 w-full">
     <Label className="text-muted-foreground text-[11px] font-medium flex items-center gap-1.5 leading-tight">
       <Icon className="w-3.5 h-3.5 shrink-0" strokeWidth={1.8} />
       {label}
     </Label>
-    <Input
-      type={type}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      className="bg-white border border-border/70 text-foreground text-sm rounded-lg h-10 px-3 py-2 min-w-0 w-full max-w-full box-border shadow-none"
-    />
+    <div className="w-full min-w-0 overflow-hidden">
+      <Input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        readOnly={readOnly}
+        style={{ minWidth: 0, maxWidth: "100%", width: "100%" }}
+        className={`bg-white border border-border/70 text-foreground text-sm rounded-lg h-10 px-3 py-2 min-w-0 w-full max-w-full box-border shadow-none appearance-none [&::-webkit-date-and-time-value]:text-left [&::-webkit-date-and-time-value]:min-h-0 ${readOnly ? "opacity-70" : ""}`}
+      />
+    </div>
+    {hint && <p className="text-[10px] text-muted-foreground leading-tight">{hint}</p>}
   </div>
 );
+
+function computeAgeFromDob(dob: string): number | null {
+  if (!dob) return null;
+  const d = new Date(dob);
+  if (isNaN(d.getTime())) return null;
+  const now = new Date();
+  if (d > now) return 0;
+  let age = now.getFullYear() - d.getFullYear();
+  const m = now.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+  return Math.max(0, age);
+}
 
 const formatLabel = (val: string | undefined | null): string => {
   if (!val) return "—";
@@ -299,7 +317,11 @@ export default function EditProfile({ onBack }: EditProfileProps) {
       if (profile.weight) setWeight(profile.weight.toString());
       if (profile.waist) setWaist(profile.waist.toString());
       if (profile.created_at) setMemberSince(profile.created_at);
-      if (profile.birth_date) setBirthDate(profile.birth_date);
+      if (profile.birth_date) {
+        setBirthDate(profile.birth_date);
+        const derived = computeAgeFromDob(profile.birth_date);
+        if (derived != null) setAge(String(derived));
+      }
       if (profile.marital_status) setMaritalStatus(profile.marital_status);
       if (profile.anniversary_date) setAnniversaryDate(profile.anniversary_date);
       if (profile.spouse_name) setSpouseName(profile.spouse_name);
@@ -555,9 +577,16 @@ export default function EditProfile({ onBack }: EditProfileProps) {
       return;
     }
 
+    // If DOB is set, derive age from it to keep them consistent
+    const effectiveAge = birthDate
+      ? computeAgeFromDob(birthDate)
+      : age
+        ? parseInt(age)
+        : undefined;
+
     // Update localStorage with recomputed score
     saveUser({
-      profile: { name, age: age ? parseInt(age) : undefined, gender, email: trimmedEmail || undefined } as any,
+      profile: { name, age: effectiveAge, gender, email: trimmedEmail || undefined } as any,
       bodyMetrics: bodyMetrics as any,
       lifestyle: lifestyleData as any,
       clinical: clinicalData as any,
@@ -573,7 +602,7 @@ export default function EditProfile({ onBack }: EditProfileProps) {
     // Update backend after capturing previous score state
     const ok = await updateProfile(user.id, {
       name,
-      age: age ? parseInt(age) : null,
+      age: effectiveAge ?? null,
       gender: gender || null,
       phone: phone || null,
       country_code: countryCode || null,
@@ -941,8 +970,30 @@ export default function EditProfile({ onBack }: EditProfileProps) {
             </div>
           </div>
           <Field label="Email" icon={Mail} value={email} onChange={setEmail} placeholder="you@example.com" type="email" />
-          <Field label="Date of Birth" icon={Calendar} value={birthDate} onChange={setBirthDate} placeholder="YYYY-MM-DD" type="date" />
-          <Field label="Age" icon={Calendar} value={age} onChange={setAge} placeholder="Age" type="number" />
+          <div className="grid grid-cols-2 gap-3 min-w-0">
+            <Field
+              label="Date of Birth"
+              icon={Calendar}
+              value={birthDate}
+              onChange={(v) => {
+                setBirthDate(v);
+                const derived = computeAgeFromDob(v);
+                if (derived != null) setAge(String(derived));
+              }}
+              placeholder="YYYY-MM-DD"
+              type="date"
+            />
+            <Field
+              label="Age"
+              icon={Calendar}
+              value={age}
+              onChange={setAge}
+              placeholder="Age"
+              type="number"
+              readOnly={!!birthDate}
+              hint={birthDate ? "Auto from DOB" : undefined}
+            />
+          </div>
 
           <div className="space-y-1.5">
             <Label className="text-muted-foreground text-xs leading-tight break-words">Gender</Label>

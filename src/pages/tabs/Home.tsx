@@ -1574,47 +1574,46 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
         </motion.div>
       ) : fastingState === "no_plan" ? (
         <motion.div
-          className="liquid-glass rounded-3xl p-5 relative overflow-hidden"
+          className="liquid-glass rounded-2xl p-3.5 relative overflow-hidden"
           initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
         >
-          <div className="flex items-center gap-2.5 mb-1">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Timer className="w-5 h-5 text-primary" strokeWidth={1.6} />
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Timer className="w-4 h-4 text-primary" strokeWidth={1.6} />
             </div>
-            <div>
-              <p className="text-foreground font-bold text-sm">
+            <div className="min-w-0">
+              <p className="text-foreground font-bold text-[13px] leading-tight">
                 {packageKey === "foundation" ? "Start your fasting journey" : "Awaiting meeting with your coach"}
               </p>
               <p className="text-muted-foreground text-[10px] font-medium">
-                {packageKey === "foundation" ? "Pick a plan to begin 24 weeks" : "Your coach will assign your fasting protocol"}
+                {packageKey === "foundation" ? "Pick a plan to begin 24 weeks" : "Your coach will assign your protocol"}
               </p>
             </div>
           </div>
           {packageKey === "foundation" ? (
-            <div className="mt-4 space-y-2.5">
+            <div className="mt-3 space-y-1.5">
               {availableProtos.map((p) => {
                 const isStarting = startingProtoId === p.id;
                 return (
-                  <div key={p.id} className="rounded-2xl bg-muted/40 p-3 flex items-center justify-between gap-3">
+                  <div key={p.id} className="rounded-xl bg-muted/40 p-2.5 flex items-center justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="text-sm font-bold text-foreground truncate">{p.protocol_name}</p>
-                      <p className="text-[10px] text-muted-foreground">{p.total_weeks} weeks · starts with 12:12 (FMOD 7 AM · LMOD 7 PM)</p>
+                      <p className="text-[13px] font-bold text-foreground truncate">{p.protocol_name}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">{p.total_weeks}w · 12:12 start</p>
                     </div>
                     <button
                       onClick={() => handleStartProtocol(p.id)}
                       disabled={isStarting}
-                      className="px-4 py-2 rounded-xl bg-primary text-primary-foreground font-bold text-xs shrink-0 disabled:opacity-60"
+                      className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground font-bold text-[11px] shrink-0 disabled:opacity-60"
                     >
-                      {isStarting ? "Starting…" : "Start"}
+                      {isStarting ? "…" : "Start"}
                     </button>
                   </div>
                 );
               })}
             </div>
           ) : (
-            <div className="mt-4 rounded-2xl bg-primary/5 border border-primary/15 p-3 text-xs text-muted-foreground leading-relaxed">
+            <div className="mt-3 rounded-xl bg-primary/5 border border-primary/15 p-2.5 text-[11px] text-muted-foreground leading-relaxed">
               Your coach will design a fasting protocol tailored to your health markers during your first 1:1 session.
-              The full plan, FMOD/LMOD windows and weekly progression will appear here right after that meeting.
             </div>
           )}
         </motion.div>

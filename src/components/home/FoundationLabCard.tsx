@@ -100,23 +100,49 @@ export default function FoundationLabCard({ userId }: Props) {
           className="w-full text-left rounded-3xl p-5 text-white shadow-card relative overflow-hidden active:scale-[0.99] transition-transform"
           style={{ background: "var(--bbdo-gradient)" }}
         >
-          <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-white/10 blur-2xl pointer-events-none" />
-          <div className="relative flex items-start gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center shrink-0">
-              <Sparkles className="w-5 h-5 text-white" strokeWidth={1.8} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/80">
-                Your reports are available
+          <div className="absolute -right-16 -top-16 w-52 h-52 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+          <div className="relative flex items-start justify-between gap-3 mb-4">
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/80">
+                Your health profile
               </p>
-              <h3 className="text-lg font-black mt-1 leading-tight">
-                View your Health Profile
+              <h3 className="text-lg font-black leading-tight mt-0.5">
+                Baseline report ready
               </h3>
-              <p className="text-xs text-white/85 mt-1.5 leading-relaxed">
-                Tap to open your body map — track every marker and compare against your baseline as you retest.
-              </p>
+              {reportDate && (
+                <p className="text-[11px] text-white/75 mt-1">
+                  Reported {new Date(reportDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                </p>
+              )}
             </div>
             <ChevronRight className="w-5 h-5 text-white/90 shrink-0 mt-1" />
+          </div>
+          {markers.length > 0 && (
+            <div className="relative grid grid-cols-2 gap-2">
+              {markers.map((m) => {
+                const Icon = m.icon;
+                const bad = m.status === "high" || m.status === "low";
+                return (
+                  <div key={m.code} className="rounded-2xl bg-white/15 backdrop-blur px-3 py-2.5 ring-1 ring-white/20">
+                    <div className="flex items-center gap-1.5 text-white/80 text-[10px] font-bold uppercase tracking-wider">
+                      <Icon className="w-3 h-3" />
+                      <span className="truncate">{m.label}</span>
+                    </div>
+                    <div className="flex items-baseline gap-1 mt-1">
+                      <span className="text-base font-black leading-none">{m.value}</span>
+                      <span className="text-[10px] text-white/70">{m.unit}</span>
+                    </div>
+                    <span className={`inline-block mt-1 text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full ${bad ? "bg-amber-300 text-amber-900" : "bg-emerald-300 text-emerald-900"}`}>
+                      {bad ? m.status : "Normal"}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <div className="relative mt-4 flex items-center gap-1.5 text-xs font-bold text-white/95">
+            Tap to see your full body map & marker trends
+            <ChevronRight className="w-3.5 h-3.5" />
           </div>
         </motion.button>
       ) : (

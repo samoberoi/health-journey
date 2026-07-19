@@ -1,6 +1,8 @@
 const VIDEO_BIOMETRIC_SUPPRESS_KEY = "bbdo_video_biometric_suppress_until";
 const NATIVE_PLAYER_ACTIVE_KEY = "bbdo_native_player_active";
+const NATIVE_PLAYER_TRANSITION_UNTIL_KEY = "bbdo_native_player_transition_until";
 const VIDEO_SUPPRESSION_MS = 45 * 60 * 1000;
+const VIDEO_TRANSITION_MS = 90 * 1000;
 
 function storage() {
   if (typeof window === "undefined") return null;
@@ -30,10 +32,21 @@ export function isNativeVideoSuppressionActive() {
   return Date.now() < readNativeVideoSuppressUntil() || isNativeVideoContextActive();
 }
 
+export function isNativeVideoTransitionActive() {
+  if (typeof window === "undefined") return false;
+  const transitionUntil = Number(storage()?.getItem(NATIVE_PLAYER_TRANSITION_UNTIL_KEY) || 0);
+  return isNativeVideoContextActive() || Date.now() < transitionUntil;
+}
+
+function extendNativeVideoTransition() {
+  storage()?.setItem(NATIVE_PLAYER_TRANSITION_UNTIL_KEY, String(Date.now() + VIDEO_TRANSITION_MS));
+}
+
 export function markNativeVideoOpen() {
   if (typeof window === "undefined") return;
   (window as any).__bbdoNativePlayerActive = true;
   storage()?.setItem(NATIVE_PLAYER_ACTIVE_KEY, "1");
+  extendNativeVideoTransition();
   extendNativeVideoSuppression();
 }
 
@@ -41,5 +54,6 @@ export function markNativeVideoClosed() {
   if (typeof window === "undefined") return;
   (window as any).__bbdoNativePlayerActive = false;
   storage()?.removeItem(NATIVE_PLAYER_ACTIVE_KEY);
+  extendNativeVideoTransition();
   extendNativeVideoSuppression();
 }

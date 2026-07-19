@@ -155,15 +155,46 @@ export async function downloadInvoice({ subscription, userName, userEmail, userP
 </body>
 </html>`;
 
+  const filename = `Invoice-${invoiceNo}.html`;
+
+  // Native (iOS/Android via Capacitor): write file and open the native share sheet
+  // so the user can save/print/share. window.open + a.download do not work reliably
+  // inside WKWebView / Android WebView.
+  try {
+    const { Capacitor } = await import("@capacitor/core");
+    if (Capacitor.isNativePlatform()) {
+      const { Filesystem, Directory, Encoding } = await import("@capacitor/filesystem");
+      const { Share } = await import("@capacitor/share");
+      const writeResult = await Filesystem.writeFile({
+        path: filename,
+        data: html,
+        directory: Directory.Cache,
+        encoding: Encoding.UTF8,
+      });
+      await Share.share({
+        title: "BBDO Invoice",
+        text: `Invoice ${invoiceNo}`,
+        url: writeResult.uri,
+        dialogTitle: "Save or share invoice",
+      });
+      return;
+    }
+  } catch (err) {
+    console.warn("[invoice] native share failed, falling back to browser download", err);
+  }
+
+  // Browser: try to open in a new tab for print; fall back to blob download.
   const printWindow = window.open("", "_blank");
   if (!printWindow) {
     const blob = new Blob([html], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Invoice-${invoiceNo}.html`;
+    a.download = filename;
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(url);
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     return;
   }
   printWindow.document.write(html);

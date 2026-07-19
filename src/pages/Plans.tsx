@@ -43,7 +43,15 @@ export default function Plans() {
         user ? fetchActiveSubscription(user.id) : Promise.resolve(null),
         user ? fetchLatestSubscription(user.id) : Promise.resolve(null),
       ]);
-      const visible = data.filter((p) => p.show_in_onboarding !== false);
+      const activeKey = normalizePlanKey(activeSub?.plan_id);
+      let visible = data.filter((p) => p.show_in_onboarding !== false);
+      // When user already has an active plan, only show upgrades (higher sort_order)
+      if (activeKey) {
+        const current = data.find((p) => p.plan_key === activeKey);
+        if (current) {
+          visible = visible.filter((p) => p.sort_order > current.sort_order);
+        }
+      }
       setPkgs(visible);
       const activeKey = normalizePlanKey(activeSub?.plan_id);
       setCurrentPlanKey(activeKey);

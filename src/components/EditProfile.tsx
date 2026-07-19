@@ -1052,7 +1052,7 @@ export default function EditProfile({ onBack }: EditProfileProps) {
               Country
             </Label>
             <Select value={country} onValueChange={setCountry}>
-              <SelectTrigger className="bg-accent/50 border-border/50 text-foreground rounded-xl h-11">
+              <SelectTrigger className="bg-white border border-border/70 text-foreground text-sm rounded-lg h-10 shadow-none">
                 <SelectValue placeholder="Select country" />
               </SelectTrigger>
               <SelectContent className="max-h-72">

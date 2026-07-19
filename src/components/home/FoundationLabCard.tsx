@@ -99,6 +99,11 @@ export default function FoundationLabCard({ userId }: Props) {
               >
                 Book BBDO Basic <ChevronRight className="w-3.5 h-3.5" />
               </button>
+              <div className="mt-2.5 inline-flex items-center gap-1.5">
+                <span className="text-[9px] font-black tracking-[0.18em] text-muted-foreground uppercase">Powered by</span>
+                <span className="text-[11px] font-black tracking-tight text-foreground">Thyrocare</span>
+              </div>
+
             </div>
           </div>
         </motion.div>

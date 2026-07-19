@@ -2164,9 +2164,9 @@ function DiabetesSlot({
         ) : (
           <button
             onClick={() => setEditing(true)}
-            className="no-pill w-full h-12 rounded-xl bg-primary/10 text-primary text-[13px] font-bold flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform"
+            className="no-pill w-full h-9 rounded-lg bg-primary/10 text-primary text-[11px] font-bold flex items-center justify-center gap-1 active:scale-[0.98] transition-transform"
           >
-            <Plus className="w-4 h-4" strokeWidth={1.75} />
+            <Plus className="w-3.5 h-3.5" strokeWidth={2} />
             Add reading
           </button>
         )

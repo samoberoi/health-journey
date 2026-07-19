@@ -18,6 +18,8 @@ import {
 import NativeYouTubePlayer from "@/components/exercises/NativeYouTubePlayer";
 import { isNativeAndroidApp, isNativeIOSApp, isYoutubePlayerMessage, youtubePlayerProxyUrl } from "@/lib/youtubeEmbed";
 
+const FALLBACK_SHORT_VIDEO_SEC = 120;
+
 const VIDEO_ICON_MAP: Record<string, LucideIcon> = {
   Activity,
   Brain,
@@ -46,6 +48,7 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
   const lastPosRef = useRef<number>(0);
   const currentTimeRef = useRef<number>(0);
   const durationRef = useRef<number>(0);
+  const nativeSessionStartRef = useRef<number>(Date.now());
   const [resumeFrom, setResumeFrom] = useState<number>(0);
   const [restarted, setRestarted] = useState(false);
   const [playerError, setPlayerError] = useState(false);
@@ -96,6 +99,19 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
     }
   };
 
+  const commitNativeSession = (flush = false) => {
+    const elapsed = Math.min(4 * 60 * 60, Math.max(0, (Date.now() - nativeSessionStartRef.current) / 1000));
+    if (elapsed <= 0) return;
+    const duration = durationRef.current || Math.max(FALLBACK_SHORT_VIDEO_SEC, Math.ceil(elapsed));
+    watchedSecRef.current = Math.max(watchedSecRef.current, elapsed);
+    const progress = Math.min(duration, watchedSecRef.current);
+    accumulateWatched(video.id, elapsed, duration, video.youtubeId, { flush });
+    recordProgress(video.id, progress, duration, video.youtubeId, { flush });
+    if (progress / duration >= 0.9) {
+      markCompleted(video.id, duration, video.youtubeId, { flush });
+    }
+  };
+
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
       if (useAndroidSimpleEmbed || event.source !== iframeRef.current?.contentWindow) return;
@@ -140,7 +156,7 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
       window.removeEventListener("message", onMessage);
       const d = Number(durationRef.current || 0);
       const t = Number(currentTimeRef.current || 0);
-      if (t > 1) recordProgress(video.id, t, d, video.youtubeId);
+      if (t > 1) recordProgress(video.id, t, d, video.youtubeId, { flush: true });
       lastTickRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -150,6 +166,7 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
   useEffect(() => {
     if (!useNativePlayer && !useAndroidSimpleEmbed) return;
     const startedAt = Date.now();
+    nativeSessionStartRef.current = startedAt;
     let lastAt = startedAt;
     const interval = window.setInterval(() => {
       const now = Date.now();
@@ -158,6 +175,8 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
       if (delta > 0 && delta < 30) {
         watchedSecRef.current += delta;
         accumulateWatched(video.id, delta, durationRef.current || 0, video.youtubeId);
+        const fallbackDuration = durationRef.current || Math.max(FALLBACK_SHORT_VIDEO_SEC, Math.ceil((now - startedAt) / 1000));
+        recordProgress(video.id, Math.min(fallbackDuration, watchedSecRef.current), fallbackDuration, video.youtubeId);
       }
     }, 1000);
     return () => {
@@ -165,8 +184,9 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
       const delta = Math.min(3600, (Date.now() - lastAt) / 1000);
       if (delta > 0) {
         watchedSecRef.current += delta;
-        accumulateWatched(video.id, delta, durationRef.current || 0, video.youtubeId);
+        accumulateWatched(video.id, delta, durationRef.current || 0, video.youtubeId, { flush: true });
       }
+      commitNativeSession(true);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [useNativePlayer, useAndroidSimpleEmbed, video.id, video.youtubeId, restarted]);
@@ -176,6 +196,11 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
     setResumeFrom(0);
     setPlayerError(false);
     setRestarted((v) => !v);
+  };
+
+  const handleNativeClose = () => {
+    commitNativeSession(true);
+    onClose();
   };
 
   return (
@@ -235,7 +260,7 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
                 videoId={video.youtubeId}
                 title={video.name}
                 start={restarted ? 0 : resumeFrom}
-                onNativeClose={onClose}
+                onNativeClose={handleNativeClose}
               />
             ) : (
               <iframe

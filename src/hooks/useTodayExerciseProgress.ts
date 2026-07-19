@@ -2,6 +2,20 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDailyExerciseGoal } from "@/hooks/useAppSettings";
 import { getTodayExerciseMinutes } from "@/lib/yogaProgressService";
+import { getVideoProgressTodayKey, loadWatched } from "@/lib/videoProgressStore";
+
+function localExerciseMinutesToday() {
+  if (typeof window === "undefined") return 0;
+  const today = getVideoProgressTodayKey();
+  let seconds = 0;
+  for (const [videoId, record] of Object.entries(loadWatched())) {
+    if (!videoId.startsWith("exercise:")) continue;
+    if (record.sessionDate === today) {
+      seconds += Math.max(0, record.todayWatchedSec ?? record.progressSec ?? 0);
+    }
+  }
+  return Math.round((seconds / 60) * 10) / 10;
+}
 
 export function useTodayExerciseProgress(fallbackGoal = 30) {
   const { user } = useAuth();
@@ -9,22 +23,27 @@ export function useTodayExerciseProgress(fallbackGoal = 30) {
   const [minutes, setMinutes] = useState(0);
 
   const refresh = useCallback(async () => {
+    const localMinutes = localExerciseMinutesToday();
     if (!user?.id) {
-      setMinutes(0);
+      setMinutes(localMinutes);
       return;
     }
-    setMinutes(await getTodayExerciseMinutes(user.id));
+    setMinutes(localMinutes);
+    const backendMinutes = await getTodayExerciseMinutes(user.id);
+    setMinutes(Math.max(localMinutes, backendMinutes));
   }, [user?.id]);
 
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
+      const localMinutes = localExerciseMinutesToday();
       if (!user?.id) {
-        if (!cancelled) setMinutes(0);
+        if (!cancelled) setMinutes(localMinutes);
         return;
       }
+      if (!cancelled) setMinutes(localMinutes);
       const next = await getTodayExerciseMinutes(user.id);
-      if (!cancelled) setMinutes(next);
+      if (!cancelled) setMinutes(Math.max(localMinutes, next));
     };
 
     void load();

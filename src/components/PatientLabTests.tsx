@@ -642,110 +642,31 @@ export default function PatientLabTests({ alwaysShow = false, foundationMode = f
       })}
 
 
-      <Dialog open={!!bookingRec} onOpenChange={(o) => !o && setBookingRec(null)}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Book Lab Test</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div>
-              <Label>Patient Name</Label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label>Age</Label>
-                <Input type="number" value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })} />
-              </div>
-              <div>
-                <Label>Gender</Label>
-                <select className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
-                  value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })}>
-                  <option>Male</option><option>Female</option><option>Other</option>
-                </select>
-              </div>
-            </div>
-            <div>
-              <Label>Mobile</Label>
-              <Input value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} />
-            </div>
-            <div>
-              <Label>Email (optional)</Label>
-              <Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-            </div>
-            <div>
-              <Label className="flex items-center gap-1"><MapPin className="w-3 h-3" /> Pincode</Label>
-              <Input value={form.pincode} inputMode="numeric" maxLength={6} onChange={(e) => {
-                const v = e.target.value.replace(/\D/g, "").slice(0, 6);
-                setForm({ ...form, pincode: v });
-                if (v.length === 6) checkPin(v); else setPinOk(null);
-              }} />
-              {pinChecking && <p className="text-xs text-muted-foreground mt-1">Checking serviceability…</p>}
-              {pinOk === true && <p className="text-xs text-primary mt-1">✓ Sample collection available</p>}
-              {pinOk === false && <p className="text-xs text-destructive mt-1">Not serviceable in this pincode</p>}
-            </div>
-            <div>
-              <Label>Address</Label>
-              <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
-            </div>
-            <div>
-              <Label>Collection Date</Label>
-              <Input
-                type="date"
-                min={new Date().toISOString().slice(0, 10)}
-                value={form.collection_date}
-                onChange={(e) => setForm({ ...form, collection_date: e.target.value })}
-              />
-            </div>
-            <div>
-              <div className="flex items-center justify-between">
-                <Label>Available slots</Label>
-                {slotsSource === "fallback" && (
-                  <span className="text-[10px] text-muted-foreground">Standard times</span>
-                )}
-              </div>
-              {!form.pincode || !form.collection_date ? (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Enter pincode and pick a date to see available slots.
-                </p>
-              ) : slotsLoading ? (
-                <p className="text-xs text-muted-foreground mt-1">Loading slots…</p>
-              ) : slots.length === 0 ? (
-                <p className="text-xs text-destructive mt-1">No slots available for this date.</p>
-              ) : (
-                <div className="mt-2 flex flex-wrap gap-2 max-h-40 overflow-y-auto">
-                  {slots.map((s) => {
-                    const selected = form.collection_slot === s.start;
-                    const disabled = !s.available;
-                    return (
-                      <button
-                        key={s.start}
-                        type="button"
-                        disabled={disabled}
-                        onClick={() => setForm({ ...form, collection_slot: s.start })}
-                        className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
-                          selected
-                            ? "bg-primary text-primary-foreground border-primary"
-                            : disabled
-                              ? "bg-muted text-muted-foreground/50 border-border line-through cursor-not-allowed"
-                              : "bg-background text-foreground border-border hover:bg-accent"
-                        }`}
-                      >
-                        {s.start}
-                        {s.end ? `–${s.end}` : ""}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setBookingRec(null)}>Cancel</Button>
-            <Button onClick={submitOrder} disabled={submitting || pinOk === false || !form.collection_slot}>
-              {submitting ? "Booking…" : "Confirm Booking"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <LabBookingDialog
+        open={!!bookingRec}
+        onClose={() => setBookingRec(null)}
+        productCodes={bookingRec?.product_codes || []}
+        recommendationId={bookingRec?.id || null}
+        onBooked={async () => {
+          if (!user) return;
+          const [{ data: r }, { data: o }] = await Promise.all([
+            supabase.from("thyrocare_recommendations" as any)
+              .select("id, product_codes, notes, status, recommended_at")
+              .eq("user_id", user.id).order("recommended_at", { ascending: false }),
+            supabase.from("thyrocare_orders" as any)
+              .select("id, recommendation_id, product_codes, thyrocare_order_id, thyrocare_lead_id, status, status_detail, beneficiary_name, beneficiary_age, beneficiary_gender, mobile, email, pincode, address, collection_date, collection_slot, amount, raw_response, created_at")
+              .eq("user_id", user.id).order("created_at", { ascending: false }),
+          ]);
+          setRecs(((r as any) || []) as Rec[]);
+          setOrders(((o as any) || []) as Order[]);
+          const orderMap: Record<string, Order> = {};
+          for (const ox of (((o as any) || []) as Order[])) {
+            if (ox.recommendation_id && !orderMap[ox.recommendation_id]) orderMap[ox.recommendation_id] = ox;
+          }
+          setOrdersByRec(orderMap);
+        }}
+      />
+
 
       <Dialog open={!!detailsTest} onOpenChange={(o) => !o && setDetailsTest(null)}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">

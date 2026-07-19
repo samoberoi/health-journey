@@ -442,9 +442,9 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
       if (!groups.has(it.filter_id)) groups.set(it.filter_id, []);
       groups.get(it.filter_id)!.push(it);
     }
-    return filters
-      .filter((f) => groups.has(f.id))
-      .map((f) => ({ filter: f, items: groups.get(f.id)! }));
+    // Include every active filter — empty groups render a placeholder row so
+    // categories with no currently-matching foods are still discoverable.
+    return filters.map((f) => ({ filter: f, items: groups.get(f.id) ?? [] }));
   }, [visibleItems, filters, isGlobalSort, presetCategory, search]);
 
   // If the current category is dominated by avoid/limit items, show a redirect banner.

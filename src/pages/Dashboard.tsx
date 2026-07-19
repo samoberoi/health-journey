@@ -418,8 +418,9 @@ export default function Dashboard() {
                 {notificationsOpen ? (
                   <NotificationsPanel embedded onClose={() => setNotificationsOpen(false)} />
                 ) : (
-                  tabContent[activeTab]
+                  <Suspense fallback={<TabFallback />}>{tabContent[activeTab]}</Suspense>
                 )}
+
               </motion.div>
             </AnimatePresence>
           </div>

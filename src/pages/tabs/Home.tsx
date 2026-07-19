@@ -47,6 +47,7 @@ import { createNotification } from "@/lib/notificationService";
 import { whatsappCallUrl, isMeetingCallable } from "@/lib/coachAvailability";
 import { Phone } from "lucide-react";
 import CoachSummaryDialog from "@/components/CoachSummaryDialog";
+import FoundationLabCard from "@/components/home/FoundationLabCard";
 
 function getHabitItems(t: (k: string) => string) {
   return [

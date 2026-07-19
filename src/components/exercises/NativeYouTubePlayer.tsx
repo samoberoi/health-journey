@@ -2,30 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Capacitor, registerPlugin } from "@capacitor/core";
 import { Maximize2, Play, RotateCcw } from "lucide-react";
 import { isNativeAndroidApp, isNativeIOSApp, youtubePlayerProxyUrl } from "@/lib/youtubeEmbed";
+import { markNativeVideoClosed, markNativeVideoOpen } from "@/lib/nativeVideoSession";
 
 type BBDOYouTubePlayerPlugin = {
   open(options: { videoId: string; title?: string; start?: number }): Promise<{ opened?: boolean; closed?: boolean; elapsedSec?: number }>;
 };
 
 const BBDOYouTubePlayer = registerPlugin<BBDOYouTubePlayerPlugin>("BBDOYouTubePlayer");
-const VIDEO_BIOMETRIC_SUPPRESS_KEY = "bbdo_video_biometric_suppress_until";
-const NATIVE_PLAYER_ACTIVE_KEY = "bbdo_native_player_active";
-
-function markNativePlayerOpen() {
-  const until = Date.now() + 45 * 60 * 1000;
-  (window as any).__bbdoNativePlayerActive = true;
-  (window as any).__bbdoBiometricSuppressUntil = until;
-  sessionStorage.setItem(NATIVE_PLAYER_ACTIVE_KEY, "1");
-  sessionStorage.setItem(VIDEO_BIOMETRIC_SUPPRESS_KEY, String(until));
-}
-
-function markNativePlayerClosed() {
-  const until = Date.now() + 45 * 60 * 1000;
-  (window as any).__bbdoNativePlayerActive = false;
-  (window as any).__bbdoBiometricSuppressUntil = until;
-  sessionStorage.removeItem(NATIVE_PLAYER_ACTIVE_KEY);
-  sessionStorage.setItem(VIDEO_BIOMETRIC_SUPPRESS_KEY, String(until));
-}
 
 type NativeYouTubePlayerProps = {
   videoId: string;
@@ -67,7 +50,7 @@ export default function NativeYouTubePlayer({
     const notifyClosed = (result?: { elapsedSec?: number }) => {
       if (closeNotified) return;
       closeNotified = true;
-      markNativePlayerClosed();
+      markNativeVideoClosed();
       window.dispatchEvent(new CustomEvent("bbdo:native-player-close", { detail: { videoId, elapsedSec: result?.elapsedSec } }));
       setLaunching(false);
       // Unmount the React video modal immediately so the user lands on the
@@ -75,7 +58,7 @@ export default function NativeYouTubePlayer({
       onNativeClose?.(result);
     };
     try {
-      markNativePlayerOpen();
+      markNativeVideoOpen();
       window.dispatchEvent(new CustomEvent("bbdo:native-player-open", { detail: { videoId } }));
       openResult = await BBDOYouTubePlayer.open({
         videoId,
@@ -90,7 +73,7 @@ export default function NativeYouTubePlayer({
     } finally {
       if (didLaunch) notifyClosed(openResult);
       else {
-        markNativePlayerClosed();
+        markNativeVideoClosed();
         window.dispatchEvent(new CustomEvent("bbdo:native-player-close", { detail: { videoId } }));
         setLaunching(false);
       }

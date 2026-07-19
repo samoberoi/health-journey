@@ -97,37 +97,33 @@ export default function FoundationLabCard({ userId }: Props) {
           transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
           className="liquid-glass rounded-3xl p-5 ring-1 ring-[var(--bbdo-red)]/30"
         >
-          <div className="flex items-start gap-3">
-            <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
-              style={{ background: "var(--bbdo-red)" }}>
-              <FlaskConical className="w-5 h-5 text-white" strokeWidth={1.8} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.18em]" style={{ color: "var(--bbdo-red)" }}>
-                    Day-1 essential
-                  </p>
-                  <h3 className="text-base font-black text-foreground mt-1 leading-tight">
-                    Book your BBDO Basic lab test
-                  </h3>
-                </div>
-                <ThyrocarePoweredBy variant="dark" className="ml-auto" />
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: "var(--bbdo-red)" }}>
+                <FlaskConical className="w-4 h-4 text-white" strokeWidth={2} />
               </div>
-              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                This first test helps personalise your plan. Once your report is ready, your Health Profile and body map will unlock on Home.
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] truncate" style={{ color: "var(--bbdo-red)" }}>
+                Day-1 essential
               </p>
-              <button
-                type="button"
-                onClick={openBooking}
-                disabled={!basicCode}
-                className="mt-3 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold text-white active:scale-[0.98] transition-transform disabled:opacity-60"
-                style={{ background: "var(--bbdo-red)" }}
-              >
-                Book lab test <ChevronRight className="w-3.5 h-3.5" />
-              </button>
             </div>
+            <ThyrocarePoweredBy variant="dark" />
           </div>
+          <h3 className="text-lg font-black text-foreground leading-tight">
+            Book your BBDO Basic lab test
+          </h3>
+          <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+            This first test helps personalise your plan. Once your report is ready, your Health Profile and body map will unlock on Home.
+          </p>
+          <button
+            type="button"
+            onClick={openBooking}
+            disabled={!basicCode}
+            className="mt-4 inline-flex items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-bold text-white active:scale-[0.98] transition-transform disabled:opacity-60"
+            style={{ background: "var(--bbdo-red)" }}
+          >
+            Book lab test <ChevronRight className="w-4 h-4" />
+          </button>
         </motion.div>
       )}
 

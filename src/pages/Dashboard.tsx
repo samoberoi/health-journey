@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Home, Play, Users, Stethoscope, Zap, Timer, Pill, FlaskConical, LogOut, Footprints, Compass, Dumbbell, MessageCircle, Plus, CalendarDays } from "lucide-react";
 import Avocado from "@/components/icons/Avocado";
@@ -10,16 +10,27 @@ import bbdoLogo from "@/assets/logo.png";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import LogFAB from "@/components/LogFAB";
 import BottomNav from "@/components/BottomNav";
+
+// Home tab loads eagerly so /home paints immediately.
 import HomeTab from "./tabs/Home";
-import Movement from "./tabs/Movement";
-import ExerciseTab from "./tabs/Exercise";
-import Videos from "./tabs/Videos";
-import Community from "./tabs/Community";
-import Profile from "./tabs/Profile";
-import Messages from "./tabs/Messages";
-import Consult from "./tabs/Consult";
-import LabTestsTab from "./tabs/LabTests";
-import Diet from "./tabs/Diet";
+
+// Other tabs load on demand; prefetched below when the Dashboard mounts.
+const Movement = lazy(() => import("./tabs/Movement"));
+const ExerciseTab = lazy(() => import("./tabs/Exercise"));
+const Videos = lazy(() => import("./tabs/Videos"));
+const Community = lazy(() => import("./tabs/Community"));
+const Profile = lazy(() => import("./tabs/Profile"));
+const Messages = lazy(() => import("./tabs/Messages"));
+const Consult = lazy(() => import("./tabs/Consult"));
+const LabTestsTab = lazy(() => import("./tabs/LabTests"));
+const Diet = lazy(() => import("./tabs/Diet"));
+
+const TabFallback = () => (
+  <div className="w-full h-full flex items-center justify-center py-16">
+    <div className="h-6 w-6 rounded-full border-2 border-primary/25 border-t-primary animate-spin" />
+  </div>
+);
+
 
 import UserFasting from "@/components/UserFasting";
 import UserSupplements from "@/components/UserSupplements";
@@ -81,6 +92,27 @@ export default function Dashboard() {
   const { canSeeTab, packageKey } = useRbac();
   const storedUser = useUserStore();
   const { counts: attentionCounts } = useAttentionCounts();
+
+  // Prefetch sibling tabs during idle time so switches feel instant.
+  useEffect(() => {
+    const idle = (cb: () => void) =>
+      (window as any).requestIdleCallback
+        ? (window as any).requestIdleCallback(cb, { timeout: 2500 })
+        : setTimeout(cb, 800);
+    idle(() => {
+      void import("./tabs/Exercise");
+      void import("./tabs/Videos");
+      void import("./tabs/Diet");
+      void import("./tabs/Community");
+      void import("./tabs/Movement");
+      void import("./tabs/Profile");
+      void import("./tabs/LabTests");
+      void import("./tabs/Consult");
+      void import("./tabs/Messages");
+    });
+  }, []);
+
+
 
   const userAvatar = storedUser?.avatarUrl || (user as any)?.user_metadata?.avatar_url;
   const userName =
@@ -407,8 +439,9 @@ export default function Dashboard() {
                 {notificationsOpen ? (
                   <NotificationsPanel embedded onClose={() => setNotificationsOpen(false)} />
                 ) : (
-                  tabContent[activeTab]
+                  <Suspense fallback={<TabFallback />}>{tabContent[activeTab]}</Suspense>
                 )}
+
               </motion.div>
             </AnimatePresence>
           </div>
@@ -441,8 +474,11 @@ export default function Dashboard() {
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1]}}
           >
             <div className="max-w-3xl mx-auto">
-               <Profile onClose={handleCloseProfile} isDark={isDark} onToggleTheme={toggleTheme} />
+               <Suspense fallback={<TabFallback />}>
+                 <Profile onClose={handleCloseProfile} isDark={isDark} onToggleTheme={toggleTheme} />
+               </Suspense>
             </div>
+
           </motion.div>
         )}
       </AnimatePresence>

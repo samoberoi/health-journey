@@ -15,11 +15,10 @@ const ICON_FOR: Record<Tab, AppIconName> = {
   fasting: "clock",
   supplements: "pill",
   labs: "chart",
-  videos: "video",
+  videos: "yoga",
   community: "users",
   consult: "stethoscope",
   messages: "chat",
-  
 } as const;
 
 // Per-tab accent colors (PUNCH pillars get distinct colors so each section is instantly identifiable)

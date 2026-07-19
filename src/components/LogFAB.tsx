@@ -396,7 +396,7 @@ export default function LogFAB({ packageKey }: { packageKey?: string | null }) {
             >
               <span
                 className="w-11 h-11 rounded-xl flex items-center justify-center"
-                style={{ background: breathDone ? "#10B981" : "var(--bbdo-blue)" }}
+                style={{ background: breathDone ? "#10B981" : "var(--bbdo-red, #EA6A5E)" }}
               >
                 <Wind className="w-5 h-5 text-white" strokeWidth={1.7} />
               </span>
@@ -405,8 +405,8 @@ export default function LogFAB({ packageKey }: { packageKey?: string | null }) {
                 <span
                   className="text-[9px] font-black px-1.5 py-0.5 rounded-md"
                   style={{
-                    background: breathDone ? "#10B98122" : "var(--bbdo-blue-soft)",
-                    color: breathDone ? "#10B981" : "var(--bbdo-blue)",
+                    background: breathDone ? "#10B98122" : "rgba(234,106,94,0.14)",
+                    color: breathDone ? "#10B981" : "var(--bbdo-red, #EA6A5E)",
                   }}
                 >
                   {breathCount}/{breathGoal}

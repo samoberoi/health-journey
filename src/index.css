@@ -483,6 +483,7 @@
   }
   html.bb-native.bb-android .ob-lock { padding-bottom: var(--bbdo-native-bottom-guard); }
   html.bb-native.bb-android .ob-lock > .flex-1 { padding-bottom: calc(env(safe-area-inset-bottom) + var(--bbdo-native-bottom-guard) + 1.5rem) !important; }
+  html.bb-native.bb-android .ob-bottom { padding-bottom: calc(var(--bbdo-native-bottom-guard) + 1rem); }
   .ob-bg { position: absolute; inset: 0; z-index: 0; opacity: 0.14; }
   .ob-bg img { width: 100%; height: 100%; object-fit: cover; }
   .ob-bg::after {

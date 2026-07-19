@@ -74,13 +74,11 @@ export default function NativeYouTubePlayer({
     try {
       markNativePlayerOpen();
       window.dispatchEvent(new CustomEvent("bbdo:native-player-open", { detail: { videoId } }));
-      const safetyTimer = window.setTimeout(notifyClosed, 1200);
       await BBDOYouTubePlayer.open({
         videoId,
         title,
         start: Math.max(0, Math.floor(start || 0)),
       });
-      window.clearTimeout(safetyTimer);
       didLaunch = true;
       openedRef.current = true;
     } catch (error) {

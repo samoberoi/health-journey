@@ -7,6 +7,9 @@ import { COUNTRIES, type Country } from "@/lib/countries";
 import { saveUser } from "@/lib/userStore";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchProfile, loadProfileToLocal } from "@/lib/profileService";
+import { fetchActiveSubscription } from "@/lib/subscriptionService";
+import { isCoachUser, isAdminUser } from "@/lib/roleService";
+import { isChannelPartner } from "@/lib/channelPartnerService";
 import { EXPLICIT_LOGOUT_KEY, getExistingSessionUnlessLoggedOut } from "@/contexts/AuthContext";
 import {
   InputOTP,
@@ -20,6 +23,25 @@ import { persistSupabaseSessionToNative } from "@/lib/nativePersistence";
 import { resolvePostAuthRoute } from "@/lib/accessControl";
 
 const DEFAULT_OTP = "111111";
+
+function withTimeout<T>(promise: Promise<T>, fallback: T, ms = 2500): Promise<T> {
+  return Promise.race([
+    promise.catch(() => fallback),
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
+
+async function resolvePrivilegedRouteFast(userId: string): Promise<string | null> {
+  const [isAdmin, isCoach, isPartner] = await Promise.all([
+    withTimeout(isAdminUser(userId), false),
+    withTimeout(isCoachUser(userId), false),
+    withTimeout(isChannelPartner(userId), false),
+  ]);
+  if (isAdmin) return "/admin-dashboard";
+  if (isCoach) return "/coach-dashboard";
+  if (isPartner) return "/partner-dashboard";
+  return null;
+}
 
 export default function Auth() {
   const [step, setStep] = useState<"phone" | "otp" | "name">("phone");
@@ -131,14 +153,27 @@ export default function Auth() {
         ]);
 
         // Existing user — resolve role/profile/payment in parallel for fast OTP handoff.
-        const [route, profile] = await Promise.all([
-          resolvePostAuthRoute(userId, { missingProfileRoute: null }),
+        const [privilegedRoute, profile, activeSubscription] = await Promise.all([
+          resolvePrivilegedRouteFast(userId),
           fetchProfile(userId),
+          fetchActiveSubscription(userId),
         ]);
         if (profile) {
           saveUser({ profile: { phone, country: country.name, country_code: country.dial } as any });
           loadProfileToLocal(profile);
         }
+        if (privilegedRoute) {
+          setLoading(false);
+          navigate(privilegedRoute);
+          return;
+        }
+        const route = activeSubscription
+          ? "/home"
+          : profile?.onboarding_completed
+          ? "/plans"
+          : profile?.name
+          ? "/setup/purpose"
+          : null;
         if (route) {
           setLoading(false);
           navigate(route);

@@ -430,13 +430,13 @@ final class BBDOYouTubePlayerViewController: UIViewController, WKNavigationDeleg
     }
 
     @objc private func closePlayer() {
-        webView?.stopLoading()
-        webView = nil
         let callback = onClose
         onClose = nil
-        dismiss(animated: true) {
-            callback?()
-        }
+        callback?()
+        webView?.stopLoading()
+        webView?.removeFromSuperview()
+        webView = nil
+        dismiss(animated: true)
     }
 
     override func viewWillDisappear(_ animated: Bool) {

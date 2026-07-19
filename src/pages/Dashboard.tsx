@@ -453,8 +453,11 @@ export default function Dashboard() {
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1]}}
           >
             <div className="max-w-3xl mx-auto">
-               <Profile onClose={handleCloseProfile} isDark={isDark} onToggleTheme={toggleTheme} />
+               <Suspense fallback={<TabFallback />}>
+                 <Profile onClose={handleCloseProfile} isDark={isDark} onToggleTheme={toggleTheme} />
+               </Suspense>
             </div>
+
           </motion.div>
         )}
       </AnimatePresence>

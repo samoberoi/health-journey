@@ -40,17 +40,19 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    let user = await findUserByEmail(admin, email);
-    if (!user) {
-      const { data, error } = await admin.auth.admin.createUser({
+    let user = null;
+    const { data: created, error: createError } = await admin.auth.admin.createUser({
         email,
         password,
         email_confirm: true,
         user_metadata: { phone },
       });
-      if (error) throw error;
-      user = data.user;
-    } else {
+
+    if (!createError) {
+      user = created.user;
+    } else if (String(createError?.message || "").toLowerCase().includes("already")) {
+      user = await findUserByEmail(admin, email);
+      if (!user) throw createError;
       const { data, error } = await admin.auth.admin.updateUserById(user.id, {
         password,
         email_confirm: true,
@@ -58,6 +60,8 @@ Deno.serve(async (req) => {
       });
       if (error) throw error;
       user = data.user;
+    } else {
+      throw createError;
     }
 
     await admin.from("profiles").upsert(

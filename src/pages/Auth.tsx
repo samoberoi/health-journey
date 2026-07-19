@@ -7,9 +7,6 @@ import { COUNTRIES, type Country } from "@/lib/countries";
 import { saveUser } from "@/lib/userStore";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchProfile, loadProfileToLocal } from "@/lib/profileService";
-import { fetchActiveSubscription } from "@/lib/subscriptionService";
-import { isCoachUser, isAdminUser } from "@/lib/roleService";
-import { isChannelPartner } from "@/lib/channelPartnerService";
 import { EXPLICIT_LOGOUT_KEY, getExistingSessionUnlessLoggedOut } from "@/contexts/AuthContext";
 import {
   InputOTP,
@@ -102,7 +99,7 @@ export default function Auth() {
     setLoading(true);
     saveUser({ profile: { phone, country: country.name, country_code: country.dial } as any });
     // Simulate OTP send
-    await new Promise((r) => setTimeout(r, 800));
+    await new Promise((r) => setTimeout(r, 150));
     setLoading(false);
     setStep("otp");
   };
@@ -124,57 +121,28 @@ export default function Auth() {
       });
 
       if (signInData?.user) {
-        await persistNativeSession(signInData.session);
-        // Check if this is an admin
-        const isAdmin = await isAdminUser(signInData.user.id);
-        if (isAdmin) {
-          setLoading(false);
-          navigate("/admin-dashboard");
-          return;
-        }
+        void persistNativeSession(signInData.session);
+        const userId = signInData.user.id;
 
         // Auto-link coach and partner records by phone
-        await supabase.rpc("link_coach_to_user" as any, { _user_id: signInData.user.id, _phone: phone });
-        await supabase.rpc("link_partner_to_user" as any, { _user_id: signInData.user.id, _phone: phone });
+        void Promise.allSettled([
+          supabase.rpc("link_coach_to_user" as any, { _user_id: userId, _phone: phone }),
+          supabase.rpc("link_partner_to_user" as any, { _user_id: userId, _phone: phone }),
+        ]);
 
-        // Check if this is a coach
-        const isCoach = await isCoachUser(signInData.user.id);
-        if (isCoach) {
-          setLoading(false);
-          navigate("/coach-dashboard");
-          return;
-        }
-
-        // Check if this is a channel partner
-        const isPartner = await isChannelPartner(signInData.user.id);
-        if (isPartner) {
-          setLoading(false);
-          navigate("/partner-dashboard");
-          return;
-        }
-
-
-        // Existing user — fetch profile and check onboarding/payment completion
-        const profile = await fetchProfile(signInData.user.id);
+        // Existing user — resolve role/profile/payment in parallel for fast OTP handoff.
+        const [route, profile] = await Promise.all([
+          resolvePostAuthRoute(userId, { missingProfileRoute: null }),
+          fetchProfile(userId),
+        ]);
         if (profile) {
           saveUser({ profile: { phone, country: country.name, country_code: country.dial } as any });
           loadProfileToLocal(profile);
-          const activeSubscription = await fetchActiveSubscription(signInData.user.id);
-          if (activeSubscription) {
-            setLoading(false);
-            navigate("/home");
-            return;
-          }
-          if (profile.onboarding_completed) {
-            setLoading(false);
-            navigate("/plans");
-            return;
-          }
-          if (profile.name) {
-            setLoading(false);
-            navigate("/setup/purpose");
-            return;
-          }
+        }
+        if (route) {
+          setLoading(false);
+          navigate(route);
+          return;
         }
         setLoading(false);
         setStep("name");
@@ -202,29 +170,31 @@ export default function Auth() {
           setStep("otp");
           return;
         }
-        await persistNativeSession(newSessionData.session);
+        void persistNativeSession(newSessionData.session);
 
         const signedInNewUser = newSessionData.user;
 
         if (signedInNewUser) {
           // Auto-link coach or partner record by phone if it exists
-          const { data: linkedCoachId } = await supabase.rpc(
-            "link_coach_to_user" as any,
-            { _user_id: signedInNewUser.id, _phone: phone }
-          );
-          if (linkedCoachId) {
-            setLoading(false);
-            navigate("/coach-dashboard");
-            return;
-          }
-          const { data: linkedPartnerId } = await supabase.rpc(
-            "link_partner_to_user" as any,
-            { _user_id: signedInNewUser.id, _phone: phone }
-          );
-          if (linkedPartnerId) {
-            setLoading(false);
-            navigate("/partner-dashboard");
-            return;
+          const linkResults = await Promise.race([
+            Promise.allSettled([
+              supabase.rpc("link_coach_to_user" as any, { _user_id: signedInNewUser.id, _phone: phone }),
+              supabase.rpc("link_partner_to_user" as any, { _user_id: signedInNewUser.id, _phone: phone }),
+            ]),
+            new Promise<null>((resolve) => setTimeout(() => resolve(null), 1200)),
+          ]);
+          if (linkResults) {
+            const [coachResult, partnerResult] = linkResults;
+            if (coachResult.status === "fulfilled" && (coachResult.value as any)?.data) {
+              setLoading(false);
+              navigate("/coach-dashboard");
+              return;
+            }
+            if (partnerResult.status === "fulfilled" && (partnerResult.value as any)?.data) {
+              setLoading(false);
+              navigate("/partner-dashboard");
+              return;
+            }
           }
 
           await supabase.from("profiles" as any).upsert({

@@ -50,6 +50,10 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
   const lastAuthAt = useRef<number>(0);
   const authenticatingRef = useRef(false);
 
+  const isVideoSuppressActive = useCallback(() => {
+    return Date.now() < Number((window as any).__bbdoBiometricSuppressUntil || 0);
+  }, []);
+
   // Native biometric gate runs on both iOS (Face ID / Touch ID) and Android
   // (Fingerprint / Face Unlock). On Android we're resilient — if biometry
   // isn't enrolled we let the user in rather than trap them behind the lock.
@@ -118,6 +122,11 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
       lastAuthAt.current = 0;
       return;
     }
+    if (isVideoSuppressActive()) {
+      lastAuthAt.current = Date.now();
+      setLocked(false);
+      return;
+    }
     let cancelled = false;
     setLocked(true);
     setBiometryChecked(false);
@@ -129,7 +138,23 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [runAuth, shouldGate, session?.user?.id]);
+  }, [isVideoSuppressActive, runAuth, shouldGate, session?.user?.id]);
+
+  useEffect(() => {
+    if (!native) return;
+    const suppressVideoUnlock = () => {
+      (window as any).__bbdoBiometricSuppressUntil = Date.now() + 45 * 60 * 1000;
+      lastAuthAt.current = Date.now();
+      setLocked(false);
+      setAuthenticating(false);
+    };
+    window.addEventListener("bbdo:native-player-open", suppressVideoUnlock);
+    window.addEventListener("bbdo:native-player-close", suppressVideoUnlock);
+    return () => {
+      window.removeEventListener("bbdo:native-player-open", suppressVideoUnlock);
+      window.removeEventListener("bbdo:native-player-close", suppressVideoUnlock);
+    };
+  }, [native]);
 
   // Re-lock whenever the native app leaves the foreground, then prompt on resume.
   useEffect(() => {
@@ -138,12 +163,9 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
       // Suppress re-lock if the native YouTube player was just used.
       // iOS's fullscreen presentation puts the WKWebView into background
       // and back — that should not force a Face ID re-prompt.
-      const suppressUntil = Number((window as any).__bbdoBiometricSuppressUntil || 0);
-      if (Date.now() < suppressUntil) {
-        if (isActive) {
-          lastAuthAt.current = Date.now();
-          setLocked(false);
-        }
+      if (isVideoSuppressActive()) {
+        lastAuthAt.current = Date.now();
+        setLocked(false);
         return;
       }
       if (!isActive) {
@@ -158,7 +180,7 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
     return () => {
       void sub.then((s) => s.remove());
     };
-  }, [runAuth, shouldGate]);
+  }, [isVideoSuppressActive, runAuth, shouldGate]);
 
   return (
     <>

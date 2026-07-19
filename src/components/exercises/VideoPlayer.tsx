@@ -155,11 +155,11 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
       const now = Date.now();
       const delta = (now - lastAt) / 1000;
       lastAt = now;
-      if (delta > 0 && delta < 60) {
+      if (delta > 0 && delta < 30) {
         watchedSecRef.current += delta;
         accumulateWatched(video.id, delta, durationRef.current || 0, video.youtubeId);
       }
-    }, 10000);
+    }, 1000);
     return () => {
       window.clearInterval(interval);
       const delta = Math.min(3600, (Date.now() - lastAt) / 1000);
@@ -235,6 +235,7 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
                 videoId={video.youtubeId}
                 title={video.name}
                 start={restarted ? 0 : resumeFrom}
+                onNativeClose={onClose}
               />
             ) : (
               <iframe

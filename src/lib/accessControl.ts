@@ -25,13 +25,17 @@ export async function resolvePostAuthRoute(
   userId: string,
   options: { missingProfileRoute?: string | null } = {},
 ): Promise<string | null> {
-  const privilegedRoute = await resolvePrivilegedRoute(userId);
-  if (privilegedRoute) return privilegedRoute;
-
-  const [profile, activeSubscription] = await Promise.all([
+  const [isAdmin, isCoach, isPartner, profile, activeSubscription] = await Promise.all([
+    isAdminUser(userId),
+    isCoachUser(userId),
+    isChannelPartner(userId),
     fetchProfile(userId),
     fetchActiveSubscription(userId),
   ]);
+
+  if (isAdmin) return "/admin-dashboard";
+  if (isCoach) return "/coach-dashboard";
+  if (isPartner) return "/partner-dashboard";
 
   if (activeSubscription) return "/home";
   if (profile?.onboarding_completed) return "/plans";
@@ -40,13 +44,15 @@ export async function resolvePostAuthRoute(
 }
 
 export async function resolveProtectedAccess(userId: string): Promise<ProtectedAccessDecision> {
-  const privilegedRoute = await resolvePrivilegedRoute(userId);
-  if (privilegedRoute) return { allowed: true };
-
-  const [profile, activeSubscription] = await Promise.all([
+  const [isAdmin, isCoach, isPartner, profile, activeSubscription] = await Promise.all([
+    isAdminUser(userId),
+    isCoachUser(userId),
+    isChannelPartner(userId),
     fetchProfile(userId),
     fetchActiveSubscription(userId),
   ]);
+
+  if (isAdmin || isCoach || isPartner) return { allowed: true };
 
   if (activeSubscription) return { allowed: true };
   if (profile?.onboarding_completed) return { allowed: false, redirectTo: "/plans" };

@@ -422,9 +422,10 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
     if (!isGlobalSort) return [] as { filter: FoodFilter; count: number }[];
     const counts = new Map<string, number>();
     for (const it of visibleItems) counts.set(it.filter_id, (counts.get(it.filter_id) ?? 0) + 1);
-    return filters
-      .filter((f) => counts.has(f.id))
-      .map((f) => ({ filter: f, count: counts.get(f.id)! }));
+    // Show every active filter chip (even with 0 matches) so newly added
+    // taxonomy categories like F13 Alcoholic Beverages don't vanish when their
+    // only sample is filtered out by a preset.
+    return filters.map((f) => ({ filter: f, count: counts.get(f.id) ?? 0 }));
   }, [visibleItems, filters, isGlobalSort]);
 
   // Apply sub-category filter, if picked.
@@ -441,9 +442,9 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
       if (!groups.has(it.filter_id)) groups.set(it.filter_id, []);
       groups.get(it.filter_id)!.push(it);
     }
-    return filters
-      .filter((f) => groups.has(f.id))
-      .map((f) => ({ filter: f, items: groups.get(f.id)! }));
+    // Include every active filter — empty groups render a placeholder row so
+    // categories with no currently-matching foods are still discoverable.
+    return filters.map((f) => ({ filter: f, items: groups.get(f.id) ?? [] }));
   }, [visibleItems, filters, isGlobalSort, presetCategory, search]);
 
   // If the current category is dominated by avoid/limit items, show a redirect banner.

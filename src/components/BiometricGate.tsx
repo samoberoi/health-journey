@@ -84,8 +84,8 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
   const startupShield = native && loading && !isVideoSuppressActive();
   const shouldGate = native && !loading && !!session && BIOMETRIC_PROTECTED_ROUTES.has(location.pathname);
   const gateVisible =
-    startupShield ||
-    (shouldGate && (locked || authenticating || lastAuthAt.current === 0));
+    !isVideoSuppressActive() &&
+    (startupShield || (shouldGate && (locked || authenticating || lastAuthAt.current === 0)));
 
   const runAuth = useCallback(async () => {
     if (authenticatingRef.current) return;

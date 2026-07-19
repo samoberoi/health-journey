@@ -26,6 +26,28 @@ const BIOMETRIC_PROTECTED_ROUTES = new Set([
   "/partner-dashboard",
 ]);
 
+const VIDEO_BIOMETRIC_SUPPRESS_KEY = "bbdo_video_biometric_suppress_until";
+const NATIVE_PLAYER_ACTIVE_KEY = "bbdo_native_player_active";
+
+function readVideoSuppressUntil() {
+  if (typeof window === "undefined") return 0;
+  const memoryValue = Number((window as any).__bbdoBiometricSuppressUntil || 0);
+  const storedValue = Number(sessionStorage.getItem(VIDEO_BIOMETRIC_SUPPRESS_KEY) || 0);
+  return Math.max(memoryValue, storedValue);
+}
+
+function extendVideoBiometricSuppression() {
+  if (typeof window === "undefined") return;
+  const until = Date.now() + 45 * 60 * 1000;
+  (window as any).__bbdoBiometricSuppressUntil = until;
+  sessionStorage.setItem(VIDEO_BIOMETRIC_SUPPRESS_KEY, String(until));
+}
+
+function isNativeVideoContextActive() {
+  if (typeof window === "undefined") return false;
+  return Boolean((window as any).__bbdoNativePlayerActive) || sessionStorage.getItem(NATIVE_PLAYER_ACTIVE_KEY) === "1";
+}
+
 function isAndroidNativeApp() {
   return typeof navigator !== "undefined" && /android/i.test(navigator.userAgent);
 }
@@ -49,26 +71,35 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
   const [label, setLabel] = useState<string>("Face ID");
   const lastAuthAt = useRef<number>(0);
   const authenticatingRef = useRef(false);
+  const inactiveStartedAt = useRef<number | null>(null);
 
   const isVideoSuppressActive = useCallback(() => {
-    return Date.now() < Number((window as any).__bbdoBiometricSuppressUntil || 0);
+    return Date.now() < readVideoSuppressUntil() || isNativeVideoContextActive();
   }, []);
 
   // Native biometric gate runs on both iOS (Face ID / Touch ID) and Android
   // (Fingerprint / Face Unlock). On Android we're resilient — if biometry
   // isn't enrolled we let the user in rather than trap them behind the lock.
   const native = isNative();
-  const startupShield = native && loading;
+  const startupShield = native && loading && !isVideoSuppressActive();
   const shouldGate = native && !loading && !!session && BIOMETRIC_PROTECTED_ROUTES.has(location.pathname);
   const gateVisible =
-    startupShield ||
-    (shouldGate && (locked || authenticating || lastAuthAt.current === 0));
+    !isVideoSuppressActive() &&
+    (startupShield || (shouldGate && (locked || authenticating || lastAuthAt.current === 0)));
 
   const runAuth = useCallback(async () => {
     if (authenticatingRef.current) return;
+    if (isVideoSuppressActive()) {
+      lastAuthAt.current = Date.now();
+      setLocked(false);
+      setAuthenticating(false);
+      setBiometryChecked(true);
+      return;
+    }
     authenticatingRef.current = true;
     setLocked(true);
     setAuthenticating(true);
+    setBiometryChecked(false);
     const nextDiagnostics = await getBiometricDiagnostics();
     setDiagnostics(nextDiagnostics);
     setLabel(nextDiagnostics.label || await getBiometryLabel());
@@ -79,6 +110,13 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
     }
     setBiometryAvailable(available);
     setBiometryChecked(true);
+    if (isVideoSuppressActive()) {
+      authenticatingRef.current = false;
+      setAuthenticating(false);
+      lastAuthAt.current = Date.now();
+      setLocked(false);
+      return;
+    }
     // On Android, if biometry isn't enrolled/available, don't trap the user
     // behind the lock screen — just let them in. iOS keeps the strict gate.
     const isAndroid = isAndroidNativeApp();
@@ -109,7 +147,7 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
     } else {
       setLocked(true);
     }
-  }, []);
+  }, [isVideoSuppressActive]);
 
   // Initial gate when a session appears
   useEffect(() => {
@@ -125,6 +163,8 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
     if (isVideoSuppressActive()) {
       lastAuthAt.current = Date.now();
       setLocked(false);
+      setAuthenticating(false);
+      setBiometryChecked(true);
       return;
     }
     let cancelled = false;
@@ -143,10 +183,11 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!native) return;
     const suppressVideoUnlock = () => {
-      (window as any).__bbdoBiometricSuppressUntil = Date.now() + 45 * 60 * 1000;
+      extendVideoBiometricSuppression();
       lastAuthAt.current = Date.now();
       setLocked(false);
       setAuthenticating(false);
+      setBiometryChecked(true);
     };
     window.addEventListener("bbdo:native-player-open", suppressVideoUnlock);
     window.addEventListener("bbdo:native-player-close", suppressVideoUnlock);
@@ -166,14 +207,27 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
       if (isVideoSuppressActive()) {
         lastAuthAt.current = Date.now();
         setLocked(false);
+        setAuthenticating(false);
+        setBiometryChecked(true);
         return;
       }
       if (!isActive) {
-        lastAuthAt.current = 0;
-        setLocked(true);
+        inactiveStartedAt.current = Date.now();
         return;
       }
-      if (lastAuthAt.current === 0) {
+      const inactiveFor = inactiveStartedAt.current ? Date.now() - inactiveStartedAt.current : 0;
+      inactiveStartedAt.current = null;
+      // Capacitor emits appStateChange for native overlays (YouTube player,
+      // Face ID, permission sheets), not only true app backgrounding. Do not
+      // re-lock for short/native transitions; that caused the video-close lock hang.
+      if (inactiveFor > 0 && inactiveFor < 2 * 60 * 1000) {
+        lastAuthAt.current = Date.now();
+        setLocked(false);
+        setAuthenticating(false);
+        setBiometryChecked(true);
+        return;
+      }
+      if (lastAuthAt.current === 0 || inactiveFor >= 2 * 60 * 1000) {
         void runAuth();
       }
     });

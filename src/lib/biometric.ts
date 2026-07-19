@@ -199,9 +199,10 @@ export async function authenticateWithBiometrics(
       cancelTitle: "Cancel",
       allowDeviceCredential: true,
       iosFallbackTitle: "Use passcode",
-      androidTitle: reason,
-      // Intentionally no androidSubtitle — the plugin also renders `reason` as
-      // the description, so setting a subtitle causes it to appear twice.
+      // Android prompt renders the `reason` field as the description/subtitle.
+      // We use a short distinct title so the user sees "Unlock BBDO" once, not
+      // duplicated as both title and body.
+      androidTitle: "BBDO",
       androidConfirmationRequired: false,
       androidBiometryStrength: AndroidBiometryStrength.weak,
     });

@@ -87,7 +87,7 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
     }
     let ok = false;
     try {
-      ok = await authenticateWithBiometrics("Unlock bye bye diabetes");
+      ok = await authenticateWithBiometrics("Unlock BBDO");
     } catch (err) {
       console.warn("Biometric auth threw:", err);
       ok = false;
@@ -175,7 +175,7 @@ export default function BiometricGate({ children }: { children: ReactNode }) {
             <p className="text-muted-foreground text-sm">
               {startupShield || !biometryChecked
                 ? "Checking your secure session…"
-                : `Use ${label} to unlock bye bye diabetes.`}
+                : `Use ${label} to unlock BBDO.`}
             </p>
           </div>
           {biometryChecked && (

@@ -4,7 +4,7 @@ import { Maximize2, Play, RotateCcw } from "lucide-react";
 import { isNativeAndroidApp, isNativeIOSApp, youtubePlayerProxyUrl } from "@/lib/youtubeEmbed";
 
 type BBDOYouTubePlayerPlugin = {
-  open(options: { videoId: string; title?: string; start?: number }): Promise<{ opened?: boolean; closed?: boolean }>;
+  open(options: { videoId: string; title?: string; start?: number }): Promise<{ opened?: boolean; closed?: boolean; elapsedSec?: number }>;
 };
 
 const BBDOYouTubePlayer = registerPlugin<BBDOYouTubePlayerPlugin>("BBDOYouTubePlayer");
@@ -32,7 +32,7 @@ type NativeYouTubePlayerProps = {
   title: string;
   start?: number;
   autoOpen?: boolean;
-  onNativeClose?: () => void;
+  onNativeClose?: (result?: { elapsedSec?: number }) => void;
 };
 
 export default function NativeYouTubePlayer({
@@ -63,20 +63,21 @@ export default function NativeYouTubePlayer({
     setFailed(false);
     let didLaunch = false;
     let closeNotified = false;
-    const notifyClosed = () => {
+    let openResult: { elapsedSec?: number } | undefined;
+    const notifyClosed = (result?: { elapsedSec?: number }) => {
       if (closeNotified) return;
       closeNotified = true;
       markNativePlayerClosed();
-      window.dispatchEvent(new CustomEvent("bbdo:native-player-close", { detail: { videoId } }));
+      window.dispatchEvent(new CustomEvent("bbdo:native-player-close", { detail: { videoId, elapsedSec: result?.elapsedSec } }));
       setLaunching(false);
       // Unmount the React video modal immediately so the user lands on the
       // underlying app page — no spinner / empty screen while React catches up.
-      onNativeClose?.();
+      onNativeClose?.(result);
     };
     try {
       markNativePlayerOpen();
       window.dispatchEvent(new CustomEvent("bbdo:native-player-open", { detail: { videoId } }));
-      await BBDOYouTubePlayer.open({
+      openResult = await BBDOYouTubePlayer.open({
         videoId,
         title,
         start: Math.max(0, Math.floor(start || 0)),
@@ -87,7 +88,7 @@ export default function NativeYouTubePlayer({
       console.error("[native-youtube] iOS player failed", error);
       setFailed(true);
     } finally {
-      if (didLaunch) notifyClosed();
+      if (didLaunch) notifyClosed(openResult);
       else {
         markNativePlayerClosed();
         window.dispatchEvent(new CustomEvent("bbdo:native-player-close", { detail: { videoId } }));

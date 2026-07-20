@@ -1,4 +1,4 @@
-package app.lovable.byebyediabetes;
+package com.hyperrevamp.bbdo;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -31,7 +31,6 @@ public class MainActivity extends BridgeActivity {
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (manager == null) return;
 
-        // Delete older channels so users don't see stale duplicates in system settings.
         try { manager.deleteNotificationChannel("bbdo-alerts-v6"); } catch (Exception ignored) {}
         try { manager.deleteNotificationChannel("bbdo-alerts-v5"); } catch (Exception ignored) {}
 
@@ -47,7 +46,6 @@ public class MainActivity extends BridgeActivity {
         channel.enableLights(true);
         channel.setLockscreenVisibility(android.app.Notification.VISIBILITY_PUBLIC);
 
-        // Use the bundled BBDO chime instead of the OS default tone.
         Uri bbdoSound = Uri.parse("android.resource://" + getPackageName() + "/raw/bbdo_chime");
         AudioAttributes attributes = new AudioAttributes.Builder()
             .setUsage(AudioAttributes.USAGE_NOTIFICATION)

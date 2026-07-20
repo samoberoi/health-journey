@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "app.lovable.byebyediabetes"
+    namespace = "com.hyperrevamp.bbdo"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "app.lovable.byebyediabetes"
+        applicationId "com.hyperrevamp.bbdo"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

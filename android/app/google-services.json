@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:73939371932:android:4f918ee41d7f50b2ecaa59",
+        "mobilesdk_app_id": "1:73939371932:android:cd23ba31e11851f9ecaa59",
         "android_client_info": {
-          "package_name": "app.lovable.byebyediabetes"
+          "package_name": "com.hyperrevamp.bbdo"
         }
       },
       "oauth_client": [],

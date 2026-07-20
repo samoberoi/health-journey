@@ -87,9 +87,23 @@ export default function YogaUpsell() {
       .catch(() => setUpcoming([]));
   }, [activeBooking?.id, (activeBooking as any)?.template_id, activeBooking?.expires_on]);
 
-  function openBook(p: Pkg) {
+  const [openingPkgId, setOpeningPkgId] = useState<string | null>(null);
+
+  async function openBook(p: Pkg) {
+    // Fetch slots BEFORE opening the dialog so the sheet never renders the
+    // "Continue to payment" footer while the slot list is still empty — users
+    // reported the payment CTA flashing in first, then the slots popping in.
     const token = ++fetchTokenRef.current;
-    setSelected(p);
+    setOpeningPkgId(p.id);
+    let fetched: AvailableSlot[] = [];
+    try {
+      fetched = await fetchAvailableSlotsForPackage(p.id);
+    } catch {
+      fetched = [];
+    }
+    if (token !== fetchTokenRef.current) return; // stale — a newer open/close happened
+    setLiveSlots(fetched);
+    setSlotsLoading(false);
     setSlot(null);
     setSlotId(null);
     setTemplateId(null);
@@ -98,17 +112,8 @@ export default function YogaUpsell() {
     setNotes("");
     setPaymentStep(false);
     setCustomMode(false);
-    setLiveSlots([]);
-    setSlotsLoading(true);
-    fetchAvailableSlotsForPackage(p.id)
-      .then((s) => {
-        if (token !== fetchTokenRef.current) return; // stale response — discard
-        setLiveSlots(s);
-      })
-      .finally(() => {
-        if (token !== fetchTokenRef.current) return;
-        setSlotsLoading(false);
-      });
+    setSelected(p);
+    setOpeningPkgId(null);
   }
 
   function closeDialog() {

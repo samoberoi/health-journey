@@ -433,18 +433,33 @@ function FoundationSupplementBrowser({
   onChanged,
   planItems,
   plan,
+  dietSlug,
+  foundationalKit,
 }: {
   supplements: Supplement[];
   userId: string | null;
   onChanged: () => Promise<void> | void;
   planItems: PlanItem[];
   plan: UserSupplementPlan | null;
+  dietSlug: string | null;
+  foundationalKit: { supplement_id: string; duration_weeks: number }[];
 }) {
-  const [category, setCategory] = useState("all");
-  const [timing, setTiming] = useState("all");
   const [query, setQuery] = useState("");
   const [adding, setAdding] = useState<string | null>(null);
   const [removing, setRemoving] = useState<string | null>(null);
+
+  // Diet → allowed veg_types on supplements.
+  // Vegetarian-family diets (veg, vegan, jain, eggitarian) only see veg + both.
+  // Non-vegetarian sees non_veg + both. If no diet on file, show all.
+  const isVegDiet = dietSlug ? ["veg", "vegetarian", "vegan", "jain", "eggitarian"].includes(dietSlug) : false;
+  const isNonVegDiet = dietSlug === "non_veg" || dietSlug === "non-vegetarian";
+  const [vegFilter, setVegFilter] = useState<"auto" | "veg" | "non_veg" | "all">("auto");
+
+  const kitMap = useMemo(() => {
+    const m = new Map<string, number>();
+    foundationalKit.forEach((r) => m.set(r.supplement_id, r.duration_weeks || 8));
+    return m;
+  }, [foundationalKit]);
 
   const inPlan = useMemo(() => new Set(planItems.map((i) => i.supplement_id)), [planItems]);
   const planItemBySuppId = useMemo(() => {
@@ -455,33 +470,44 @@ function FoundationSupplementBrowser({
     return map;
   }, [planItems]);
 
+  const allowedVegTypes = useMemo<Set<VegType>>(() => {
+    if (vegFilter === "veg") return new Set(["veg", "both"]);
+    if (vegFilter === "non_veg") return new Set(["non_veg", "both"]);
+    if (vegFilter === "all") return new Set(["veg", "non_veg", "both"]);
+    // auto — follow the user's diet
+    if (isNonVegDiet) return new Set(["non_veg", "both"]);
+    if (isVegDiet) return new Set(["veg", "both"]);
+    return new Set(["veg", "non_veg", "both"]);
+  }, [vegFilter, isVegDiet, isNonVegDiet]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return supplements.filter((s) => {
-      if (category !== "all" && (s.category || "").toLowerCase() !== category) return false;
-      if (timing !== "all") {
-        const t = (s.default_timing || "").toLowerCase();
-        if (!t.includes(timing)) return false;
-      }
+      // Foundation Care = only the 7-item foundational kit
+      if (!kitMap.has(s.id)) return false;
+      if (!allowedVegTypes.has((s.veg_type ?? "both") as VegType)) return false;
       if (q && !`${s.name} ${s.category} ${s.description ?? ""}`.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [supplements, category, timing, query]);
+  }, [supplements, kitMap, allowedVegTypes, query]);
 
   const availableList = useMemo(() => filtered.filter((s) => !inPlan.has(s.id)), [filtered, inPlan]);
   const addedList = useMemo(() => filtered.filter((s) => inPlan.has(s.id)), [filtered, inPlan]);
+
+  const dietLabel = isVegDiet ? "vegetarian" : isNonVegDiet ? "non-vegetarian" : null;
 
   const handleAdd = async (s: Supplement) => {
     if (!userId) return toast.error("Please sign in");
     setAdding(s.id);
     try {
       let planId = plan?.id;
+      const weeks = kitMap.get(s.id) ?? 8;
       if (!planId) {
         planId = await createUserPlan({
           user_id: userId,
           plan_name: "My Foundation Plan",
           start_date: new Date().toISOString().slice(0, 10),
-          duration_weeks: 12,
+          duration_weeks: weeks,
           status: "active",
         });
       }
@@ -492,9 +518,9 @@ function FoundationSupplementBrowser({
         frequency: s.default_frequency || "Daily",
         timing: s.default_timing || "with meal",
         is_active: true,
-        duration_weeks: 12,
+        duration_weeks: weeks,
       });
-      toast.success(`${s.name} added to your supplements`);
+      toast.success(`${s.name} added for ${weeks} weeks`);
       await onChanged();
     } catch (e: any) {
       toast.error(e.message || "Couldn't add supplement");
@@ -502,6 +528,8 @@ function FoundationSupplementBrowser({
       setAdding(null);
     }
   };
+
+
 
   const handleRemove = async (s: Supplement) => {
     if (!userId) return toast.error("Please sign in");

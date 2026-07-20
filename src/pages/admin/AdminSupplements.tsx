@@ -681,6 +681,16 @@ export default function AdminSupplements() {
               >
                 {categories.map((c) => (<option key={c.key} value={c.key}>{c.label}</option>))}
               </select>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Veg / Non-veg</span>
+                <select
+                  className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
+                  value={newSupp.veg_type}
+                  onChange={(e) => setNewSupp({ ...newSupp, veg_type: e.target.value as VegType })}
+                >
+                  {VEG_TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </label>
               <textarea className="rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" rows={2}
                 placeholder="What does this supplement do?" value={newSupp.description} onChange={(e) => setNewSupp({ ...newSupp, description: e.target.value })} />
             </div>
@@ -742,6 +752,15 @@ export default function AdminSupplements() {
                     >
                       {categories.map((c) => (<option key={c.key} value={c.key}>{c.label}</option>))}
                     </select>
+                    <Field label="Veg / Non-veg">
+                      <select
+                        className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
+                        value={(editSuppValues.veg_type as VegType) ?? "both"}
+                        onChange={(e) => setEditSuppValues({ ...editSuppValues, veg_type: e.target.value as VegType })}
+                      >
+                        {VEG_TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      </select>
+                    </Field>
                     <textarea className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" rows={2}
                       value={editSuppValues.description ?? ""} onChange={(e) => setEditSuppValues({ ...editSuppValues, description: e.target.value })} placeholder="Description" />
                     <div className="flex gap-2">
@@ -752,6 +771,16 @@ export default function AdminSupplements() {
                 ) : (
                   <div className="px-4 pb-4 text-center">
                     <h3 className="text-sm font-bold text-foreground">{supp.name}</h3>
+                    <div className="mt-2 flex justify-center">
+                      <select
+                        aria-label={`Veg type for ${supp.name}`}
+                        className="rounded-full border border-input bg-background px-3 py-1.5 text-[11px] font-bold text-foreground"
+                        value={supp.veg_type ?? "both"}
+                        onChange={(e) => handleUpdateSupplementVegType(supp, e.target.value as VegType)}
+                      >
+                        {VEG_TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      </select>
+                    </div>
                     <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{supp.description || "No description added yet"}</p>
                   </div>
                 )}

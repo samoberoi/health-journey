@@ -398,7 +398,7 @@ export default function PatientLabTests({ alwaysShow = false, foundationMode = f
       {otherTests.length > 0 && (
         <div className="space-y-2">
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground px-1">
-            Also available (for later)
+            {basicOrder ? "Other tests available" : "Also available (for later)"}
           </p>
           <div className="grid gap-3 md:grid-cols-2">
             {otherTests.map((t, idx) => {

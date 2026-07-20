@@ -250,7 +250,10 @@ export default function PatientLabTests({ alwaysShow = false, foundationMode = f
     );
   }
 
-  const orphanOrders = orders.filter((order) => !order.recommendation_id || !recs.some((rec) => rec.id === order.recommendation_id));
+  const orphanOrdersAll = orders.filter((order) => !order.recommendation_id || !recs.some((rec) => rec.id === order.recommendation_id));
+  // In foundationMode, the BBDO Basic done state is already surfaced in the hero above.
+  // Hide the duplicate raw order card to keep the Labs screen clean.
+
 
   const startFoundationBooking = (test: Test) => {
     setBookingRec({

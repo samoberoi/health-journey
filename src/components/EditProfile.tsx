@@ -604,7 +604,7 @@ export default function EditProfile({ onBack }: EditProfileProps) {
       name,
       age: effectiveAge ?? null,
       gender: gender || null,
-      phone: phone || null,
+      // phone is the unique login identifier — never overwrite from this screen
       country_code: countryCode || null,
       country: country || null,
       email: trimmedEmail || null,

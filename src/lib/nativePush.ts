@@ -217,7 +217,7 @@ export async function registerNativePush(userId: string): Promise<
     if (!registered) {
       registered = true;
 
-      PushNotifications.addListener("registration", async (t) => {
+      await PushNotifications.addListener("registration", async (t) => {
         try {
           lastRegistrationToken = t.value;
           resolveTokenWaiters(t.value);
@@ -231,11 +231,11 @@ export async function registerNativePush(userId: string): Promise<
         }
       });
 
-      PushNotifications.addListener("registrationError", (err) => {
+      await PushNotifications.addListener("registrationError", (err) => {
         console.warn("[push] registration error", err);
       });
 
-      PushNotifications.addListener(
+      await PushNotifications.addListener(
         "pushNotificationReceived",
         (n) => {
           console.log("[push] received in-app:", n);
@@ -243,7 +243,7 @@ export async function registerNativePush(userId: string): Promise<
         },
       );
 
-      PushNotifications.addListener(
+      await PushNotifications.addListener(
         "pushNotificationActionPerformed",
         (a) => {
           console.log("[push] tapped:", a);

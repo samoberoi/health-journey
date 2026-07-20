@@ -17,8 +17,9 @@ import { getNotificationSoundSettings } from "@/lib/notificationSoundService";
 import { getMuted, playNotificationSound, setMasterVolume } from "@/lib/soundEngine";
 
 const APP_VERSION = (globalThis as any).__APP_VERSION__ ?? "1.0.0";
-export const BBDO_PUSH_CHANNEL_ID = "bbdo-alerts-v7";
-const ANDROID_TOKEN_RESET_KEY = `bbdo_fcm_token_reset_${BBDO_PUSH_CHANNEL_ID}`;
+export const BBDO_PUSH_CHANNEL_ID = "bbdo-alerts-v8";
+const ANDROID_FIREBASE_GENERATION = "com.hyperrevamp.bbdo:bbdoapp:73939371932:v2";
+const ANDROID_TOKEN_RESET_KEY = `bbdo_fcm_token_reset_${ANDROID_FIREBASE_GENERATION}`;
 
 const BBDONotifications = registerPlugin<{
   refreshAuthorization: () => Promise<{
@@ -137,13 +138,16 @@ async function playNativePushAppSound() {
 
 async function resetAndroidFcmTokenAfterChannelUpgrade() {
   if (currentPlatform() !== "android") return;
-  if (localStorage.getItem(ANDROID_TOKEN_RESET_KEY) === "1") return;
+  const hasStoredToken = Boolean(activeUserId ? await fetchStoredToken(activeUserId) : null);
+  if (hasStoredToken && localStorage.getItem(ANDROID_TOKEN_RESET_KEY) === "1") return;
 
   try {
     // Forces Android to mint a fresh FCM token after Firebase/channel changes.
     // Stale tokens from an older Firebase sender are rejected by FCM with
     // SENDER_ID_MISMATCH and never reach the phone.
+    localStorage.removeItem("bbdo_fcm_token_reset_bbdo-alerts-v7");
     await PushNotifications.unregister();
+    await new Promise((resolve) => window.setTimeout(resolve, 700));
   } catch (err) {
     console.warn("[push] android token reset skipped", err);
   } finally {
@@ -213,7 +217,7 @@ export async function registerNativePush(userId: string): Promise<
     if (!registered) {
       registered = true;
 
-      PushNotifications.addListener("registration", async (t) => {
+      await PushNotifications.addListener("registration", async (t) => {
         try {
           lastRegistrationToken = t.value;
           resolveTokenWaiters(t.value);
@@ -227,11 +231,11 @@ export async function registerNativePush(userId: string): Promise<
         }
       });
 
-      PushNotifications.addListener("registrationError", (err) => {
+      await PushNotifications.addListener("registrationError", (err) => {
         console.warn("[push] registration error", err);
       });
 
-      PushNotifications.addListener(
+      await PushNotifications.addListener(
         "pushNotificationReceived",
         (n) => {
           console.log("[push] received in-app:", n);
@@ -239,7 +243,7 @@ export async function registerNativePush(userId: string): Promise<
         },
       );
 
-      PushNotifications.addListener(
+      await PushNotifications.addListener(
         "pushNotificationActionPerformed",
         (a) => {
           console.log("[push] tapped:", a);
@@ -249,7 +253,11 @@ export async function registerNativePush(userId: string): Promise<
     }
 
     await PushNotifications.register();
-    const token = (await waitForToken()) ?? (await fetchStoredToken(userId));
+    const registrationToken = await waitForToken(12_000);
+    if (registrationToken) {
+      await upsertToken(userId, registrationToken);
+    }
+    const token = registrationToken ?? (await fetchStoredToken(userId));
     return { ok: true, token: token ?? undefined };
   } catch (err: any) {
     console.warn("[push] setup failed", err);

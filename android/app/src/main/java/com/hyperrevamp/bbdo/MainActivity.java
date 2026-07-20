@@ -13,7 +13,7 @@ import android.webkit.WebSettings;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
-    private static final String BBDO_PUSH_CHANNEL_ID = "bbdo-alerts-v7";
+    private static final String BBDO_PUSH_CHANNEL_ID = "bbdo-alerts-v8";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +33,7 @@ public class MainActivity extends BridgeActivity {
 
         try { manager.deleteNotificationChannel("bbdo-alerts-v6"); } catch (Exception ignored) {}
         try { manager.deleteNotificationChannel("bbdo-alerts-v5"); } catch (Exception ignored) {}
+        try { manager.deleteNotificationChannel("bbdo-alerts-v7"); } catch (Exception ignored) {}
 
         if (manager.getNotificationChannel(BBDO_PUSH_CHANNEL_ID) != null) return;
 

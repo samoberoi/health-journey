@@ -30,6 +30,10 @@ export default function UserSupplements({ simpleMode = false }: { simpleMode?: b
   const [weekHistory, setWeekHistory] = useState<SupplementTracking[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Foundation-kit filtering
+  const [dietSlug, setDietSlug] = useState<string | null>(null);
+  const [foundationalKit, setFoundationalKit] = useState<{ supplement_id: string; duration_weeks: number }[]>([]);
+
   // Badge/streak state
   const [allBadges, setAllBadges] = useState<SupplementBadge[]>([]);
   const [earnedBadges, setEarnedBadges] = useState<UserSupplementBadge[]>([]);
@@ -41,16 +45,20 @@ export default function UserSupplements({ simpleMode = false }: { simpleMode?: b
     if (!user) return;
     setLoading(true);
     try {
-      const [p, supps, badgeDefs, userBadges] = await Promise.all([
+      const [p, supps, badgeDefs, userBadges, dietRes, kitRes] = await Promise.all([
         fetchUserPlan(user.id),
         fetchSupplements(),
         fetchSupplementBadgeDefinitions(),
         fetchUserSupplementBadges(user.id),
+        supabase.from("user_diet_profiles" as any).select("diet_preference").eq("user_id", user.id).maybeSingle(),
+        supabase.from("supplement_condition_rules" as any).select("supplement_id, duration_weeks").eq("condition", "foundational").eq("is_active", true),
       ]);
       setPlan(p);
       setSupplements(supps);
       setAllBadges(badgeDefs);
       setEarnedBadges(userBadges);
+      setDietSlug(((dietRes as any).data?.diet_preference as string | undefined) ?? null);
+      setFoundationalKit(((kitRes as any).data ?? []) as { supplement_id: string; duration_weeks: number }[]);
 
       if (p) {
         const [planItems, todayT, weekT] = await Promise.all([
@@ -81,6 +89,7 @@ export default function UserSupplements({ simpleMode = false }: { simpleMode?: b
     } catch (e: any) { toast.error(e.message); }
     setLoading(false);
   }, [user, today]);
+
 
   useEffect(() => { load(); }, [load]);
 

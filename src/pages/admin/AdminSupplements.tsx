@@ -14,7 +14,7 @@ import {
   CATEGORY_COLORS, CATEGORY_BG, TIMING_ICONS,
   DOSE_UNITS, DOSE_VEHICLES, FREQUENCY_OPTIONS, TIMING_OPTIONS,
   parseDosage, formatDosage,
-  type Supplement, type ConditionRule
+  type Supplement, type ConditionRule, type VegType
 } from "@/lib/supplementService";
 import {
   fetchSupplementBadgeDefinitions, updateSupplementBadgeDefinition,
@@ -24,6 +24,15 @@ import ExportCsvButton from "@/components/admin/ExportCsvButton";
 import ImportCsvButton from "@/components/admin/ImportCsvButton";
 
 type View = "catalog" | "rules" | "badges";
+
+const VEG_TYPE_OPTIONS: Array<{ value: VegType; label: string; short: string }> = [
+  { value: "veg", label: "Vegetarian", short: "V" },
+  { value: "non_veg", label: "Non-vegetarian", short: "NV" },
+  { value: "both", label: "Suitable for both", short: "V/NV" },
+];
+
+const getVegTypeOption = (value?: string | null) =>
+  VEG_TYPE_OPTIONS.find((o) => o.value === value) ?? VEG_TYPE_OPTIONS[2];
 
 function ConditionFlatIcon({ className = "w-3 h-3" }: { className?: string }) {
   return <HeartPulse className={className} strokeWidth={1.75} />;
@@ -45,7 +54,7 @@ export default function AdminSupplements() {
   const [showAddSupp, setShowAddSupp] = useState(false);
   const [showAddRule, setShowAddRule] = useState(false);
   const [expandedCondition, setExpandedCondition] = useState<string | null>(null);
-  const [newSupp, setNewSupp] = useState({ name: "", category: "vitamin", description: "" });
+  const [newSupp, setNewSupp] = useState<{ name: string; category: string; description: string; veg_type: VegType }>({ name: "", category: "vitamin", description: "", veg_type: "both" });
   const [newRule, setNewRule] = useState({ supplement_id: "", condition: "deficiency", severity: "moderate", dosage: "", frequency: "once daily", timing: "with meal", duration_weeks: 12, remarks: "" });
   const [newDose, setNewDose] = useState({ amount: "", unit: "mg", vehicle: "" });
   const [editDose, setEditDose] = useState({ amount: "", unit: "", vehicle: "" });
@@ -236,7 +245,15 @@ export default function AdminSupplements() {
 
   const handleEditSupp = (supp: Supplement) => {
     setEditingSupp(supp.id);
-    setEditSuppValues({ name: supp.name, category: supp.category, description: supp.description ?? "", default_dosage: supp.default_dosage ?? "", default_frequency: supp.default_frequency ?? "", default_timing: supp.default_timing ?? "" });
+    setEditSuppValues({ name: supp.name, category: supp.category, description: supp.description ?? "", default_dosage: supp.default_dosage ?? "", default_frequency: supp.default_frequency ?? "", default_timing: supp.default_timing ?? "", veg_type: supp.veg_type ?? "both" });
+  };
+
+  const handleUpdateSupplementVegType = async (supp: Supplement, vegType: VegType) => {
+    try {
+      await updateSupplement(supp.id, { veg_type: vegType });
+      setSupplements((prev) => prev.map((s) => s.id === supp.id ? { ...s, veg_type: vegType } : s));
+      toast.success(`${supp.name} marked ${getVegTypeOption(vegType).label}`);
+    } catch (e: any) { toast.error(e.message); }
   };
 
   const handleSaveSupp = async (suppId: string) => {
@@ -254,7 +271,7 @@ export default function AdminSupplements() {
       await createSupplement(newSupp as any);
       toast.success("Supplement added");
       setShowAddSupp(false);
-      setNewSupp({ name: "", category: "vitamin", description: "" });
+      setNewSupp({ name: "", category: "vitamin", description: "", veg_type: "both" });
       loadData();
     } catch (e: any) { toast.error(e.message); }
   };
@@ -664,6 +681,16 @@ export default function AdminSupplements() {
               >
                 {categories.map((c) => (<option key={c.key} value={c.key}>{c.label}</option>))}
               </select>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Veg / Non-veg</span>
+                <select
+                  className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
+                  value={newSupp.veg_type}
+                  onChange={(e) => setNewSupp({ ...newSupp, veg_type: e.target.value as VegType })}
+                >
+                  {VEG_TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </label>
               <textarea className="rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" rows={2}
                 placeholder="What does this supplement do?" value={newSupp.description} onChange={(e) => setNewSupp({ ...newSupp, description: e.target.value })} />
             </div>
@@ -725,6 +752,15 @@ export default function AdminSupplements() {
                     >
                       {categories.map((c) => (<option key={c.key} value={c.key}>{c.label}</option>))}
                     </select>
+                    <Field label="Veg / Non-veg">
+                      <select
+                        className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
+                        value={(editSuppValues.veg_type as VegType) ?? "both"}
+                        onChange={(e) => setEditSuppValues({ ...editSuppValues, veg_type: e.target.value as VegType })}
+                      >
+                        {VEG_TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      </select>
+                    </Field>
                     <textarea className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" rows={2}
                       value={editSuppValues.description ?? ""} onChange={(e) => setEditSuppValues({ ...editSuppValues, description: e.target.value })} placeholder="Description" />
                     <div className="flex gap-2">
@@ -735,6 +771,16 @@ export default function AdminSupplements() {
                 ) : (
                   <div className="px-4 pb-4 text-center">
                     <h3 className="text-sm font-bold text-foreground">{supp.name}</h3>
+                    <div className="mt-2 flex justify-center">
+                      <select
+                        aria-label={`Veg type for ${supp.name}`}
+                        className="rounded-full border border-input bg-background px-3 py-1.5 text-[11px] font-bold text-foreground"
+                        value={supp.veg_type ?? "both"}
+                        onChange={(e) => handleUpdateSupplementVegType(supp, e.target.value as VegType)}
+                      >
+                        {VEG_TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      </select>
+                    </div>
                     <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{supp.description || "No description added yet"}</p>
                   </div>
                 )}
@@ -817,9 +863,9 @@ export default function AdminSupplements() {
                         >
                           <div className="px-5 pb-5 space-y-4" style={{ borderTop: "1px solid hsl(var(--border))" }}>
                             {/* Detailed table */}
-                            <div className="rounded-2xl border border-border overflow-hidden mt-4">
-                              <div className="grid grid-cols-[minmax(120px,1.5fr)_100px_minmax(100px,1fr)_minmax(80px,1fr)_minmax(80px,1fr)_80px_minmax(100px,1fr)_50px] gap-0 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground bg-muted px-3 py-2">
-                                <span>Supplement</span>
+                              <div className="rounded-2xl border border-border overflow-hidden mt-4">
+                              <div className="grid grid-cols-[minmax(150px,1.6fr)_100px_minmax(100px,1fr)_minmax(80px,1fr)_minmax(80px,1fr)_80px_minmax(100px,1fr)_50px] gap-0 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground bg-muted px-3 py-2">
+                                <span>Supplement / Veg type</span>
                                 <span>Severity</span>
                                 <span>Dosage</span>
                                 <span>Frequency</span>
@@ -836,13 +882,25 @@ export default function AdminSupplements() {
                                   return (
                                     <div key={rule.id} className="border-b border-border last:border-b-0">
                                       {/* Display row */}
-                                      <div className="grid grid-cols-[minmax(120px,1.5fr)_100px_minmax(100px,1fr)_minmax(80px,1fr)_minmax(80px,1fr)_80px_minmax(100px,1fr)_50px] gap-0 items-center px-3 py-2.5 text-sm hover:bg-accent/30 transition-colors">
-                                        <span className="font-bold text-foreground text-xs flex items-center gap-2">
-                                          <div className={`w-6 h-6 rounded-lg ${CATEGORY_BG[supp?.category ?? ""] ?? "bg-muted"} flex items-center justify-center shrink-0`}>
-                                            <Pill className={`w-3 h-3 ${CATEGORY_COLORS[supp?.category ?? ""] ?? "text-muted-foreground"}`} />
-                                          </div>
-                                          {supp?.name ?? "Unknown"}
-                                        </span>
+                                       <div className="grid grid-cols-[minmax(150px,1.6fr)_100px_minmax(100px,1fr)_minmax(80px,1fr)_minmax(80px,1fr)_80px_minmax(100px,1fr)_50px] gap-0 items-center px-3 py-2.5 text-sm hover:bg-accent/30 transition-colors">
+                                         <span className="text-xs flex items-center gap-2 min-w-0">
+                                           <div className={`w-6 h-6 rounded-lg ${CATEGORY_BG[supp?.category ?? ""] ?? "bg-muted"} flex items-center justify-center shrink-0`}>
+                                             <Pill className={`w-3 h-3 ${CATEGORY_COLORS[supp?.category ?? ""] ?? "text-muted-foreground"}`} />
+                                           </div>
+                                           <span className="min-w-0 flex-1">
+                                             <span className="block font-bold text-foreground truncate">{supp?.name ?? "Unknown"}</span>
+                                             {supp && (
+                                               <select
+                                                 aria-label={`Veg type for ${supp.name}`}
+                                                 className="mt-1 max-w-full rounded-lg border border-input bg-background px-2 py-1 text-[10px] font-bold text-foreground"
+                                                 value={supp.veg_type ?? "both"}
+                                                 onChange={(e) => handleUpdateSupplementVegType(supp, e.target.value as VegType)}
+                                               >
+                                                 {VEG_TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                               </select>
+                                             )}
+                                           </span>
+                                         </span>
                                         <span>
                                           <Badge className={`text-[9px] ${SEVERITY_COLORS[rule.severity] ?? ""}`} variant="outline">
                                             {rule.severity}

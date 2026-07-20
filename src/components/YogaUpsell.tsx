@@ -436,9 +436,12 @@ export default function YogaUpsell() {
                     </div>
                     <Button
                       onClick={() => openBook(p)}
-                      className="bg-[var(--bbdo-red)] hover:bg-[var(--bbdo-red)]/90 text-white"
+                      disabled={openingPkgId === p.id}
+                      className="bg-[var(--bbdo-red)] hover:bg-[var(--bbdo-red)]/90 text-white disabled:opacity-70"
                     >
-                      {isGroup ? "Choose slot" : "Book now"}
+                      {openingPkgId === p.id
+                        ? "Loading slots…"
+                        : isGroup ? "Choose slot" : "Book now"}
                     </Button>
                   </div>
                 </motion.div>

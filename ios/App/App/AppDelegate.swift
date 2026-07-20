@@ -608,6 +608,11 @@ class BBDOBridgeViewController: CAPBridgeViewController {
         bbdoNativeLog("BBDOBridgeViewController.capacitorDidLoad")
         bridge?.webView?.configuration.allowsInlineMediaPlayback = true
         bridge?.webView?.configuration.mediaTypesRequiringUserActionForPlayback = []
+        // Enable the standard iOS edge-swipe navigation gestures inside the
+        // WKWebView: swipe from the left edge = go back, swipe from the right
+        // edge = go forward. WKWebView records SPA pushState entries in its
+        // back/forward list, so this works with React Router as-is.
+        bridge?.webView?.allowsBackForwardNavigationGestures = true
         bridge?.registerPluginInstance(BBDOBiometricsPlugin())
         bridge?.registerPluginInstance(BBDONativeAuthStorePlugin())
         bridge?.registerPluginInstance(BBDONotificationsPlugin())

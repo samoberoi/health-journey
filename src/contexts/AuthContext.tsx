@@ -277,6 +277,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             console.error("sendWelcomeNotification failed", error);
           });
         }, 0);
+        if (isNativePushSupported()) {
+          setTimeout(() => { void registerNativePush(uid); }, 900);
+        }
       }
     })().catch((error) => {
       reportStartupError("Initial auth restore failed", error);

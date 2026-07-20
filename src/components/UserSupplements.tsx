@@ -2,16 +2,18 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   Pill, Check, Clock, AlertTriangle, Droplets,
-  Coffee, Sun, Moon, Loader2, Flame, Trophy, Plus, Search, Sparkles, Minus, Lock, Leaf, Zap
+  Coffee, Sun, Moon, Loader2, Flame, Trophy, Plus, Search, Sparkles, Minus, Lock, Leaf, Zap, Drumstick
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import {
   fetchUserPlan, fetchPlanItems, fetchSupplements, createUserPlan, addPlanItem, removePlanItem,
   fetchTodayTracking, toggleTracking, fetchTrackingHistory,
   CATEGORY_COLORS, CATEGORY_BG,
-  type UserSupplementPlan, type PlanItem, type Supplement, type SupplementTracking
+  type UserSupplementPlan, type PlanItem, type Supplement, type SupplementTracking, type VegType
 } from "@/lib/supplementService";
+
 import {
   fetchSupplementBadgeDefinitions, fetchUserSupplementBadges,
   getSupplementBadgeLevel, calculateSupplementStreak,
@@ -28,6 +30,10 @@ export default function UserSupplements({ simpleMode = false }: { simpleMode?: b
   const [weekHistory, setWeekHistory] = useState<SupplementTracking[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Foundation-kit filtering
+  const [dietSlug, setDietSlug] = useState<string | null>(null);
+  const [foundationalKit, setFoundationalKit] = useState<{ supplement_id: string; duration_weeks: number }[]>([]);
+
   // Badge/streak state
   const [allBadges, setAllBadges] = useState<SupplementBadge[]>([]);
   const [earnedBadges, setEarnedBadges] = useState<UserSupplementBadge[]>([]);
@@ -39,16 +45,20 @@ export default function UserSupplements({ simpleMode = false }: { simpleMode?: b
     if (!user) return;
     setLoading(true);
     try {
-      const [p, supps, badgeDefs, userBadges] = await Promise.all([
+      const [p, supps, badgeDefs, userBadges, dietRes, kitRes] = await Promise.all([
         fetchUserPlan(user.id),
         fetchSupplements(),
         fetchSupplementBadgeDefinitions(),
         fetchUserSupplementBadges(user.id),
+        supabase.from("user_diet_profiles" as any).select("diet_preference").eq("user_id", user.id).maybeSingle(),
+        supabase.from("supplement_condition_rules" as any).select("supplement_id, duration_weeks").eq("condition", "foundational").eq("is_active", true),
       ]);
       setPlan(p);
       setSupplements(supps);
       setAllBadges(badgeDefs);
       setEarnedBadges(userBadges);
+      setDietSlug(((dietRes as any).data?.diet_preference as string | undefined) ?? null);
+      setFoundationalKit(((kitRes as any).data ?? []) as { supplement_id: string; duration_weeks: number }[]);
 
       if (p) {
         const [planItems, todayT, weekT] = await Promise.all([
@@ -80,6 +90,7 @@ export default function UserSupplements({ simpleMode = false }: { simpleMode?: b
     setLoading(false);
   }, [user, today]);
 
+
   useEffect(() => { load(); }, [load]);
 
   const handleToggle = async (planItemId: string) => {
@@ -101,7 +112,7 @@ export default function UserSupplements({ simpleMode = false }: { simpleMode?: b
 
   if (!plan || items.length === 0) {
     if (simpleMode) {
-      return <FoundationSupplementBrowser supplements={supplements} userId={user?.id ?? null} onChanged={load} planItems={items} plan={plan} />;
+      return <FoundationSupplementBrowser supplements={supplements} userId={user?.id ?? null} onChanged={load} planItems={items} plan={plan} dietSlug={dietSlug} foundationalKit={foundationalKit} />;
     }
     return (
       <div className="p-6">
@@ -137,7 +148,10 @@ export default function UserSupplements({ simpleMode = false }: { simpleMode?: b
           onChanged={load}
           planItems={items}
           plan={plan}
+          dietSlug={dietSlug}
+          foundationalKit={foundationalKit}
         />
+
       </div>
     );
   }
@@ -419,18 +433,33 @@ function FoundationSupplementBrowser({
   onChanged,
   planItems,
   plan,
+  dietSlug,
+  foundationalKit,
 }: {
   supplements: Supplement[];
   userId: string | null;
   onChanged: () => Promise<void> | void;
   planItems: PlanItem[];
   plan: UserSupplementPlan | null;
+  dietSlug: string | null;
+  foundationalKit: { supplement_id: string; duration_weeks: number }[];
 }) {
-  const [category, setCategory] = useState("all");
-  const [timing, setTiming] = useState("all");
   const [query, setQuery] = useState("");
   const [adding, setAdding] = useState<string | null>(null);
   const [removing, setRemoving] = useState<string | null>(null);
+
+  // Diet → allowed veg_types on supplements.
+  // Vegetarian-family diets (veg, vegan, jain, eggitarian) only see veg + both.
+  // Non-vegetarian sees non_veg + both. If no diet on file, show all.
+  const isVegDiet = dietSlug ? ["veg", "vegetarian", "vegan", "jain", "eggitarian"].includes(dietSlug) : false;
+  const isNonVegDiet = dietSlug === "non_veg" || dietSlug === "non-vegetarian";
+  const [vegFilter, setVegFilter] = useState<"auto" | "veg" | "non_veg" | "all">("auto");
+
+  const kitMap = useMemo(() => {
+    const m = new Map<string, number>();
+    foundationalKit.forEach((r) => m.set(r.supplement_id, r.duration_weeks || 8));
+    return m;
+  }, [foundationalKit]);
 
   const inPlan = useMemo(() => new Set(planItems.map((i) => i.supplement_id)), [planItems]);
   const planItemBySuppId = useMemo(() => {
@@ -441,33 +470,44 @@ function FoundationSupplementBrowser({
     return map;
   }, [planItems]);
 
+  const allowedVegTypes = useMemo<Set<VegType>>(() => {
+    if (vegFilter === "veg") return new Set(["veg", "both"]);
+    if (vegFilter === "non_veg") return new Set(["non_veg", "both"]);
+    if (vegFilter === "all") return new Set(["veg", "non_veg", "both"]);
+    // auto — follow the user's diet
+    if (isNonVegDiet) return new Set(["non_veg", "both"]);
+    if (isVegDiet) return new Set(["veg", "both"]);
+    return new Set(["veg", "non_veg", "both"]);
+  }, [vegFilter, isVegDiet, isNonVegDiet]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return supplements.filter((s) => {
-      if (category !== "all" && (s.category || "").toLowerCase() !== category) return false;
-      if (timing !== "all") {
-        const t = (s.default_timing || "").toLowerCase();
-        if (!t.includes(timing)) return false;
-      }
+      // Foundation Care = only the 7-item foundational kit
+      if (!kitMap.has(s.id)) return false;
+      if (!allowedVegTypes.has((s.veg_type ?? "both") as VegType)) return false;
       if (q && !`${s.name} ${s.category} ${s.description ?? ""}`.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [supplements, category, timing, query]);
+  }, [supplements, kitMap, allowedVegTypes, query]);
 
   const availableList = useMemo(() => filtered.filter((s) => !inPlan.has(s.id)), [filtered, inPlan]);
   const addedList = useMemo(() => filtered.filter((s) => inPlan.has(s.id)), [filtered, inPlan]);
+
+  const dietLabel = isVegDiet ? "vegetarian" : isNonVegDiet ? "non-vegetarian" : null;
 
   const handleAdd = async (s: Supplement) => {
     if (!userId) return toast.error("Please sign in");
     setAdding(s.id);
     try {
       let planId = plan?.id;
+      const weeks = kitMap.get(s.id) ?? 8;
       if (!planId) {
         planId = await createUserPlan({
           user_id: userId,
           plan_name: "My Foundation Plan",
           start_date: new Date().toISOString().slice(0, 10),
-          duration_weeks: 12,
+          duration_weeks: weeks,
           status: "active",
         });
       }
@@ -478,9 +518,9 @@ function FoundationSupplementBrowser({
         frequency: s.default_frequency || "Daily",
         timing: s.default_timing || "with meal",
         is_active: true,
-        duration_weeks: 12,
+        duration_weeks: weeks,
       });
-      toast.success(`${s.name} added to your supplements`);
+      toast.success(`${s.name} added for ${weeks} weeks`);
       await onChanged();
     } catch (e: any) {
       toast.error(e.message || "Couldn't add supplement");
@@ -488,6 +528,8 @@ function FoundationSupplementBrowser({
       setAdding(null);
     }
   };
+
+
 
   const handleRemove = async (s: Supplement) => {
     if (!userId) return toast.error("Please sign in");
@@ -513,11 +555,12 @@ function FoundationSupplementBrowser({
         style={{ background: "var(--bbdo-gradient)" }}
       >
         <div className="absolute -right-12 -top-12 w-44 h-44 rounded-full bg-white/10 blur-2xl" />
-        <p className="text-[11px] font-bold tracking-[0.18em] uppercase text-white/80">Foundation Library</p>
-        <h2 className="text-2xl font-black tracking-tight mt-1">Build your supplements & boosters stack</h2>
+        <p className="text-[11px] font-bold tracking-[0.18em] uppercase text-white/80">Foundational Kit</p>
+        <h2 className="text-2xl font-black tracking-tight mt-1">Your Foundation Care supplements</h2>
         <p className="text-sm text-white/85 mt-1 max-w-xl">
-          Browse by category and timing. Tap <span className="font-black">Add</span> to put it on your daily list — we'll
-          remind you under Today's Habits when to take each one.
+          {dietLabel
+            ? <>Being <span className="font-black">{dietLabel}</span>, these are the supplements we recommend. Tap <span className="font-black">Add</span> to start taking them for the recommended weeks.</>
+            : <>Tap <span className="font-black">Add</span> to start taking a supplement for the recommended weeks.</>}
         </p>
       </div>
 
@@ -532,16 +575,22 @@ function FoundationSupplementBrowser({
         />
       </div>
 
-      {/* Category filters */}
+      {/* Veg / Non-veg filter */}
       <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-        {CATEGORY_FILTERS.map((c) => {
+        {[
+          { id: "auto" as const, label: dietLabel ? `For ${dietLabel}` : "Recommended", Icon: Sparkles },
+          { id: "veg" as const, label: "Vegetarian", Icon: Leaf },
+          { id: "non_veg" as const, label: "Non-vegetarian", Icon: Drumstick },
+          { id: "all" as const, label: "Show all", Icon: Pill },
+        ].map((c) => {
           const Icon = c.Icon;
+          const active = vegFilter === c.id;
           return (
             <button
               key={c.id}
-              onClick={() => setCategory(c.id)}
+              onClick={() => setVegFilter(c.id)}
               className={`no-pill shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 ${
-                category === c.id
+                active
                   ? "bg-primary/10 text-primary ring-1 ring-primary/30"
                   : "bg-muted/40 text-muted-foreground hover:bg-accent"
               }`}
@@ -552,24 +601,6 @@ function FoundationSupplementBrowser({
         })}
       </div>
 
-      {/* Timing filters */}
-      <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-        {TIMING_FILTERS.map((t) => {
-          const Icon = t.Icon;
-          return (
-            <button
-              key={t.id}
-              onClick={() => setTiming(t.id)}
-              className={`no-pill shrink-0 px-3 py-2 rounded-xl text-[11px] font-semibold inline-flex items-center gap-1.5 ${
-                timing === t.id ? "bg-foreground text-background" : "bg-muted/40 text-muted-foreground hover:bg-accent"
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" strokeWidth={1.75} />
-              {t.label}
-            </button>
-          );
-        })}
-      </div>
 
       {/* Results */}
       {(() => {
@@ -619,7 +650,18 @@ function FoundationSupplementBrowser({
                     <TimingIcon timing={s.default_timing} className="w-3 h-3" /> {s.default_timing}
                   </span>
                 )}
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-secondary/10 text-secondary inline-flex items-center gap-1">
+                  <Clock className="w-3 h-3" /> {kitMap.get(s.id) ?? 8} weeks
+                </span>
+                {(s.veg_type ?? "both") !== "both" && (
+                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1 ${
+                    s.veg_type === "veg" ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-600"
+                  }`}>
+                    {s.veg_type === "veg" ? <><Leaf className="w-3 h-3" /> Veg</> : <><Drumstick className="w-3 h-3" /> Non-veg</>}
+                  </span>
+                )}
               </div>
+
               <button
                 onClick={() => (added ? handleRemove(s) : handleAdd(s))}
                 disabled={isAdding || isRemoving}

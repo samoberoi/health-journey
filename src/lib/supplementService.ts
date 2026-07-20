@@ -1,6 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { logAudit } from "@/lib/auditLog";
 
+export type VegType = "veg" | "non_veg" | "both";
+
 export interface Supplement {
   id: string;
   name: string;
@@ -9,9 +11,11 @@ export interface Supplement {
   default_dosage: string | null;
   default_frequency: string | null;
   default_timing: string | null;
+  veg_type: VegType;
   is_active: boolean;
   created_at: string;
 }
+
 
 export interface ConditionRule {
   id: string;

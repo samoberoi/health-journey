@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, ArrowRight, Heart, HelpCircle } from "lucide-react";
 import { saveUser, getUser } from "@/lib/userStore";
@@ -79,19 +79,19 @@ export default function ClinicalData() {
   };
 
   const renderOptions = (opts: { id: string; label: string; description: string }[], selectedId: string | null | undefined, onSelect: (id: string) => void) =>
-    opts.map((opt, i) => {
+    opts.map((opt) => {
       const isSelected = selectedId === opt.id;
       return (
-        <motion.button key={opt.id} onClick={() => onSelect(opt.id)} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }} whileTap={{ scale: 0.98 }}
+        <motion.button key={opt.id} onClick={() => onSelect(opt.id)} whileTap={{ scale: 0.98 }}
           className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 text-left transition-colors ${isSelected ? "border-primary bg-primary/5 shadow-sm" : "bg-card border-border"}`}>
           <div>
             <p className={`text-base font-bold ${isSelected ? "text-primary" : "text-foreground"}`}>{opt.label}</p>
             <p className="text-muted-foreground text-xs mt-0.5">{opt.description}</p>
           </div>
           {isSelected && (
-            <motion.div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center shrink-0" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1]}}>
+            <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center shrink-0">
               <span className="text-white text-xs font-bold">✓</span>
-            </motion.div>
+            </div>
           )}
         </motion.button>
       );
@@ -107,24 +107,23 @@ export default function ClinicalData() {
         <Progress value={progress} className="h-1.5" />
       </div>
 
-      <AnimatePresence initial={false}>
-        <motion.div key={`${q.id}-${showDiabetesType}`} className="flex flex-col flex-1" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}>
-          <div className="mb-8">
-            <div className="w-12 h-12 rounded-2xl bg-destructive/10 flex items-center justify-center mb-4">
-              {showDiabetesType ? <HelpCircle className="w-6 h-6 text-warning" strokeWidth={1.8} /> : <Heart className="w-6 h-6 text-destructive" strokeWidth={1.8} />}
-            </div>
-            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest mb-2">
-              {showDiabetesType ? "More Details" : `Health History · ${currentQ + 1} of ${questions.length}`}
-            </p>
-            <h1 className="text-3xl font-black text-foreground mb-2">{showDiabetesType ? "What type of diabetes?" : q.text}</h1>
-            <p className="text-muted-foreground text-sm">{showDiabetesType ? "This helps us tailor your plan more accurately." : q.subtitle}</p>
+      <div className="flex flex-col flex-1">
+        <div className="mb-8">
+          <div className="w-12 h-12 rounded-2xl bg-destructive/10 flex items-center justify-center mb-4">
+            {showDiabetesType ? <HelpCircle className="w-6 h-6 text-warning" strokeWidth={1.8} /> : <Heart className="w-6 h-6 text-destructive" strokeWidth={1.8} />}
           </div>
-          <div className="flex flex-col gap-3 flex-1">
-            {showDiabetesType ? renderOptions(diabetesTypeOptions, diabetesType, (id) => setDiabetesType(id as DiabetesType))
-              : renderOptions(answerOptions, currentAnswer, selectAnswer as (id: string) => void)}
-          </div>
-        </motion.div>
-      </AnimatePresence>
+          <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest mb-2">
+            {showDiabetesType ? "More Details" : `Health History · ${currentQ + 1} of ${questions.length}`}
+          </p>
+          <h1 className="text-3xl font-black text-foreground mb-2">{showDiabetesType ? "What type of diabetes?" : q.text}</h1>
+          <p className="text-muted-foreground text-sm">{showDiabetesType ? "This helps us tailor your plan more accurately." : q.subtitle}</p>
+        </div>
+        <div className="flex flex-col gap-3 flex-1">
+          {showDiabetesType ? renderOptions(diabetesTypeOptions, diabetesType, (id) => setDiabetesType(id as DiabetesType))
+            : renderOptions(answerOptions, currentAnswer, selectAnswer as (id: string) => void)}
+        </div>
+      </div>
+
 
       <div className="flex gap-3 mt-8">
         <button onClick={prev} className="w-14 h-14 rounded-xl flex items-center justify-center text-muted-foreground bg-card">

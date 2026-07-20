@@ -359,7 +359,8 @@ export default function Auth() {
               transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}>
 
               {/* Top half hero image — extends to top edge */}
-              <div className="relative h-[46vh] min-h-[300px] overflow-hidden shadow-card">
+              <div className="relative h-[38vh] min-h-[220px] max-h-[300px] overflow-hidden shadow-card shrink-0">
+
                 <AuthHeroCarousel />
                 <div className="absolute inset-x-0 bottom-0 p-6 pb-8 bg-gradient-to-t from-black/60 via-black/20 to-transparent">
                   <p className="text-white text-[28px] font-black tracking-[-0.02em] leading-tight drop-shadow-lg">Sign in</p>
@@ -475,7 +476,7 @@ export default function Auth() {
               transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}>
 
               {/* Top half hero image */}
-              <div className="relative h-[46vh] min-h-[300px] overflow-hidden shadow-card">
+              <div className="relative h-[38vh] min-h-[220px] max-h-[300px] overflow-hidden shadow-card shrink-0">
                 <AuthHeroCarousel />
                 <button
                   onClick={() => { setStep("phone"); setOtp(""); }}

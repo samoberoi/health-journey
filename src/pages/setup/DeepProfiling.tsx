@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, ArrowRight, FlaskConical, Pill, Stethoscope, Utensils, Circle } from "lucide-react";
 import { saveUser, getUser } from "@/lib/userStore";
@@ -126,42 +126,41 @@ export default function DeepProfiling() {
         <Progress value={progress} className="h-1.5" />
       </div>
 
-      <AnimatePresence initial={false}>
-        <motion.div key={current} className="flex flex-col flex-1" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}>
-          <div className="mb-8">
-            <div className="w-12 h-12 rounded-2xl liquid-glass flex items-center justify-center mb-4">{step.icon}</div>
-            <h1 className="text-2xl font-black text-foreground mb-2">{step.question}</h1>
-            <p className="text-muted-foreground text-xs">Skip if you don't know or prefer not to answer.</p>
+      <div className="flex flex-col flex-1">
+        <div className="mb-8">
+          <div className="w-12 h-12 rounded-2xl liquid-glass flex items-center justify-center mb-4">{step.icon}</div>
+          <h1 className="text-2xl font-black text-foreground mb-2">{step.question}</h1>
+          <p className="text-muted-foreground text-xs">Skip if you don't know or prefer not to answer.</p>
+        </div>
+
+        {step.type === "select" && step.options && (
+          <div className="flex flex-col gap-2 flex-1">
+            {step.options.map((opt) => (
+              <motion.button key={opt.id} onClick={() => setAnswers({ ...answers, [step.id]: opt.id })} whileTap={{ scale: 0.98 }}
+                className={`text-left p-4 rounded-xl border-2 transition-colors ${answers[step.id] === opt.id ? "border-primary bg-primary/5 shadow-sm" : "bg-card border-border"}`}>
+                <span className={`text-sm font-medium ${answers[step.id] === opt.id ? "text-primary" : "text-foreground"}`}>{opt.label}</span>
+              </motion.button>
+            ))}
           </div>
+        )}
 
-          {step.type === "select" && step.options && (
-            <div className="flex flex-col gap-2 flex-1">
-              {step.options.map((opt) => (
-                <motion.button key={opt.id} onClick={() => setAnswers({ ...answers, [step.id]: opt.id })} whileTap={{ scale: 0.98 }}
-                  className={`text-left p-4 rounded-xl border-2 transition-colors ${answers[step.id] === opt.id ? "border-primary bg-primary/5 shadow-sm" : "bg-card border-border"}`}>
-                  <span className={`text-sm font-medium ${answers[step.id] === opt.id ? "text-primary" : "text-foreground"}`}>{opt.label}</span>
-                </motion.button>
-              ))}
+        {step.type === "slider" && (
+          <div className="flex-1 flex flex-col justify-center">
+            <div className="text-center mb-8">
+              <span className="text-5xl font-black text-primary">{getSliderVal(step)}</span>
+              <span className="text-muted-foreground text-lg ml-2">{step.unit}</span>
             </div>
-          )}
+            <input type="range" min={step.min} max={step.max} step={step.step} value={getSliderVal(step)}
+              onChange={(e) => setSliderValues({ ...sliderValues, [step.id]: parseFloat(e.target.value) })}
+              className="w-full h-2 rounded-full appearance-none cursor-pointer"
+              style={{ background: sliderBg(getSliderVal(step), step.min ?? 0, step.max ?? 100) }} />
+            <div className="flex justify-between text-muted-foreground text-xs mt-2">
+              <span>{step.min} {step.unit}</span><span>{step.max} {step.unit}</span>
+            </div>
+          </div>
+        )}
+      </div>
 
-          {step.type === "slider" && (
-            <div className="flex-1 flex flex-col justify-center">
-              <div className="text-center mb-8">
-                <span className="text-5xl font-black text-primary">{getSliderVal(step)}</span>
-                <span className="text-muted-foreground text-lg ml-2">{step.unit}</span>
-              </div>
-              <input type="range" min={step.min} max={step.max} step={step.step} value={getSliderVal(step)}
-                onChange={(e) => setSliderValues({ ...sliderValues, [step.id]: parseFloat(e.target.value) })}
-                className="w-full h-2 rounded-full appearance-none cursor-pointer"
-                style={{ background: sliderBg(getSliderVal(step), step.min ?? 0, step.max ?? 100) }} />
-              <div className="flex justify-between text-muted-foreground text-xs mt-2">
-                <span>{step.min} {step.unit}</span><span>{step.max} {step.unit}</span>
-              </div>
-            </div>
-          )}
-        </motion.div>
-      </AnimatePresence>
 
       <div className="flex gap-3 mt-6">
         <button onClick={() => current > 0 ? setCurrent(current - 1) : navigate("/projection-preview")} className="w-14 h-14 rounded-xl flex items-center justify-center text-muted-foreground bg-card">

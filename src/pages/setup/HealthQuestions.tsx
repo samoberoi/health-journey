@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 import {
   ArrowLeft, CheckCircle, XCircle, HelpCircle,
@@ -69,37 +69,36 @@ export default function HealthQuestions() {
         <Progress value={progress} className="h-1.5" />
       </div>
 
-      <AnimatePresence initial={false}>
-        <motion.div key={currentQ} className="flex flex-col flex-1" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}>
-          <div className="mb-8">
-            <h1 className="text-3xl font-black text-foreground mb-2">{q.question}</h1>
-            <p className="text-muted-foreground text-sm">{q.subtitle}</p>
-          </div>
-          <div className="flex flex-col gap-3 flex-1">
-            {q.options.map((opt, i) => {
-              const Icon = opt.icon;
-              const isSelected = answers[q.id] === opt.id;
-              return (
-                <motion.button key={opt.id} onClick={() => answer(opt.id)} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }} whileTap={{ scale: 0.98 }}
-                  className={`flex items-center gap-4 p-4 rounded-2xl border-2 transition-colors ${isSelected ? "border-primary bg-primary/10" : "bg-card border-border"}`}>
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isSelected ? "bg-primary/20" : "liquid-glass"}`}>
-                    <Icon className={`w-5 h-5 ${opt.iconColor}`} strokeWidth={1.8} />
+      <div className="flex flex-col flex-1">
+        <div className="mb-8">
+          <h1 className="text-3xl font-black text-foreground mb-2">{q.question}</h1>
+          <p className="text-muted-foreground text-sm">{q.subtitle}</p>
+        </div>
+        <div className="flex flex-col gap-3 flex-1">
+          {q.options.map((opt) => {
+            const Icon = opt.icon;
+            const isSelected = answers[q.id] === opt.id;
+            return (
+              <motion.button key={opt.id} onClick={() => answer(opt.id)} whileTap={{ scale: 0.98 }}
+                className={`flex items-center gap-4 p-4 rounded-2xl border-2 transition-colors ${isSelected ? "border-primary bg-primary/10" : "bg-card border-border"}`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isSelected ? "bg-primary/20" : "liquid-glass"}`}>
+                  <Icon className={`w-5 h-5 ${opt.iconColor}`} strokeWidth={1.8} />
+                </div>
+                <div className="text-left flex-1">
+                  <p className="text-foreground font-semibold text-sm">{opt.label}</p>
+                  {opt.sublabel && <p className="text-muted-foreground text-xs mt-0.5">{opt.sublabel}</p>}
+                </div>
+                {isSelected && (
+                  <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                    <span className="text-white text-xs font-bold">✓</span>
                   </div>
-                  <div className="text-left flex-1">
-                    <p className="text-foreground font-semibold text-sm">{opt.label}</p>
-                    {opt.sublabel && <p className="text-muted-foreground text-xs mt-0.5">{opt.sublabel}</p>}
-                  </div>
-                  {isSelected && (
-                    <motion.div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-                      <span className="text-white text-xs font-bold">✓</span>
-                    </motion.div>
-                  )}
-                </motion.button>
-              );
-            })}
-          </div>
-        </motion.div>
-      </AnimatePresence>
+                )}
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
+
 
       {currentQ > 0 && (
         <button onClick={() => setCurrentQ(currentQ - 1)} className="flex items-center gap-2 text-muted-foreground mt-6 w-fit">

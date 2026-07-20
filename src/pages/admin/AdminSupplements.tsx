@@ -14,7 +14,7 @@ import {
   CATEGORY_COLORS, CATEGORY_BG, TIMING_ICONS,
   DOSE_UNITS, DOSE_VEHICLES, FREQUENCY_OPTIONS, TIMING_OPTIONS,
   parseDosage, formatDosage,
-  type Supplement, type ConditionRule
+  type Supplement, type ConditionRule, type VegType
 } from "@/lib/supplementService";
 import {
   fetchSupplementBadgeDefinitions, updateSupplementBadgeDefinition,
@@ -24,6 +24,15 @@ import ExportCsvButton from "@/components/admin/ExportCsvButton";
 import ImportCsvButton from "@/components/admin/ImportCsvButton";
 
 type View = "catalog" | "rules" | "badges";
+
+const VEG_TYPE_OPTIONS: Array<{ value: VegType; label: string; short: string }> = [
+  { value: "veg", label: "Vegetarian", short: "V" },
+  { value: "non_veg", label: "Non-vegetarian", short: "NV" },
+  { value: "both", label: "Suitable for both", short: "V/NV" },
+];
+
+const getVegTypeOption = (value?: string | null) =>
+  VEG_TYPE_OPTIONS.find((o) => o.value === value) ?? VEG_TYPE_OPTIONS[2];
 
 function ConditionFlatIcon({ className = "w-3 h-3" }: { className?: string }) {
   return <HeartPulse className={className} strokeWidth={1.75} />;
@@ -45,7 +54,7 @@ export default function AdminSupplements() {
   const [showAddSupp, setShowAddSupp] = useState(false);
   const [showAddRule, setShowAddRule] = useState(false);
   const [expandedCondition, setExpandedCondition] = useState<string | null>(null);
-  const [newSupp, setNewSupp] = useState({ name: "", category: "vitamin", description: "" });
+  const [newSupp, setNewSupp] = useState<{ name: string; category: string; description: string; veg_type: VegType }>({ name: "", category: "vitamin", description: "", veg_type: "both" });
   const [newRule, setNewRule] = useState({ supplement_id: "", condition: "deficiency", severity: "moderate", dosage: "", frequency: "once daily", timing: "with meal", duration_weeks: 12, remarks: "" });
   const [newDose, setNewDose] = useState({ amount: "", unit: "mg", vehicle: "" });
   const [editDose, setEditDose] = useState({ amount: "", unit: "", vehicle: "" });
@@ -236,7 +245,15 @@ export default function AdminSupplements() {
 
   const handleEditSupp = (supp: Supplement) => {
     setEditingSupp(supp.id);
-    setEditSuppValues({ name: supp.name, category: supp.category, description: supp.description ?? "", default_dosage: supp.default_dosage ?? "", default_frequency: supp.default_frequency ?? "", default_timing: supp.default_timing ?? "" });
+    setEditSuppValues({ name: supp.name, category: supp.category, description: supp.description ?? "", default_dosage: supp.default_dosage ?? "", default_frequency: supp.default_frequency ?? "", default_timing: supp.default_timing ?? "", veg_type: supp.veg_type ?? "both" });
+  };
+
+  const handleUpdateSupplementVegType = async (supp: Supplement, vegType: VegType) => {
+    try {
+      await updateSupplement(supp.id, { veg_type: vegType });
+      setSupplements((prev) => prev.map((s) => s.id === supp.id ? { ...s, veg_type: vegType } : s));
+      toast.success(`${supp.name} marked ${getVegTypeOption(vegType).label}`);
+    } catch (e: any) { toast.error(e.message); }
   };
 
   const handleSaveSupp = async (suppId: string) => {
@@ -254,7 +271,7 @@ export default function AdminSupplements() {
       await createSupplement(newSupp as any);
       toast.success("Supplement added");
       setShowAddSupp(false);
-      setNewSupp({ name: "", category: "vitamin", description: "" });
+      setNewSupp({ name: "", category: "vitamin", description: "", veg_type: "both" });
       loadData();
     } catch (e: any) { toast.error(e.message); }
   };

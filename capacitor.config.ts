@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "app.lovable.byebyediabetes",
+  appId: "com.hyperrevamp.bbdo",
   appName: "BBDO",
   webDir: "dist",
   // Serve the WebView from a real-looking https origin so YouTube's IFrame API

@@ -415,7 +415,7 @@ export default function AdminFoodConditionRules() {
             </div>
 
             <div>
-              <Label>Food *</Label>
+              <Label>Food{editing ? "" : "s"} *</Label>
               <Popover open={foodPickerOpen} onOpenChange={setFoodPickerOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -424,14 +424,21 @@ export default function AdminFoodConditionRules() {
                     role="combobox"
                     aria-expanded={foodPickerOpen}
                     className={cn(
-                      "w-full justify-between font-normal",
-                      !form.name_pattern && "text-muted-foreground",
+                      "w-full justify-between font-normal h-auto min-h-10 py-2",
+                      !editing && selectedFoods.length === 0 && !form.name_pattern && "text-muted-foreground",
                     )}
                   >
-                    {form.name_pattern
-                      ? (foods.find((fd) => fd.name.toLowerCase() === form.name_pattern.toLowerCase())?.name
-                          ?? form.name_pattern)
-                      : "Pick a food from the master list…"}
+                    <span className="flex flex-wrap gap-1 text-left">
+                      {editing ? (
+                        foods.find((fd) => fd.name.toLowerCase() === form.name_pattern.toLowerCase())?.name ?? form.name_pattern ?? "Pick a food…"
+                      ) : selectedFoods.length === 0 ? (
+                        "Pick one or more foods…"
+                      ) : (
+                        selectedFoods.map((n) => (
+                          <Badge key={n} variant="secondary" className="font-normal">{n}</Badge>
+                        ))
+                      )}
+                    </span>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
@@ -442,14 +449,22 @@ export default function AdminFoodConditionRules() {
                       <CommandEmpty>No food found. Add it in Foods first.</CommandEmpty>
                       <CommandGroup>
                         {foods.map((fd) => {
-                          const selected = form.name_pattern.toLowerCase() === fd.name.toLowerCase();
+                          const selected = editing
+                            ? form.name_pattern.toLowerCase() === fd.name.toLowerCase()
+                            : selectedFoods.includes(fd.name);
                           return (
                             <CommandItem
                               key={fd.id}
                               value={fd.name}
                               onSelect={() => {
-                                setForm((f) => ({ ...f, name_pattern: fd.name }));
-                                setFoodPickerOpen(false);
+                                if (editing) {
+                                  setForm((f) => ({ ...f, name_pattern: fd.name }));
+                                  setFoodPickerOpen(false);
+                                } else {
+                                  setSelectedFoods((prev) =>
+                                    prev.includes(fd.name) ? prev.filter((n) => n !== fd.name) : [...prev, fd.name],
+                                  );
+                                }
                               }}
                             >
                               <Check className={cn("mr-2 h-4 w-4", selected ? "opacity-100" : "opacity-0")} />
@@ -463,9 +478,12 @@ export default function AdminFoodConditionRules() {
                 </PopoverContent>
               </Popover>
               <p className="text-xs text-muted-foreground mt-1">
-                Only foods from the master Foods list can be mapped. {foods.length} foods available.
+                {editing
+                  ? `Only foods from the master Foods list can be mapped. ${foods.length} available.`
+                  : `Select multiple foods to create one rule per food with the same action & reason. ${selectedFoods.length} selected of ${foods.length}.`}
               </p>
             </div>
+
 
             <div>
               <Label>Scope to filter (optional)</Label>

@@ -86,6 +86,7 @@ export default function AdminFoodConditionRules() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Rule | null>(null);
   const [form, setForm] = useState(emptyRuleForm("hypothyroid"));
+  const [selectedFoods, setSelectedFoods] = useState<string[]>([]); // names, used only when creating
   const [foodPickerOpen, setFoodPickerOpen] = useState(false);
 
   // Condition manager state
@@ -142,6 +143,7 @@ export default function AdminFoodConditionRules() {
   const openNew = () => {
     setEditing(null);
     setForm(emptyRuleForm(activeConditions[0]?.key || "hypothyroid"));
+    setSelectedFoods([]);
     setDialogOpen(true);
   };
   const openEdit = (r: Rule) => {
@@ -151,31 +153,34 @@ export default function AdminFoodConditionRules() {
       name_pattern: r.name_pattern, filter_id: r.filter_id,
       reason: r.reason, priority: r.priority, is_active: r.is_active,
     });
+    setSelectedFoods([]);
     setDialogOpen(true);
   };
 
   const handleSave = async () => {
-    if (!form.name_pattern.trim()) { toast.error("Food name pattern is required"); return; }
     if (!form.reason.trim()) { toast.error("Reason is required"); return; }
-    const payload = {
+    const basePayload = {
       condition_key: form.condition_key,
       action: form.action,
-      name_pattern: form.name_pattern.trim().toLowerCase(),
       filter_id: form.filter_id || null,
       reason: form.reason.trim(),
       priority: Number(form.priority) || 100,
       is_active: form.is_active,
     };
     if (editing) {
+      if (!form.name_pattern.trim()) { toast.error("Food is required"); return; }
+      const payload = { ...basePayload, name_pattern: form.name_pattern.trim().toLowerCase() };
       const { error } = await supabase.from("food_condition_rules").update(payload).eq("id", editing.id);
       if (error) { toast.error(error.message); return; }
       logAudit({ module: "Diet", action: "update", target_type: "rule", target_id: editing.id, target_label: `${payload.condition_key}: ${payload.name_pattern}` });
       toast.success("Rule updated");
     } else {
-      const { error } = await supabase.from("food_condition_rules").insert(payload);
+      if (selectedFoods.length === 0) { toast.error("Pick at least one food"); return; }
+      const rows = selectedFoods.map((n) => ({ ...basePayload, name_pattern: n.trim().toLowerCase() }));
+      const { error } = await supabase.from("food_condition_rules").insert(rows);
       if (error) { toast.error(error.message); return; }
-      logAudit({ module: "Diet", action: "create", target_type: "rule", target_label: `${payload.condition_key}: ${payload.name_pattern}` });
-      toast.success("Rule created");
+      logAudit({ module: "Diet", action: "create", target_type: "rule", target_label: `${basePayload.condition_key}: ${rows.length} foods` });
+      toast.success(`Created ${rows.length} rule${rows.length === 1 ? "" : "s"}`);
     }
     setDialogOpen(false);
     load();
@@ -410,7 +415,7 @@ export default function AdminFoodConditionRules() {
             </div>
 
             <div>
-              <Label>Food *</Label>
+              <Label>Food{editing ? "" : "s"} *</Label>
               <Popover open={foodPickerOpen} onOpenChange={setFoodPickerOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -419,14 +424,21 @@ export default function AdminFoodConditionRules() {
                     role="combobox"
                     aria-expanded={foodPickerOpen}
                     className={cn(
-                      "w-full justify-between font-normal",
-                      !form.name_pattern && "text-muted-foreground",
+                      "w-full justify-between font-normal h-auto min-h-10 py-2",
+                      !editing && selectedFoods.length === 0 && !form.name_pattern && "text-muted-foreground",
                     )}
                   >
-                    {form.name_pattern
-                      ? (foods.find((fd) => fd.name.toLowerCase() === form.name_pattern.toLowerCase())?.name
-                          ?? form.name_pattern)
-                      : "Pick a food from the master list…"}
+                    <span className="flex flex-wrap gap-1 text-left">
+                      {editing ? (
+                        foods.find((fd) => fd.name.toLowerCase() === form.name_pattern.toLowerCase())?.name ?? form.name_pattern ?? "Pick a food…"
+                      ) : selectedFoods.length === 0 ? (
+                        "Pick one or more foods…"
+                      ) : (
+                        selectedFoods.map((n) => (
+                          <Badge key={n} variant="secondary" className="font-normal">{n}</Badge>
+                        ))
+                      )}
+                    </span>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
@@ -437,14 +449,22 @@ export default function AdminFoodConditionRules() {
                       <CommandEmpty>No food found. Add it in Foods first.</CommandEmpty>
                       <CommandGroup>
                         {foods.map((fd) => {
-                          const selected = form.name_pattern.toLowerCase() === fd.name.toLowerCase();
+                          const selected = editing
+                            ? form.name_pattern.toLowerCase() === fd.name.toLowerCase()
+                            : selectedFoods.includes(fd.name);
                           return (
                             <CommandItem
                               key={fd.id}
                               value={fd.name}
                               onSelect={() => {
-                                setForm((f) => ({ ...f, name_pattern: fd.name }));
-                                setFoodPickerOpen(false);
+                                if (editing) {
+                                  setForm((f) => ({ ...f, name_pattern: fd.name }));
+                                  setFoodPickerOpen(false);
+                                } else {
+                                  setSelectedFoods((prev) =>
+                                    prev.includes(fd.name) ? prev.filter((n) => n !== fd.name) : [...prev, fd.name],
+                                  );
+                                }
                               }}
                             >
                               <Check className={cn("mr-2 h-4 w-4", selected ? "opacity-100" : "opacity-0")} />
@@ -458,9 +478,12 @@ export default function AdminFoodConditionRules() {
                 </PopoverContent>
               </Popover>
               <p className="text-xs text-muted-foreground mt-1">
-                Only foods from the master Foods list can be mapped. {foods.length} foods available.
+                {editing
+                  ? `Only foods from the master Foods list can be mapped. ${foods.length} available.`
+                  : `Select multiple foods to create one rule per food with the same action & reason. ${selectedFoods.length} selected of ${foods.length}.`}
               </p>
             </div>
+
 
             <div>
               <Label>Scope to filter (optional)</Label>

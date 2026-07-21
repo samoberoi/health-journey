@@ -98,6 +98,7 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "requestAuthorization", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getTodayStepCount", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getHealthSnapshot", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getLatestEcg", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "saveWeight", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "enableBackgroundSync", returnType: CAPPluginReturnPromise)
     ]
@@ -117,6 +118,9 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         }
         if let sleep = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) {
             types.insert(sleep)
+        }
+        if #available(iOS 14.0, *) {
+            types.insert(HKObjectType.electrocardiogramType())
         }
         return types
     }

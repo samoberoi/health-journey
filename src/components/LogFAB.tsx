@@ -399,11 +399,42 @@ export default function LogFAB(_props: { packageKey?: string | null }) {
                 </span>
               </span>
             </motion.button>
+            <motion.button
+              key="soleus-shortcut"
+              onClick={() => {
+                setOpen(false);
+                setTimeout(() => setSoleusOpen(true), 180);
+              }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ duration: 0.12, ease: [0.22, 1, 0.36, 1] }}
+              className="no-pill relative flex flex-col items-center justify-center gap-2 rounded-2xl py-4 px-2 bg-card border border-border"
+            >
+              <span
+                className="w-11 h-11 rounded-xl flex items-center justify-center"
+                style={{ background: soleusDone ? "#10B981" : "var(--bbdo-blue)" }}
+              >
+                <Dumbbell className="w-5 h-5 text-white" strokeWidth={1.7} />
+              </span>
+              <span className="text-[11px] font-semibold text-foreground text-center leading-none inline-flex items-center gap-1">
+                Soleus Push-Ups
+                <span
+                  className="text-[9px] font-black px-1.5 py-0.5 rounded-md"
+                  style={{
+                    background: soleusDone ? "#10B98122" : "rgba(36,140,203,0.14)",
+                    color: soleusDone ? "#10B981" : "var(--bbdo-blue)",
+                  }}
+                >
+                  {soleusCount}/{soleusGoal}
+                </span>
+              </span>
+            </motion.button>
           </div>
         </DrawerContent>
       </Drawer>
 
       <BreathProtocolDrawer open={breathOpen} onOpenChange={setBreathOpen} />
+      <SoleusProtocolDrawer open={soleusOpen} onOpenChange={setSoleusOpen} />
+
 
 
 

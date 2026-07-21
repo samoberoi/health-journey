@@ -829,6 +829,8 @@ export default function ExerciseTab({ packageKey }: Props) {
           }}
         />
       )}
+
+      <SoleusProtocolDrawer open={soleusOpen} onOpenChange={setSoleusOpen} />
     </div>
   );
 }

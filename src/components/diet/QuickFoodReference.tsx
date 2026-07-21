@@ -50,6 +50,19 @@ const PRESETS: { key: PresetKey; label: string; Icon: typeof Sparkles; tint: str
   { key: "high_protein",  label: "High protein",  Icon: Zap,      tint: "text-purple-700 bg-purple-500/10 border-purple-500/30" },
 ];
 
+const filterNumberFromLabel = (label: string | null | undefined) => {
+  const match = label?.match(/\d+/);
+  return match ? Number(match[0]) : null;
+};
+const filterAlphaFromLabel = (label: string | null | undefined) => label?.match(/[a-z]+$/i)?.[0].toLowerCase() || "";
+const filterOrder = (filter: FoodFilter) => filter.order_number ?? filterNumberFromLabel(filter.number_label) ?? filter.display_order ?? 9999;
+const filterLabel = (filter: FoodFilter | null | undefined) => filter ? filter.number_label || `F${filterOrder(filter)}` : null;
+const sortFilters = (a: FoodFilter, b: FoodFilter) =>
+  filterOrder(a) - filterOrder(b) ||
+  filterAlphaFromLabel(filterLabel(a)).localeCompare(filterAlphaFromLabel(filterLabel(b))) ||
+  (a.display_order ?? 9999) - (b.display_order ?? 9999) ||
+  a.name.localeCompare(b.name);
+
 
 const SORT_OPTIONS: { key: SortKey; label: string; short: string }[] = [
   { key: "recommended", label: "Recommended", short: "Recommended" },
@@ -219,14 +232,7 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
       ]);
       const itemsData = ((i.data as FoodItem[]) || []);
       const rawFilters = ((f.data as FoodFilter[]) || []);
-      const fSorted = rawFilters.slice().sort((a, b) => {
-        if ((a.display_order ?? 0) !== (b.display_order ?? 0)) {
-          return (a.display_order ?? 0) - (b.display_order ?? 0);
-        }
-        const ax = a.order_number ?? parseInt((a.number_label || "F99").replace(/[^\d]/g, "")) ?? 99;
-        const bx = b.order_number ?? parseInt((b.number_label || "F99").replace(/[^\d]/g, "")) ?? 99;
-        return ax - bx;
-      });
+      const fSorted = rawFilters.slice().sort(sortFilters);
       setCats((c.data as any) || []);
       setFilters(fSorted);
       setItems(itemsData);
@@ -658,7 +664,7 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
                       isActive ? "bg-foreground text-background" : "bg-muted text-muted-foreground"
                     }`}
                   >
-                    <span className="opacity-50 mr-1.5">{f.number_label}</span>
+                    <span className="opacity-50 mr-1.5">{filterLabel(f)}</span>
                     {shortName(f.name)}
                   </button>
                 );
@@ -769,7 +775,7 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
               transition={{ duration: 0.22, ease: EASE }}
               className="mb-4"
             >
-              <p className="text-xs font-bold tracking-wider uppercase text-muted-foreground">{activeFilterObj.number_label}</p>
+              <p className="text-xs font-bold tracking-wider uppercase text-muted-foreground">{filterLabel(activeFilterObj)}</p>
               <h2 className="text-2xl font-black text-foreground leading-tight mt-1">{activeFilterObj.name}</h2>
               {activeFilterObj.description && (
                 <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{activeFilterObj.description}</p>
@@ -863,7 +869,7 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
                   <div className="flex items-baseline justify-between mb-2">
                     <div className="flex items-baseline gap-2 min-w-0">
                       <span className="text-[10px] font-bold tracking-wider uppercase text-muted-foreground shrink-0">
-                        {group.filter.number_label}
+                        {filterLabel(group.filter)}
                       </span>
                       <h3 className="text-sm font-black text-foreground truncate">{shortName(group.filter.name)}</h3>
                       <span className="text-[10px] text-muted-foreground shrink-0">{group.items.length}</span>
@@ -903,7 +909,7 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
                 <FoodRow
                   key={it.id}
                   item={it}
-                  categoryLabel={isGlobalSort && !presetCategory ? filters.find((f) => f.id === it.filter_id)?.number_label || null : null}
+                  categoryLabel={isGlobalSort && !presetCategory ? filterLabel(filters.find((f) => f.id === it.filter_id)) : null}
                   sort={effectiveSort}
                   rule={ruleMap.get(it.id) || null}
                   onClick={() => setOpenItem(it)}

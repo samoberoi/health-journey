@@ -44,8 +44,24 @@ interface Rule {
   updated_at?: string;
 }
 
-interface FilterRow { id: string; name: string; slug: string; number_label: string | null; order_number: number | null; }
+interface FilterRow { id: string; name: string; slug: string; number_label: string | null; order_number: number | null; display_order: number | null; }
 interface FoodOption { id: string; name: string; filter_id: string | null; }
+
+const filterNumberFromLabel = (label: string | null | undefined) => {
+  const match = label?.match(/\d+/);
+  return match ? Number(match[0]) : null;
+};
+
+const filterAlphaFromLabel = (label: string | null | undefined) => {
+  const match = label?.match(/[a-z]+$/i);
+  return match ? match[0].toLowerCase() : "";
+};
+
+const filterNumber = (filter: FilterRow | undefined) =>
+  filter?.order_number ?? filterNumberFromLabel(filter?.number_label) ?? filter?.display_order ?? 9999;
+
+const filterLabel = (filter: FilterRow | undefined) =>
+  filter?.number_label || (filter ? `F${filterNumber(filter)}` : null);
 
 const ACTIONS: { value: Action; label: string; cls: string }[] = [
   { value: "avoid",     label: "Avoid",     cls: "bg-destructive/10 text-destructive border-destructive/30" },
@@ -101,7 +117,7 @@ export default function AdminFoodConditionRules() {
     const [cRes, rRes, fRes, foodRes] = await Promise.all([
       (supabase as any).from("food_conditions").select("*").order("sort_order").order("label"),
       supabase.from("food_condition_rules").select("*").order("condition_key").order("priority", { ascending: false }),
-      supabase.from("food_filters").select("id,name,slug,number_label,order_number").order("order_number", { ascending: true, nullsFirst: false }).order("name"),
+      supabase.from("food_filters").select("id,name,slug,number_label,order_number,display_order").order("order_number", { ascending: true, nullsFirst: false }).order("display_order").order("name"),
       supabase.from("food_items").select("id,name,filter_id").order("name"),
     ]);
     const conds = ((cRes.data as any[]) || []) as Condition[];
@@ -123,18 +139,25 @@ export default function AdminFoodConditionRules() {
   const activeConditions = useMemo(() => conditions.filter((c) => c.is_active), [conditions]);
 
   const foodsGrouped = useMemo(() => {
-    type Group = { key: string; name: string; label: string | null; order: number; items: FoodOption[] };
+    type Group = { key: string; name: string; label: string | null; order: number; alpha: string; displayOrder: number; items: FoodOption[] };
     const groups = new Map<string, Group>();
     foods.forEach((fd) => {
       const key = fd.filter_id || "__uncategorized__";
       const filter = fd.filter_id ? filterById.get(fd.filter_id) : undefined;
       const name = filter?.name || "Uncategorized";
-      const label = filter?.number_label || null;
-      const order = filter?.order_number ?? 9999;
-      if (!groups.has(key)) groups.set(key, { key, name, label, order, items: [] });
+      const label = filterLabel(filter);
+      const order = filterNumber(filter);
+      const alpha = filterAlphaFromLabel(label);
+      const displayOrder = filter?.display_order ?? order;
+      if (!groups.has(key)) groups.set(key, { key, name, label, order, alpha, displayOrder, items: [] });
       groups.get(key)!.items.push(fd);
     });
-    return Array.from(groups.values()).sort((a, b) => a.order - b.order || a.name.localeCompare(b.name));
+    return Array.from(groups.values()).sort((a, b) =>
+      a.order - b.order ||
+      a.alpha.localeCompare(b.alpha) ||
+      a.displayOrder - b.displayOrder ||
+      a.name.localeCompare(b.name),
+    );
   }, [foods, filterById]);
 
   const visible = useMemo(() => {

@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import { useUserStore } from "@/hooks/useUserStore";
 import { useBreathSessionsToday } from "@/hooks/useBreathSessionsToday";
 import BreathProtocolDrawer from "@/components/BreathProtocolDrawer";
+import { useSoleusSessionsToday } from "@/hooks/useSoleusSessionsToday";
+import SoleusProtocolDrawer from "@/components/SoleusProtocolDrawer";
 import { useTodayExerciseProgress } from "@/hooks/useTodayExerciseProgress";
 
 type LogType = "diabetes" | "bp" | "weight" | "water" | null;

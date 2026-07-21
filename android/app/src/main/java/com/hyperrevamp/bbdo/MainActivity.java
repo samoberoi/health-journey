@@ -17,6 +17,7 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        registerPlugin(BBDOAndroidPushPlugin.class);
         super.onCreate(savedInstanceState);
         createBbdoNotificationChannel();
         WebSettings settings = getBridge().getWebView().getSettings();

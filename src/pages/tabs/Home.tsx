@@ -1488,6 +1488,20 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
           color: "#38BDF8",
           hint: `${waterGlasses} / 8 glasses`,
         });
+        rings.push({
+          key: "breath",
+          label: "Breath Protocol",
+          ratio: breathGoalToday > 0 ? Math.min(1, breathCountToday / breathGoalToday) : 0,
+          color: "#EA6A5E",
+          hint: `${Math.min(breathCountToday, breathGoalToday)} / ${breathGoalToday} sessions`,
+        });
+        rings.push({
+          key: "soleus",
+          label: "Soleus Push-Ups",
+          ratio: soleusGoalToday > 0 ? Math.min(1, soleusCountToday / soleusGoalToday) : 0,
+          color: "#B91C1C",
+          hint: `${Math.min(soleusCountToday, soleusGoalToday)} / ${soleusGoalToday} rounds`,
+        });
         if (hasDiabetesFlag) {
           rings.push({
             key: "diabetes",

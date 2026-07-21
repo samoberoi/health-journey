@@ -21,11 +21,23 @@ export type HealthSnapshot = {
   sleepHours?: number;
 };
 
+export type EcgReading = {
+  classification?: string;
+  symptomsStatus?: string;
+  averageHeartRate?: number;
+  numberOfVoltageMeasurements?: number;
+  samplingFrequencyHz?: number;
+  startDate?: string;
+  endDate?: string;
+  voltagesMicroV?: number[];
+};
+
 type BBDOHealthKitPlugin = {
   isAvailable(): Promise<HealthAvailability>;
   requestAuthorization(): Promise<HealthAuthorization>;
   getTodayStepCount(): Promise<TodaySteps>;
   getHealthSnapshot?(): Promise<HealthSnapshot>;
+  getLatestEcg?(): Promise<EcgReading>;
   saveWeight?(opts: { kg: number; at?: string }): Promise<{ saved: boolean }>;
   enableBackgroundSync?(): Promise<{ enabled: boolean }>;
   addListener?(
@@ -74,6 +86,23 @@ export async function fetchAppleHealthSnapshot(): Promise<HealthSnapshot | null>
     return snap ?? null;
   } catch (error) {
     reportStartupError("healthkit snapshot failed", error);
+    return null;
+  }
+}
+
+/** Fetch the most recent ECG reading (Apple Watch, iOS 14+). */
+export async function fetchLatestEcgFromAppleHealth(): Promise<EcgReading | null> {
+  if (!canUseAppleHealthSteps()) return null;
+  try {
+    const availability = await BBDOHealthKit.isAvailable();
+    if (!availability.available) return null;
+    await BBDOHealthKit.requestAuthorization();
+    if (typeof BBDOHealthKit.getLatestEcg !== "function") return null;
+    const ecg = await BBDOHealthKit.getLatestEcg();
+    if (!ecg || !ecg.startDate) return null;
+    return ecg;
+  } catch (error) {
+    reportStartupError("healthkit ecg failed", error);
     return null;
   }
 }

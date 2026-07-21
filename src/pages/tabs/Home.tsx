@@ -32,6 +32,7 @@ import {
 import { calculateSupplementStreak, checkAndAwardSupplementBadges } from "@/lib/supplementBadgeService";
 import TodayStepsCard from "@/components/TodayStepsCard";
 import AppleHealthSnapshotCard from "@/components/AppleHealthSnapshotCard";
+import AppleHealthEcgCard from "@/components/AppleHealthEcgCard";
 import HealthTrendsCard from "@/components/HealthTrendsCard";
 import { fetchMovementOverview } from "@/lib/movementUserService";
 import { fetchUserStats } from "@/lib/userStatsService";
@@ -1953,6 +1954,9 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
 
       {/* ─── Apple Health snapshot ─── */}
       <AppleHealthSnapshotCard />
+
+      {/* ─── Apple Watch ECG ─── */}
+      <AppleHealthEcgCard />
 
       {/* ─── Apple Health 30-day trends ─── */}
       <HealthTrendsCard days={30} />

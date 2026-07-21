@@ -3,11 +3,12 @@
  * Same API surface as the original appleHealth.ts, so UI components can call one thing.
  */
 import { Capacitor } from "@capacitor/core";
-import type { HealthSnapshot } from "@/lib/appleHealth";
+import type { HealthSnapshot, EcgReading } from "@/lib/appleHealth";
 import {
   canUseAppleHealthSteps,
   syncTodayStepsFromAppleHealth,
   fetchAppleHealthSnapshot,
+  fetchLatestEcgFromAppleHealth,
   writeWeightToAppleHealth,
   enableAppleHealthBackgroundSync,
   onAppleHealthDataChanged,
@@ -22,7 +23,16 @@ import {
   openHealthConnectSettings,
 } from "@/lib/healthConnect";
 
-export type { HealthSnapshot };
+export type { HealthSnapshot, EcgReading };
+
+export async function fetchLatestEcg(): Promise<EcgReading | null> {
+  if (isIOS()) return fetchLatestEcgFromAppleHealth();
+  return null;
+}
+
+export function canReadEcg(): boolean {
+  return isIOS();
+}
 
 export type NativeHealthPermissionState = {
   authorized: boolean;

@@ -20,9 +20,7 @@ import {
   fetchSupplementBadgeDefinitions, updateSupplementBadgeDefinition,
   type SupplementBadge
 } from "@/lib/supplementBadgeService";
-import ExportCsvButton from "@/components/admin/ExportCsvButton";
-import ImportCsvButton from "@/components/admin/ImportCsvButton";
-import PillarBackupToolbar from "@/components/admin/PillarBackupToolbar";
+import DataToolsMenu from "@/components/admin/DataToolsMenu";
 import { SUPPLEMENTS_PILLAR } from "@/lib/pillarConfigs";
 
 type View = "catalog" | "rules" | "badges";
@@ -374,12 +372,15 @@ export default function AdminSupplements() {
           <p className="text-sm text-muted-foreground mt-1">{supplements.length} supplements · {rules.length} condition rules</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <PillarBackupToolbar config={SUPPLEMENTS_PILLAR} onRestored={() => window.location.reload()} />
-          <ExportCsvButton
-            filename={view === "rules" ? "supplement-rules" : "supplements"}
-            rows={() => (view === "rules" ? rules : supplements) as any}
+          <DataToolsMenu
+            pillar={SUPPLEMENTS_PILLAR}
+            csvExport={{
+              filename: view === "rules" ? "supplement-rules" : "supplements",
+              rows: () => (view === "rules" ? rules : supplements) as any,
+            }}
+            csvImport={{ table: view === "rules" ? "supplement_condition_rules" : view === "badges" ? "supplement_badges" : "supplement_master" }}
+            onChanged={() => window.location.reload()}
           />
-<ImportCsvButton table={view === "rules" ? "supplement_condition_rules" : view === "badges" ? "supplement_badges" : "supplement_master"} onImported={() => window.location.reload()} />
           {view !== "badges" && (
             <button
               onClick={() => view === "catalog" ? setShowAddSupp(true) : setShowAddRule(true)}

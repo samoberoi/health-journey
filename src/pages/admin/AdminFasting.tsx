@@ -13,9 +13,7 @@ import {
 import {
   fetchBadgeDefinitions, updateBadgeDefinition, type FastingBadge
 } from "@/lib/streakService";
-import ExportCsvButton from "@/components/admin/ExportCsvButton";
-import ImportCsvButton from "@/components/admin/ImportCsvButton";
-import PillarBackupToolbar from "@/components/admin/PillarBackupToolbar";
+import DataToolsMenu from "@/components/admin/DataToolsMenu";
 import { FASTING_PILLAR } from "@/lib/pillarConfigs";
 import StageMilestoneEditor from "@/components/fasting/StageMilestoneEditor";
 
@@ -173,9 +171,12 @@ export default function AdminFasting() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <PillarBackupToolbar config={FASTING_PILLAR} onRestored={() => window.location.reload()} />
-            <ExportCsvButton filename="fasting-protocols" rows={protocols as any} />
-            <ImportCsvButton table="fasting_protocols" onImported={() => window.location.reload()} />
+            <DataToolsMenu
+              pillar={FASTING_PILLAR}
+              csvExport={{ filename: "fasting-protocols", rows: protocols as any }}
+              csvImport={{ table: "fasting_protocols" }}
+              onChanged={() => window.location.reload()}
+            />
           </div>
         </div>
         <div className="grid grid-cols-3 gap-3">

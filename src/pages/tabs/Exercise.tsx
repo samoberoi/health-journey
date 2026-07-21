@@ -449,107 +449,125 @@ export default function ExerciseTab({ packageKey }: Props) {
   }
 
   return (
-    <div className="theme-exercise px-4 md:px-6 pt-3 md:pt-8 pb-10 space-y-6">
-      {/* Soleus Push-Ups — BBDO daily ritual, 3x/day */}
+    <div className="theme-exercise px-4 md:px-6 pt-3 md:pt-8 pb-10 space-y-4">
+      {/* HERO — BBDO Soleus Push-Ups (matches yoga hero look & feel) */}
       <motion.button
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
         onClick={() => setSoleusOpen(true)}
-        className="w-full text-left rounded-2xl p-4 shadow-card relative overflow-hidden active:scale-[0.995] transition-transform"
-        style={{ background: "linear-gradient(135deg, var(--bbdo-red), #B80000)" }}
+        whileTap={{ scale: 0.99 }}
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="no-pill w-full text-left rounded-2xl overflow-hidden shadow-card relative"
+        style={{ background: "linear-gradient(135deg, #3D0A0A 0%, #8B0000 55%, #E00101 100%)" }}
       >
-        <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-white/10 blur-2xl pointer-events-none" />
-        <div className="relative flex items-center gap-3.5 text-white">
-          <span
-            className="w-14 h-14 rounded-2xl shrink-0 bg-white/15 ring-1 ring-white/25 flex items-center justify-center overflow-hidden"
-            style={{
-              backgroundImage: `url(${SOLEUS_PROTOCOL_VIDEO.thumbnailUrl})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
+        <div className="absolute -right-16 -top-16 w-52 h-52 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+
+        {/* Big thumbnail */}
+        <div className="relative w-full bg-black/40" style={{ aspectRatio: "16 / 9" }}>
+          <img
+            src={`https://i.ytimg.com/vi/${SOLEUS_PROTOCOL_VIDEO.youtubeId}/maxresdefault.jpg`}
+            alt="BBDO Soleus Push-Ups"
+            loading="lazy"
+            className="absolute inset-0 w-full h-full object-cover"
+            onError={(e) => {
+              const el = e.currentTarget as HTMLImageElement;
+              if (!el.dataset.fallback) {
+                el.dataset.fallback = "1";
+                el.src = `https://i.ytimg.com/vi/${SOLEUS_PROTOCOL_VIDEO.youtubeId}/hqdefault.jpg`;
+              }
             }}
-            aria-hidden
-          >
-            {!SOLEUS_PROTOCOL_VIDEO.thumbnailUrl && <Dumbbell className="w-6 h-6 text-white" />}
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-black tracking-[0.18em] uppercase text-white/80">BBDO Ritual</p>
-            <p className="text-[15px] font-black leading-tight truncate">Soleus Push-Ups · {soleusCount}/{soleusGoal} today</p>
-            <p className="text-[11px] text-white/85 leading-snug mt-0.5">
-              {soleusDone ? "All 3 rounds done — beautiful work." : "Post-meal calf pump · complete 3 rounds a day"}
-            </p>
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/95 text-foreground flex items-center justify-center shadow-lift">
+              <Play className="w-7 h-7 md:w-8 md:h-8 ml-0.5" fill="currentColor" />
+            </div>
           </div>
-          {soleusDone ? (
-            <CheckCircle2 className="w-6 h-6 text-white shrink-0" strokeWidth={2.2} />
-          ) : (
-            <Play className="w-5 h-5 text-white shrink-0" fill="currentColor" />
-          )}
+          <div className="absolute top-3 left-3 flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-white/95 text-foreground text-[10px] font-black uppercase tracking-[0.14em]">
+              <Dumbbell className="w-3 h-3" /> BBDO Hero Ritual
+            </span>
+            {soleusDone && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-black text-white" style={{ background: "#10B981" }}>
+                <CheckCircle2 className="w-3 h-3" /> Done today
+              </span>
+            )}
+          </div>
+          <div className="absolute bottom-3 right-3 px-2 py-1 rounded-md bg-black/70 text-white text-[11px] font-black">3×/day</div>
+        </div>
+
+        {/* Info + rounds */}
+        <div className="relative p-4 md:p-5 text-white">
+          <p className="text-[10px] tracking-[0.18em] uppercase font-bold text-white/80">Exercise Library · Hero</p>
+          <h1 className="text-[20px] md:text-2xl font-black leading-tight mt-1">
+            Soleus Push-Ups
+          </h1>
+          <p className="text-[12px] md:text-[13px] text-white/85 mt-1 leading-snug">
+            Post-meal calf pump · complete 3 rounds every day.
+          </p>
+          <div className="mt-3 flex items-center justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] font-black uppercase tracking-[0.14em] text-white/80">Today</span>
+                <span className="text-[11px] font-black tabular-nums">{soleusCount}/{soleusGoal} rounds</span>
+              </div>
+              <div className="mt-1.5 h-1.5 rounded-full bg-white/20 overflow-hidden">
+                <motion.div
+                  initial={false}
+                  animate={{ width: `${Math.min(100, (soleusCount / soleusGoal) * 100)}%` }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  className="h-full rounded-full"
+                  style={{ background: soleusDone ? "#10B981" : "#FFFFFF" }}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </motion.button>
 
-      {/* Hero */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-        className="rounded-2xl p-6 text-white shadow-card relative overflow-hidden"
+      {/* Plan header — compact */}
+      <div className="flex items-center justify-between gap-3 px-1">
+        <div className="min-w-0">
+          <p className="text-[10px] font-black tracking-[0.18em] uppercase text-muted-foreground">Exercise</p>
+          <h2 className="text-base font-black tracking-tight text-foreground truncate">
+            {PLAN_LABEL[PLAN_FOR_TIER[userTier]]}
+          </h2>
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="inline-flex items-center gap-1 bg-muted px-2 py-1 rounded-full text-[10px] font-bold text-muted-foreground">
+            <Flame className="w-3 h-3" /> Tier {userTier}
+          </span>
+          <span className="inline-flex items-center gap-1 bg-muted px-2 py-1 rounded-full text-[10px] font-bold text-muted-foreground">
+            <Trophy className="w-3 h-3" /> {earnedKeys.size}/{badges.length}
+          </span>
+        </div>
+      </div>
+
+      {/* Compact daily-goal marker — matches yoga */}
+      <div
+        className="rounded-xl px-3.5 py-2.5 flex items-center gap-3 shadow-card"
         style={{ background: "var(--pillar-exercise)" }}
       >
-        <div className="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-white/10 blur-3xl pointer-events-none" />
-        <div className="absolute -left-10 -bottom-16 w-44 h-44 rounded-full bg-white/5 blur-3xl" />
-        <div className="relative">
-          <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-white/80">Exercise</p>
-          <h1 className="text-2xl md:text-3xl font-black tracking-tight mt-1">
-            {PLAN_LABEL[PLAN_FOR_TIER[userTier]]}
-          </h1>
-          <p className="text-sm text-white/85 mt-1">
-            Every second of watch time counts. Aim for {dailyGoalMinutes} minutes today.
-          </p>
-
-          {/* Daily goal ring */}
-          <div className="mt-4 rounded-2xl bg-white/12 backdrop-blur-sm p-4 ring-1 ring-white/15">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Target className="w-4 h-4" />
-                <span className="text-xs font-black uppercase tracking-[0.14em]">Daily goal</span>
-              </div>
-              <span className="text-xs font-bold">
-                {todayMinutes.toLocaleString("en-IN", { maximumFractionDigits: 1 })}/{dailyGoalMinutes} min{goalMet ? " · Goal met" : ""}
-              </span>
-            </div>
-            <div className="mt-2 h-2.5 rounded-full bg-white/15 overflow-hidden">
-              <motion.div
-                initial={false}
-                animate={{ width: `${goalPct}%` }}
-                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                className="h-full rounded-full"
-                style={{ background: goalMet ? "#10B981" : "#FFFFFF" }}
-              />
-            </div>
-            <p className="text-[11px] text-white/75 mt-2">
-              {goalMet
-                ? "You've smashed today's minimum — keep going, no ceiling."
-                : `${remainingMinutes.toLocaleString("en-IN", { maximumFractionDigits: 1 })} more minute${remainingMinutes === 1 ? "" : "s"} to hit today's goal.`}
-            </p>
-            <p className="text-[10px] text-white/60 mt-1">
-              {todayProgress.completedExercises} exercise{todayProgress.completedExercises === 1 ? "" : "s"} fully completed today.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 mt-3 text-[11px]">
-            <span className="inline-flex items-center gap-1.5 bg-white/15 px-2.5 py-1 rounded-full font-semibold">
-              <Flame className="w-3.5 h-3.5" /> Tier {userTier}
-            </span>
-            <span className="inline-flex items-center gap-1.5 bg-white/15 px-2.5 py-1 rounded-full font-semibold">
-              <Trophy className="w-3.5 h-3.5" /> {earnedKeys.size}/{badges.length} badges
-            </span>
-            <span className="inline-flex items-center gap-1.5 bg-white/15 px-2.5 py-1 rounded-full font-semibold">
-              <Check className="w-3.5 h-3.5" /> {todayMinutes.toLocaleString("en-IN", { maximumFractionDigits: 1 })} min watched
-            </span>
-          </div>
-
+        <div className="flex items-center gap-1.5 shrink-0 text-white">
+          <Target className="w-3.5 h-3.5" />
+          <span className="text-[10px] font-black uppercase tracking-[0.14em]">Daily goal</span>
         </div>
-      </motion.div>
+        <div className="flex-1 min-w-0">
+          <div className="h-1.5 rounded-full bg-white/25 overflow-hidden">
+            <motion.div
+              initial={false}
+              animate={{ width: `${goalPct}%` }}
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              className="h-full rounded-full"
+              style={{ background: goalMet ? "#10B981" : "#FFFFFF" }}
+            />
+          </div>
+        </div>
+        <span className="text-[11px] font-black tabular-nums text-white shrink-0">
+          {todayMinutes.toLocaleString("en-IN", { maximumFractionDigits: 1 })}/{dailyGoalMinutes}m
+        </span>
+        {goalMet && <CheckCircle2 className="w-4 h-4 text-white shrink-0" />}
+      </div>
+
 
       {/* Fasting-window session breakdown removed for end users —
           the live daily-goal ring already reflects the active fasting protocol. */}

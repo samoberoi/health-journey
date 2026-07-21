@@ -11,8 +11,10 @@ import HealthScoreRing from "@/components/HealthScoreRing";
 
 
 function getRiskBadgeStyle(category: string): string {
-  if (category === "Excellent" || category === "Good") return "bg-primary/10 text-primary border-primary/20";
-  if (category === "Moderate Risk") return "bg-warning/10 text-warning border-warning/20";
+  if (category === "Good") return "bg-primary/10 text-primary border-primary/20";
+  if (category === "Wake-up Call") return "bg-yellow-500/10 text-yellow-600 border-yellow-500/20";
+  if (category === "Attention Required") return "bg-amber-500/10 text-amber-600 border-amber-500/20";
+  if (category === "Moderate Risk") return "bg-orange-500/10 text-orange-600 border-orange-500/20";
   return "bg-destructive/10 text-destructive border-destructive/20";
 }
 

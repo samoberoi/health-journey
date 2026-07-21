@@ -3,11 +3,12 @@
  * Same API surface as the original appleHealth.ts, so UI components can call one thing.
  */
 import { Capacitor } from "@capacitor/core";
-import type { HealthSnapshot } from "@/lib/appleHealth";
+import type { HealthSnapshot, EcgReading } from "@/lib/appleHealth";
 import {
   canUseAppleHealthSteps,
   syncTodayStepsFromAppleHealth,
   fetchAppleHealthSnapshot,
+  fetchLatestEcgFromAppleHealth,
   writeWeightToAppleHealth,
   enableAppleHealthBackgroundSync,
   onAppleHealthDataChanged,

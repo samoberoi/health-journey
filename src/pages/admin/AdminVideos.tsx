@@ -37,9 +37,7 @@ import {
 } from "@/lib/videoMetadataService";
 import { toast } from "@/hooks/use-toast";
 import { logAudit } from "@/lib/auditLog";
-import ExportCsvButton from "@/components/admin/ExportCsvButton";
-import ImportCsvButton from "@/components/admin/ImportCsvButton";
-import PillarBackupToolbar from "@/components/admin/PillarBackupToolbar";
+import DataToolsMenu from "@/components/admin/DataToolsMenu";
 import { YOGA_STRESS_PILLAR } from "@/lib/pillarConfigs";
 import SessionsGoalConfigCard from "@/components/admin/SessionsGoalConfigCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -323,9 +321,12 @@ export default function AdminVideos() {
             <Button onClick={openNewVideo} className="bg-[var(--bbdo-red)] hover:bg-[var(--bbdo-red)]/90 text-white w-full sm:w-auto">
               <Plus className="w-4 h-4 mr-1" /> New video
             </Button>
-            <PillarBackupToolbar config={YOGA_STRESS_PILLAR} onRestored={() => window.location.reload()} />
-            <ExportCsvButton filename="videos" rows={filtered as any} />
-            <ImportCsvButton table="videos" onImported={() => window.location.reload()} />
+            <DataToolsMenu
+              pillar={YOGA_STRESS_PILLAR}
+              csvExport={{ filename: "videos", rows: filtered as any }}
+              csvImport={{ table: "videos" }}
+              onChanged={() => window.location.reload()}
+            />
           </div>
         </div>
 

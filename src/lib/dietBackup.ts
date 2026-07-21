@@ -373,7 +373,7 @@ export async function importDietBackup(
     // Try upsert with composite conflict target; fall back to insert-ignore.
     const { error } = await (supabase as any)
       .from("food_item_tag_links")
-      .upsert(tagLinks, { onConflict: "item_id,tag_id", ignoreDuplicates: true });
+      .upsert(tagLinks, { onConflict: "food_item_id,tag_id", ignoreDuplicates: true });
     if (error) warnings.push(`food_item_tag_links: ${error.message}`);
   }
   report("Restoring tag links", tagLinks.length, tagLinks.length);

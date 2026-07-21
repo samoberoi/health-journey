@@ -418,10 +418,12 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
     if (!isGlobalSort) return [] as { filter: FoodFilter; count: number }[];
     const counts = new Map<string, number>();
     for (const it of visibleItems) counts.set(it.filter_id, (counts.get(it.filter_id) ?? 0) + 1);
-    // Show every active filter chip (even with 0 matches) so newly added
-    // taxonomy categories like F13 Alcoholic Beverages don't vanish when their
-    // only sample is filtered out by a preset.
-    return filters.map((f) => ({ filter: f, count: counts.get(f.id) ?? 0 }));
+    // Hide categories with zero matching items in the current preset — an empty
+    // "Select All" would frustrate users. Newly added taxonomy categories still
+    // appear as soon as they contain at least one matching food.
+    return filters
+      .map((f) => ({ filter: f, count: counts.get(f.id) ?? 0 }))
+      .filter((g) => g.count > 0);
   }, [visibleItems, filters, isGlobalSort]);
 
   // Apply sub-category filter, if picked.
@@ -438,9 +440,11 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
       if (!groups.has(it.filter_id)) groups.set(it.filter_id, []);
       groups.get(it.filter_id)!.push(it);
     }
-    // Include every active filter — empty groups render a placeholder row so
-    // categories with no currently-matching foods are still discoverable.
-    return filters.map((f) => ({ filter: f, items: groups.get(f.id) ?? [] }));
+    // Only include categories that actually have matching foods — empty groups
+    // are dropped so users never tap into an empty "Select All" list.
+    return filters
+      .map((f) => ({ filter: f, items: groups.get(f.id) ?? [] }))
+      .filter((g) => g.items.length > 0);
   }, [visibleItems, filters, isGlobalSort, presetCategory, search]);
 
   // If the current category is dominated by avoid/limit items, show a redirect banner.

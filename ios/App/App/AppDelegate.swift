@@ -432,8 +432,7 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         healthStore.execute(sampleQuery)
     }
 }
-    }
-}
+
 
 final class BBDOYouTubePlayerViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
     private let videoId: String

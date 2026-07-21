@@ -35,7 +35,7 @@ import {
   Mail,
   CalendarDays,
 } from "lucide-react";
-import Avocado from "@/components/icons/Avocado";
+
 import NotificationCenter from "@/components/NotificationCenter";
 import SoundToggle from "@/components/SoundToggle";
 import { useAuth } from "@/contexts/AuthContext";
@@ -125,10 +125,10 @@ const navItems: NavItem[] = [
   {
     kind: "group",
     id: "diet-group",
-    icon: Avocado,
+    icon: Salad,
     label: "Diet",
     children: [
-      { id: "diet", icon: Avocado, label: "Foods" },
+      { id: "diet", icon: Salad, label: "Foods" },
       { id: "food_condition_rules", icon: HeartPulse, label: "Food ↔ Conditions" },
     ],
   },
@@ -590,7 +590,7 @@ export default function AdminDashboard() {
             { id: "subscriptions", icon: CreditCard, label: "Subs" },
             { id: "users", icon: Users, label: "Users" },
             { id: "coaches", icon: UserCheck, label: "Coaches" },
-            { id: "diet", icon: Avocado, label: "Diet" },
+            { id: "diet", icon: Salad, label: "Diet" },
             { id: "food_condition_rules", icon: HeartPulse, label: "Food Rules" },
             { id: "supplements", icon: Pill, label: "Supps" },
             { id: "fasting", icon: Timer, label: "Fasting" },

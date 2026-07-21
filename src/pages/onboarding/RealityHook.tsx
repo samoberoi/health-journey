@@ -10,7 +10,7 @@ type SymptomItem = { text: string; icon: AppIconName };
 
 const symptoms: SymptomItem[] = [
   { text: "Belly fat gain", icon: "scale" },
-  { text: "Sugar cravings", icon: "apple" },
+  { text: "Sugar cravings", icon: "candy" },
   { text: "Constant fatigue", icon: "bolt" },
   { text: "Energy crashes", icon: "chartDown" },
   { text: "Brain fog", icon: "brain" },

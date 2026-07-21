@@ -145,18 +145,10 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
   );
 
   const [ruleMap, setRuleMap] = useState<Map<string, FoodRuleHit>>(new Map());
-  const [hideSkipped, setHideSkipped] = useState(true);
-  // Multi-select action filter for the education area. All three on by default.
-  const [actionKeys, setActionKeys] = useState<Set<ActionKey>>(
-    new Set<ActionKey>(["avoid", "limit", "encourage"]),
-  );
-  const toggleAction = (k: ActionKey) => {
-    setActionKeys((prev) => {
-      const next = new Set(prev);
-      if (next.has(k)) next.delete(k); else next.add(k);
-      return next;
-    });
-  };
+  // Show flagged foods by default in Browse-all views, with a "Skip · <condition>"
+  // chip on each, so users can see WHY a food is being called out for them.
+  // "Best for you" preset still hard-filters avoid+limit regardless of this.
+  const [hideSkipped, setHideSkipped] = useState(false);
   const [showAllDiets, setShowAllDiets] = useState(false);
 
   // Load user's diet preference + auto-select conditions from profile.

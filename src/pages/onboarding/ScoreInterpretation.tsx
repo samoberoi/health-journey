@@ -10,7 +10,7 @@ function getInterpretation(score: number) {
   if (score >= 85) return { title: "You're in great shape!", message: "Your metabolic health is strong.", tone: "text-primary", bg: "bg-primary/10", hope: "With small optimizations, you can stay ahead of any future risks." };
   if (score >= 70) return { title: "Good, but there's room", message: "Your health is decent, but some lifestyle tweaks can make a significant difference.", tone: "text-primary", bg: "bg-primary/10", hope: "A few targeted changes can push your score well above 85." };
   if (score >= 50) return { title: "Moderate risk detected", message: "Your body is showing signs of metabolic stress. Early intervention is key.", tone: "text-warning", bg: "bg-warning/10", hope: "The good news? Most people in this range see dramatic improvement within 90 days." };
-  if (score >= 30) return { title: "High risk — but not too late", message: "Your markers indicate significant metabolic dysfunction.", tone: "text-destructive", bg: "bg-destructive/10", hope: "With our intensive program, people in your range have reversed their condition in 4-6 months." };
+  if (score >= 30) return { title: "High risk — but not too late", message: "Your markers indicate significant metabolic dysfunction.", tone: "text-destructive", bg: "bg-destructive/10", hope: "With our intensive program, people in your range have reversed their condition in 6-18 months." };
   return { title: "Critical — immediate action needed", message: "Your health metrics require urgent attention.", tone: "text-destructive", bg: "bg-destructive/10", hope: "Even at this stage, guided metabolic correction has shown remarkable results." };
 }
 

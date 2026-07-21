@@ -279,12 +279,12 @@ export function calculateHealthScore(
   if (healthScore > 95) healthScore = 95;
 
   // Risk category
-  let riskCategory = "Excellent";
-  if (healthScore >= 85) riskCategory = "Excellent";
-  else if (healthScore >= 70) riskCategory = "Good";
-  else if (healthScore >= 50) riskCategory = "Moderate Risk";
-  else if (healthScore >= 30) riskCategory = "High Risk";
-  else riskCategory = "Critical";
+  let riskCategory = "Good";
+  if (healthScore >= 70) riskCategory = "Good";
+  else if (healthScore >= 60) riskCategory = "Wake-up Call";
+  else if (healthScore >= 50) riskCategory = "Attention Required";
+  else if (healthScore >= 40) riskCategory = "Moderate Risk";
+  else riskCategory = "High Risk";
 
   // Recommended program
   let recommendedProgram = "Preventive Wellness Program";

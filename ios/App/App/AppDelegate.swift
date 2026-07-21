@@ -365,7 +365,7 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
     private func symptomsLabel(_ s: HKElectrocardiogram.SymptomsStatus) -> String {
         switch s {
         case .present: return "present"
-        case .notPresent: return "none"
+        case .none: return "none"
         case .notSet: return "not recorded"
         @unknown default: return "unknown"
         }
@@ -669,9 +669,6 @@ public class BBDONotificationsPlugin: CAPPlugin, CAPBridgedPlugin {
 
     @objc func refreshAuthorization(_ call: CAPPluginCall) {
         var options: UNAuthorizationOptions = [.alert, .sound, .badge]
-        if #available(iOS 15.0, *) {
-            options.insert(.timeSensitive)
-        }
 
         UNUserNotificationCenter.current().requestAuthorization(options: options) { _, error in
             if let error = error {
@@ -685,9 +682,6 @@ public class BBDONotificationsPlugin: CAPPlugin, CAPBridgedPlugin {
                     "soundSetting": settings.soundSetting.rawValue,
                     "alertSetting": settings.alertSetting.rawValue
                 ]
-                if #available(iOS 15.0, *) {
-                    result["timeSensitiveSetting"] = settings.timeSensitiveSetting.rawValue
-                }
                 bbdoNativeLog("notification authorization refreshed authorization=\(settings.authorizationStatus.rawValue) sound=\(settings.soundSetting.rawValue)")
                 call.resolve(result)
             }

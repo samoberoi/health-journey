@@ -22,6 +22,8 @@ import {
 } from "@/lib/supplementBadgeService";
 import ExportCsvButton from "@/components/admin/ExportCsvButton";
 import ImportCsvButton from "@/components/admin/ImportCsvButton";
+import PillarBackupToolbar from "@/components/admin/PillarBackupToolbar";
+import { SUPPLEMENTS_PILLAR } from "@/lib/pillarConfigs";
 
 type View = "catalog" | "rules" | "badges";
 
@@ -371,7 +373,8 @@ export default function AdminSupplements() {
           </h2>
           <p className="text-sm text-muted-foreground mt-1">{supplements.length} supplements · {rules.length} condition rules</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <PillarBackupToolbar config={SUPPLEMENTS_PILLAR} onRestored={() => window.location.reload()} />
           <ExportCsvButton
             filename={view === "rules" ? "supplement-rules" : "supplements"}
             rows={() => (view === "rules" ? rules : supplements) as any}

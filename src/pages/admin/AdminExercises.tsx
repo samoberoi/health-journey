@@ -20,6 +20,8 @@ import { toast } from "@/hooks/use-toast";
 import { logAudit } from "@/lib/auditLog";
 import ExportCsvButton from "@/components/admin/ExportCsvButton";
 import ImportCsvButton from "@/components/admin/ImportCsvButton";
+import PillarBackupToolbar from "@/components/admin/PillarBackupToolbar";
+import { EXERCISE_PILLAR } from "@/lib/pillarConfigs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -339,8 +341,9 @@ export default function AdminExercises() {
           <Button onClick={openNew} className="bg-[var(--bbdo-red)] hover:bg-[var(--bbdo-red)]/90 text-white">
             <Plus className="w-4 h-4 mr-1" /> New exercise
           </Button>
+          <PillarBackupToolbar config={EXERCISE_PILLAR} onRestored={() => window.location.reload()} />
           <ExportCsvButton filename="exercises" rows={filtered as any} />
-<ImportCsvButton table="exercises" onImported={() => window.location.reload()} />
+          <ImportCsvButton table="exercises" onImported={() => window.location.reload()} />
         </div>
       </div>
 

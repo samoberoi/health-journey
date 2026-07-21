@@ -15,6 +15,8 @@ import {
 } from "@/lib/streakService";
 import ExportCsvButton from "@/components/admin/ExportCsvButton";
 import ImportCsvButton from "@/components/admin/ImportCsvButton";
+import PillarBackupToolbar from "@/components/admin/PillarBackupToolbar";
+import { FASTING_PILLAR } from "@/lib/pillarConfigs";
 import StageMilestoneEditor from "@/components/fasting/StageMilestoneEditor";
 
 const typeIcons: Record<string, React.ElementType> = {
@@ -170,8 +172,11 @@ export default function AdminFasting() {
               Manage 24-week intermittent fasting plans. Click to expand timeline.
             </p>
           </div>
-          <ExportCsvButton filename="fasting-protocols" rows={protocols as any} />
-<ImportCsvButton table="fasting_protocols" onImported={() => window.location.reload()} />
+          <div className="flex flex-wrap items-center gap-2">
+            <PillarBackupToolbar config={FASTING_PILLAR} onRestored={() => window.location.reload()} />
+            <ExportCsvButton filename="fasting-protocols" rows={protocols as any} />
+            <ImportCsvButton table="fasting_protocols" onImported={() => window.location.reload()} />
+          </div>
         </div>
         <div className="grid grid-cols-3 gap-3">
           {protocols.map((p) => {

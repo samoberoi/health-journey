@@ -440,7 +440,7 @@ export default function LogFAB(_props: { packageKey?: string | null }) {
             >
               <span
                 className="w-11 h-11 rounded-xl flex items-center justify-center"
-                style={{ background: "#0F1A3D" }}
+                style={{ background: "var(--bbdo-red, #EA6A5E)" }}
               >
                 <Timer className="w-5 h-5 text-white" strokeWidth={1.7} />
               </span>
@@ -460,7 +460,7 @@ export default function LogFAB(_props: { packageKey?: string | null }) {
             >
               <span
                 className="w-11 h-11 rounded-xl flex items-center justify-center"
-                style={{ background: "#F59E0B" }}
+                style={{ background: "var(--bbdo-blue)" }}
               >
                 <Pill className="w-5 h-5 text-white" strokeWidth={1.7} />
               </span>

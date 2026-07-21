@@ -259,6 +259,9 @@ function BmiTile({ bmi, status, color }: { bmi: number | null; status: string; c
       </div>
     </motion.div>
   );
+}
+
+
 
 function MetricCard({
   title, value, unit, trend, trendLabel, data, color, gradId, delay, icon: Icon

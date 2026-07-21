@@ -742,24 +742,13 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
             </div>
           )}
 
-          {/* Per-condition food breakdown, filtered by the chips + action toggles above. */}
-          {!loading && conditionBreakdown.length > 0 && (
-            <div className="mb-4 space-y-3">
-              {conditionBreakdown.map(({ condition, avoid, limit, encourage }) => {
-                if (!avoid.length && !limit.length && !encourage.length) return null;
-                return (
-                  <ConditionBreakdownCard
-                    key={condition.key}
-                    condition={condition}
-                    avoid={avoid}
-                    limit={limit}
-                    encourage={encourage}
-                    onOpen={(it) => setOpenItem(it)}
-                  />
-                );
-              })}
-            </div>
-          )}
+          {/* Per-condition avoid/limit/encourage breakdown was removed:
+              with insulin resistance now on by default for every user, that
+              card ballooned to hundreds of rows and drowned the screen. The
+              condition chips above tell users which conditions are guiding
+              recommendations, and each food row below carries a "Skip · <cond>"
+              tag so Browse-all still explains WHY a food is being flagged. */}
+
 
           {/* Section heading — suppressed during initial load so users don't
               see a stale "0 foods · encouraged + moderate" placeholder before

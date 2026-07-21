@@ -340,7 +340,95 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
 
         group.notify(queue: .main) {
             call.resolve(result)
+
+    // MARK: - ECG (Apple Watch)
+
+    @available(iOS 14.0, *)
+    private func classificationLabel(_ c: HKElectrocardiogram.Classification) -> String {
+        switch c {
+        case .sinusRhythm: return "Sinus Rhythm"
+        case .atrialFibrillation: return "Atrial Fibrillation"
+        case .inconclusiveLowHeartRate: return "Inconclusive · Low heart rate"
+        case .inconclusiveHighHeartRate: return "Inconclusive · High heart rate"
+        case .inconclusivePoorReading: return "Inconclusive · Poor reading"
+        case .inconclusiveOther: return "Inconclusive"
+        case .unrecognized: return "Unrecognized"
+        case .notSet: return "Not set"
+        @unknown default: return "Unknown"
         }
+    }
+
+    @available(iOS 14.0, *)
+    private func symptomsLabel(_ s: HKElectrocardiogram.SymptomsStatus) -> String {
+        switch s {
+        case .present: return "present"
+        case .notPresent: return "none"
+        case .notSet: return "not recorded"
+        @unknown default: return "unknown"
+        }
+    }
+
+    @objc func getLatestEcg(_ call: CAPPluginCall) {
+        bbdoNativeLog("BBDOHealthKit.getLatestEcg invoked")
+        guard HKHealthStore.isHealthDataAvailable() else {
+            call.reject("Apple Health is not available on this device", "healthkitUnavailable"); return
+        }
+        guard #available(iOS 14.0, *) else {
+            call.resolve([:]); return
+        }
+        let ecgType = HKObjectType.electrocardiogramType()
+        let sort = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
+        let sampleQuery = HKSampleQuery(sampleType: ecgType, predicate: nil, limit: 1, sortDescriptors: [sort]) { [weak self] _, samples, err in
+            guard let self = self else { return }
+            if let err = err {
+                DispatchQueue.main.async { call.reject(err.localizedDescription, "ecgQueryFailed") }
+                return
+            }
+            guard let ecg = samples?.first as? HKElectrocardiogram else {
+                DispatchQueue.main.async { call.resolve([:]) }
+                return
+            }
+            var result: [String: Any] = [
+                "classification": self.classificationLabel(ecg.classification),
+                "symptomsStatus": self.symptomsLabel(ecg.symptomsStatus),
+                "numberOfVoltageMeasurements": ecg.numberOfVoltageMeasurements,
+                "samplingFrequencyHz": ecg.samplingFrequency?.doubleValue(for: HKUnit.hertz()) ?? 0,
+                "startDate": ISO8601DateFormatter().string(from: ecg.startDate),
+                "endDate": ISO8601DateFormatter().string(from: ecg.endDate)
+            ]
+            if let hr = ecg.averageHeartRate?.doubleValue(for: HKUnit.count().unitDivided(by: .minute())) {
+                result["averageHeartRate"] = Int(hr.rounded())
+            }
+
+            // Downsample voltages to at most ~600 points for a compact waveform.
+            var voltages: [Double] = []
+            let total = ecg.numberOfVoltageMeasurements
+            let maxPoints = 600
+            let stride = max(1, total / maxPoints)
+            var index = 0
+            let voltageQuery = HKElectrocardiogramQuery(ecg) { _, voltageResult in
+                switch voltageResult {
+                case .measurement(let m):
+                    if let q = m.quantity(for: .appleWatchSimilarToLeadI) {
+                        if index % stride == 0 {
+                            voltages.append(q.doubleValue(for: HKUnit.voltUnit(with: .micro)))
+                        }
+                        index += 1
+                    }
+                case .done:
+                    result["voltagesMicroV"] = voltages
+                    DispatchQueue.main.async { call.resolve(result) }
+                case .error(let e):
+                    DispatchQueue.main.async { call.reject(e.localizedDescription, "ecgVoltageFailed") }
+                @unknown default:
+                    DispatchQueue.main.async { call.resolve(result) }
+                }
+            }
+            self.healthStore.execute(voltageQuery)
+        }
+        healthStore.execute(sampleQuery)
+    }
+}
     }
 }
 

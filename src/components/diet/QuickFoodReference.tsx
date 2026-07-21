@@ -145,18 +145,10 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
   );
 
   const [ruleMap, setRuleMap] = useState<Map<string, FoodRuleHit>>(new Map());
-  const [hideSkipped, setHideSkipped] = useState(true);
-  // Multi-select action filter for the education area. All three on by default.
-  const [actionKeys, setActionKeys] = useState<Set<ActionKey>>(
-    new Set<ActionKey>(["avoid", "limit", "encourage"]),
-  );
-  const toggleAction = (k: ActionKey) => {
-    setActionKeys((prev) => {
-      const next = new Set(prev);
-      if (next.has(k)) next.delete(k); else next.add(k);
-      return next;
-    });
-  };
+  // Show flagged foods by default in Browse-all views, with a "Skip · <condition>"
+  // chip on each, so users can see WHY a food is being called out for them.
+  // "Best for you" preset still hard-filters avoid+limit regardless of this.
+  const [hideSkipped, setHideSkipped] = useState(false);
   const [showAllDiets, setShowAllDiets] = useState(false);
 
   // Load user's diet preference + auto-select conditions from profile.
@@ -183,6 +175,11 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
       if (pref) { setProfilePref(pref); setDiet(pref); }
       const conds = deriveActiveConditions(profRow?.deep_profiling, metaMap, 7.0, profRow?.clinical);
       const profileKeys = new Set(conds.map((c) => c.key));
+      // BBDO product rule: insulin resistance is a platform-wide baseline —
+      // every user is treated as insulin-resistant regardless of profile flags.
+      // It never appears as a user-facing chip (see profileConditionKeys filter
+      // below) but it drives the food rule map for everyone.
+      if (metaMap["insulin_resistance"]) profileKeys.add("insulin_resistance");
       setProfileConditionKeys(profileKeys);
       // Preserve any manual toggles the user has made this session; add newly-enabled keys.
       setConditionKeys((prev) => {
@@ -745,24 +742,13 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
             </div>
           )}
 
-          {/* Per-condition food breakdown, filtered by the chips + action toggles above. */}
-          {!loading && conditionBreakdown.length > 0 && (
-            <div className="mb-4 space-y-3">
-              {conditionBreakdown.map(({ condition, avoid, limit, encourage }) => {
-                if (!avoid.length && !limit.length && !encourage.length) return null;
-                return (
-                  <ConditionBreakdownCard
-                    key={condition.key}
-                    condition={condition}
-                    avoid={avoid}
-                    limit={limit}
-                    encourage={encourage}
-                    onOpen={(it) => setOpenItem(it)}
-                  />
-                );
-              })}
-            </div>
-          )}
+          {/* Per-condition avoid/limit/encourage breakdown was removed:
+              with insulin resistance now on by default for every user, that
+              card ballooned to hundreds of rows and drowned the screen. The
+              condition chips above tell users which conditions are guiding
+              recommendations, and each food row below carries a "Skip · <cond>"
+              tag so Browse-all still explains WHY a food is being flagged. */}
+
 
           {/* Section heading — suppressed during initial load so users don't
               see a stale "0 foods · encouraged + moderate" placeholder before

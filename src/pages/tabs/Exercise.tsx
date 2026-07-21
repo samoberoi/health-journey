@@ -636,35 +636,45 @@ export default function ExerciseTab({ packageKey }: Props) {
             <EmptyState icon={Dumbbell} title="No exercises here yet" description="Try a different section or check back soon." />
           </div>
         )}
-        {filtered.map((ex) => {
+        {filtered.map((ex, i) => {
           const target = parseTargetSets(ex.sets);
           const done = setsByExercise.get(ex.id) ?? 0;
           const pct = Math.min(100, Math.round((done / target) * 100));
           const complete = done >= target;
           const hasVideo = !!ex.youtube_url && !!extractYoutubeId(ex.youtube_url);
           const ytId = extractYoutubeId(ex.youtube_url);
-          const thumbSrc = ex.image_url || (ytId ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg` : null);
+          const thumbSrc =
+            ex.image_url ||
+            (ytId ? `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg` : null);
           const canWatch = hasVideo;
           return (
-            <motion.div
+            <motion.button
               key={ex.id}
-              layout
-              className="rounded-xl overflow-hidden bg-white border border-border shadow-card hover:-translate-y-px transition-transform"
+              type="button"
+              onClick={() => canWatch && setWatching(ex)}
+              disabled={!canWatch}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: Math.min(i * 0.03, 0.3), duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              whileTap={{ scale: 0.98 }}
+              className="no-pill rounded-xl text-left overflow-hidden group bg-white border border-border shadow-card hover:-translate-y-px disabled:opacity-95"
+              aria-label={canWatch ? `Play ${ex.name}` : ex.name}
             >
-              {/* Thumbnail */}
-              <button
-                type="button"
-                onClick={() => canWatch && setWatching(ex)}
-                disabled={!canWatch}
-                className="relative block w-full aspect-video bg-muted overflow-hidden group"
-                aria-label={canWatch ? `Play ${ex.name}` : ex.name}
-              >
+              {/* Thumbnail — matches yoga card */}
+              <div className="relative w-full bg-muted" style={{ aspectRatio: "16 / 9" }}>
                 {thumbSrc ? (
                   <img
                     src={thumbSrc}
                     alt={ex.name}
                     loading="lazy"
-                    className="w-full h-full object-cover transition-transform group-hover:scale-[1.02]"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onError={(e) => {
+                      const el = e.currentTarget as HTMLImageElement;
+                      if (!el.dataset.fallback && ytId) {
+                        el.dataset.fallback = "1";
+                        el.src = `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`;
+                      }
+                    }}
                   />
                 ) : (
                   <div
@@ -674,61 +684,83 @@ export default function ExerciseTab({ packageKey }: Props) {
                     <Dumbbell className="w-10 h-10" strokeWidth={1.5} />
                   </div>
                 )}
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/10 pointer-events-none" />
-                {/* Play badge */}
-                {canWatch && (
-                  <span className="absolute inset-0 flex items-center justify-center">
-                    <span className="w-12 h-12 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                      <Play className="w-5 h-5 text-black ml-0.5" fill="currentColor" />
-                    </span>
-                  </span>
-                )}
-                {/* Tier / done pill */}
-                <span className="absolute top-2 left-2">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+
+                {/* Top-left icon badge */}
+                <div className="absolute top-2 left-2 w-9 h-9 rounded-xl bg-white/90 backdrop-blur flex items-center justify-center shadow-card" style={{ color: "var(--pillar-exercise)" }}>
+                  <Dumbbell className="w-5 h-5" strokeWidth={1.8} />
+                </div>
+
+                {/* Top-right status badge */}
+                <div className="absolute top-2 right-2 flex gap-1.5">
                   {complete ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-black text-white bg-emerald-500/90 px-2 py-0.5 rounded-full">
-                      <Check className="w-3 h-3" /> Done
+                    <span className="px-2 py-0.5 rounded-full bg-success-soft text-success text-[10px] font-bold inline-flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" /> Done
+                    </span>
+                  ) : !hasVideo ? (
+                    <span className="px-2 py-0.5 rounded-full bg-black/60 text-white text-[10px] font-bold inline-flex items-center gap-1">
+                      <Lock className="w-3 h-3" /> No video
                     </span>
                   ) : (
                     <span
-                      className="inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full text-white"
+                      className="px-2 py-0.5 rounded-full text-white text-[10px] font-bold"
                       style={{ background: `${TIER_COLOR[ex.tier as ExerciseTier]}E6` }}
                     >
                       Tier {ex.tier}
                     </span>
                   )}
-                </span>
-                {!hasVideo && (
-                  <span className="absolute top-2 right-2 inline-flex items-center gap-1 text-[10px] font-bold text-white bg-black/60 px-2 py-0.5 rounded-full">
-                    <Lock className="w-3 h-3" /> No video
-                  </span>
-                )}
-                {/* Title over gradient */}
-                <div className="absolute bottom-0 left-0 right-0 p-3 text-left">
-                  <h3 className="text-sm font-black text-white leading-tight line-clamp-2 drop-shadow">
-                    {ex.name}
-                  </h3>
-                  <p className="text-[11px] text-white/85 mt-0.5">
-                    {ex.reps_duration} · {ex.sets} sets
-                  </p>
                 </div>
-              </button>
 
-              {/* Body */}
-              <div className="p-4 space-y-3">
-                <div>
-                  <div className="flex items-center justify-between text-[11px] font-bold mb-1">
-                    <span className={complete ? "text-success" : "text-foreground/70"}>
+                {/* Center play button */}
+                {canWatch && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-14 h-14 rounded-full bg-white/95 text-foreground flex items-center justify-center shadow-lift">
+                      <Play className="w-6 h-6 ml-0.5" fill="currentColor" />
+                    </div>
+                  </div>
+                )}
+
+                {/* Bottom — sets/duration meta */}
+                <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded-md bg-black/75 text-white text-[10px] font-bold">
+                  {ex.reps_duration} · {ex.sets} sets
+                </div>
+
+                {/* Progress bar for in-progress */}
+                {done > 0 && !complete && (
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+                    <div
+                      className="h-full"
+                      style={{
+                        width: `${Math.max(2, pct)}%`,
+                        background: TIER_COLOR[ex.tier as ExerciseTier],
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Body — title + progress + tags */}
+              <div className="p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="text-foreground font-bold text-sm leading-tight">{ex.name}</h3>
+                  {complete && (
+                    <span className="shrink-0 text-[10px] font-bold text-success inline-flex items-center gap-0.5">
+                      <Check className="w-3 h-3" /> Watch again
+                    </span>
+                  )}
+                </div>
+                <div className="mt-2">
+                  <div className="flex items-center justify-between text-[10px] font-bold mb-1">
+                    <span className={complete ? "text-success" : "text-muted-foreground"}>
                       {done}/{target} sets today
                     </span>
-                    {hasVideo && (
+                    {hasVideo && !complete && (
                       <span className="text-muted-foreground">
-                        {complete ? "Watch again to add minutes" : done === 0 ? "Watch to log set 1" : `Watch again for set ${done + 1}`}
+                        {done === 0 ? "Watch to log set 1" : `Watch for set ${done + 1}`}
                       </span>
                     )}
                   </div>
-                  <div className="h-2 rounded-full bg-muted overflow-hidden">
+                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                     <motion.div
                       initial={false}
                       animate={{ width: `${pct}%` }}
@@ -740,48 +772,13 @@ export default function ExerciseTab({ packageKey }: Props) {
                     />
                   </div>
                 </div>
-
-                <button
-                  onClick={() => canWatch && setWatching(ex)}
-                  disabled={!hasVideo}
-                  className="w-full h-9 px-3 rounded-xl text-white text-xs font-bold inline-flex items-center justify-center gap-1.5 disabled:opacity-50"
-                  style={{
-                    background: complete
-                      ? "#10B981"
-                      : hasVideo
-                      ? TIER_COLOR[ex.tier as ExerciseTier]
-                      : "var(--bbdo-surface-3)",
-                  }}
-                  title={
-                    !hasVideo
-                      ? "No video available yet"
-                      : complete
-                      ? "Watch again to add minutes"
-                      : "Watch the full video to log this set"
-                  }
-                >
-                  {complete ? (
-                    <>
-                      <Play className="w-3.5 h-3.5" /> Watch again
-                    </>
-                  ) : !hasVideo ? (
-                    <>
-                      <Lock className="w-3.5 h-3.5" /> No video
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-3.5 h-3.5" /> Watch &amp; log set {done + 1}
-                    </>
-                  )}
-                </button>
-
                 {ex.knee_pain_substitute && (
-                  <p className="text-[10px] text-muted-foreground italic">
+                  <p className="text-[10px] text-muted-foreground italic mt-2">
                     Knee-pain swap: {ex.knee_pain_substitute}
                   </p>
                 )}
               </div>
-            </motion.div>
+            </motion.button>
           );
         })}
       </div>

@@ -212,6 +212,54 @@ function MetricRing({
   );
 }
 
+function BmiTile({ bmi, status, color }: { bmi: number | null; status: string; color: string }) {
+  const pct = bmi == null ? 0 : Math.min(100, Math.max(0, (bmi / 40) * 100));
+  const [animated, setAnimated] = useState(0);
+  const r = 39;
+  const c = 2 * Math.PI * r;
+  useEffect(() => { const t = setTimeout(() => setAnimated(pct), 400); return () => clearTimeout(t); }, [pct]);
+  const isObese = status === "Obese";
+  return (
+    <motion.div
+      className="liquid-glass-strong rounded-[20px] p-2.5 w-full min-w-0 flex flex-col items-center justify-between gap-1.5"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <div className="relative mx-auto w-full aspect-square shrink-0" style={{ maxWidth: 72 }}>
+        <svg viewBox="0 0 92 92" className="h-full w-full -rotate-90 block">
+          <circle cx={46} cy={46} r={r} fill="none" stroke="var(--bbdo-line)" strokeWidth={7} />
+          <circle
+            cx={46} cy={46} r={r} fill="none"
+            stroke={color}
+            strokeWidth={7} strokeLinecap="round"
+            strokeDasharray={c}
+            strokeDashoffset={c - (animated / 100) * c}
+            style={{ transition: "stroke-dashoffset 1.6s cubic-bezier(0.4,0,0.2,1)" }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="stat-number text-base text-foreground leading-none">{bmi ?? "—"}</span>
+          <span className="text-muted-foreground text-[8px] font-medium mt-0.5">kg/m²</span>
+        </div>
+      </div>
+      <span className="text-muted-foreground text-[9px] font-bold uppercase tracking-[0.12em] text-center leading-tight">BMI</span>
+      <div className="min-h-[18px] flex items-center justify-center">
+        {bmi != null && (
+          <div
+            className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+              isObese
+                ? "text-destructive bg-destructive/10"
+                : "text-[var(--bbdo-mint)] bg-[var(--bbdo-mint)]/10"
+            }`}
+          >
+            {status}
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+
 function MetricCard({
   title, value, unit, trend, trendLabel, data, color, gradId, delay, icon: Icon
 }: {

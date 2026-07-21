@@ -294,6 +294,8 @@ export default function ExerciseTab({ packageKey }: Props) {
   const [watching, setWatching] = useState<Exercise | null>(null);
   const [todayLogs, setTodayLogs] = useState<LogRow[]>([]);
   const [allLogs, setAllLogs] = useState<LogRow[]>([]);
+  const [soleusOpen, setSoleusOpen] = useState(false);
+  const { count: soleusCount, goal: soleusGoal, completed: soleusDone } = useSoleusSessionsToday();
 
 
   const loadLogs = useCallback(async () => {

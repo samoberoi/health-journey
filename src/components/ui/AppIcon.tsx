@@ -102,9 +102,6 @@ interface AppIconProps extends React.SVGProps<SVGSVGElement> {
 
 export const AppIcon = forwardRef<SVGSVGElement, AppIconProps>(
   ({ name, size = 20, className, strokeWidth = 1.6, ...props }, ref) => {
-    if (name === "utensils" || name === "restaurant" || name === "apple") {
-      return <Avocado ref={ref as any} size={size} className={className} strokeWidth={strokeWidth} {...(props as any)} /> as any;
-    }
     const Cmp = (map[name] ?? Iconoir.QuestionMark) as any;
     return (
       <Cmp

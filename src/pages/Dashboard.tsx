@@ -1,7 +1,6 @@
 import { useEffect, useState, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Home, Play, Users, Stethoscope, Zap, Timer, Pill, FlaskConical, LogOut, Footprints, Compass, Dumbbell, MessageCircle, Plus, CalendarDays } from "lucide-react";
-import Avocado from "@/components/icons/Avocado";
+import { Home, Play, Users, Stethoscope, Zap, Timer, Pill, FlaskConical, LogOut, Footprints, Compass, Dumbbell, MessageCircle, Plus, CalendarDays, UtensilsCrossed } from "lucide-react";
 import BbdoWordmark from "@/components/BbdoWordmark";
 import SoundToggle from "@/components/SoundToggle";
 import NotificationCenter from "@/components/NotificationCenter";
@@ -62,7 +61,7 @@ const navIcons: Record<Tab, React.ElementType> = {
   community: Users,
   consult: Stethoscope,
   labs: FlaskConical,
-  diet: Avocado,
+  diet: UtensilsCrossed,
   messages: MessageCircle,
   
 };

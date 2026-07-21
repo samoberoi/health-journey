@@ -45,7 +45,7 @@ interface Rule {
 }
 
 interface FilterRow { id: string; name: string; slug: string; }
-interface FoodOption { id: string; name: string; }
+interface FoodOption { id: string; name: string; filter_id: string | null; }
 
 const ACTIONS: { value: Action; label: string; cls: string }[] = [
   { value: "avoid",     label: "Avoid",     cls: "bg-destructive/10 text-destructive border-destructive/30" },

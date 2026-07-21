@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Activity, Heart, Scale, Droplets, Camera, Loader2, Clock, Dumbbell, Sunrise, Sun, Moon, Wind } from "lucide-react";
+import { Activity, Heart, Scale, Droplets, Camera, Loader2, Clock, Dumbbell, Sunrise, Sun, Moon, Wind, Timer, Pill } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";

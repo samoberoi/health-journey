@@ -531,7 +531,8 @@ export default function AdminFoodConditionRules() {
                   })()}
                 </div>
               </div>
-
+              <p className="text-xs text-muted-foreground mt-1">
+                {editing
                   ? `Only foods from the master Foods list can be mapped. ${foods.length} available.`
                   : `Select multiple foods to create one rule per food with the same action & reason. ${selectedFoods.length} selected of ${foods.length}.`}
               </p>

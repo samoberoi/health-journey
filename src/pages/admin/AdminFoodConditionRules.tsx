@@ -453,37 +453,39 @@ export default function AdminFoodConditionRules() {
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="p-0 w-[--radix-popover-trigger-width]" align="start">
+                <PopoverContent className="p-0 w-[min(720px,92vw)]" align="start">
                   <Command>
                     <CommandInput placeholder="Search foods…" />
-                    <CommandList className="max-h-72">
+                    <CommandList className="max-h-[420px]">
                       <CommandEmpty>No food found. Add it in Foods first.</CommandEmpty>
-                      <CommandGroup>
-                        {foods.map((fd) => {
-                          const selected = editing
-                            ? form.name_pattern.toLowerCase() === fd.name.toLowerCase()
-                            : selectedFoods.includes(fd.name);
-                          return (
-                            <CommandItem
-                              key={fd.id}
-                              value={fd.name}
-                              onSelect={() => {
-                                if (editing) {
-                                  setForm((f) => ({ ...f, name_pattern: fd.name }));
-                                  setFoodPickerOpen(false);
-                                } else {
-                                  setSelectedFoods((prev) =>
-                                    prev.includes(fd.name) ? prev.filter((n) => n !== fd.name) : [...prev, fd.name],
-                                  );
-                                }
-                              }}
-                            >
-                              <Check className={cn("mr-2 h-4 w-4", selected ? "opacity-100" : "opacity-0")} />
-                              {fd.name}
-                            </CommandItem>
-                          );
-                        })}
-                      </CommandGroup>
+                      {foodsGrouped.map((group) => (
+                        <CommandGroup key={group.name} heading={group.name}>
+                          {group.items.map((fd) => {
+                            const selected = editing
+                              ? form.name_pattern.toLowerCase() === fd.name.toLowerCase()
+                              : selectedFoods.includes(fd.name);
+                            return (
+                              <CommandItem
+                                key={fd.id}
+                                value={`${group.name} ${fd.name}`}
+                                onSelect={() => {
+                                  if (editing) {
+                                    setForm((f) => ({ ...f, name_pattern: fd.name }));
+                                    setFoodPickerOpen(false);
+                                  } else {
+                                    setSelectedFoods((prev) =>
+                                      prev.includes(fd.name) ? prev.filter((n) => n !== fd.name) : [...prev, fd.name],
+                                    );
+                                  }
+                                }}
+                              >
+                                <Check className={cn("mr-2 h-4 w-4", selected ? "opacity-100" : "opacity-0")} />
+                                {fd.name}
+                              </CommandItem>
+                            );
+                          })}
+                        </CommandGroup>
+                      ))}
                     </CommandList>
                   </Command>
                 </PopoverContent>

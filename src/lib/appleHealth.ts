@@ -21,11 +21,23 @@ export type HealthSnapshot = {
   sleepHours?: number;
 };
 
+export type EcgReading = {
+  classification?: string;
+  symptomsStatus?: string;
+  averageHeartRate?: number;
+  numberOfVoltageMeasurements?: number;
+  samplingFrequencyHz?: number;
+  startDate?: string;
+  endDate?: string;
+  voltagesMicroV?: number[];
+};
+
 type BBDOHealthKitPlugin = {
   isAvailable(): Promise<HealthAvailability>;
   requestAuthorization(): Promise<HealthAuthorization>;
   getTodayStepCount(): Promise<TodaySteps>;
   getHealthSnapshot?(): Promise<HealthSnapshot>;
+  getLatestEcg?(): Promise<EcgReading>;
   saveWeight?(opts: { kg: number; at?: string }): Promise<{ saved: boolean }>;
   enableBackgroundSync?(): Promise<{ enabled: boolean }>;
   addListener?(

@@ -175,6 +175,11 @@ export default function QuickFoodReference({ onClose, embedded = false }: { onCl
       if (pref) { setProfilePref(pref); setDiet(pref); }
       const conds = deriveActiveConditions(profRow?.deep_profiling, metaMap, 7.0, profRow?.clinical);
       const profileKeys = new Set(conds.map((c) => c.key));
+      // BBDO product rule: insulin resistance is a platform-wide baseline —
+      // every user is treated as insulin-resistant regardless of profile flags.
+      // It never appears as a user-facing chip (see profileConditionKeys filter
+      // below) but it drives the food rule map for everyone.
+      if (metaMap["insulin_resistance"]) profileKeys.add("insulin_resistance");
       setProfileConditionKeys(profileKeys);
       // Preserve any manual toggles the user has made this session; add newly-enabled keys.
       setConditionKeys((prev) => {

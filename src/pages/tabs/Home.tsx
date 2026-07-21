@@ -1445,35 +1445,43 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
         return <DailyActivityDial items={rings} title="Close your rings" size="lg" />;
       })()}
 
-      {/* ─── 3 Metric Rings: Health Score, Weight, Sugar ─── */}
-      <div className="grid grid-cols-3 gap-3">
-
-        <MetricRing
-          value={healthScore}
-          label="Health"
-          delta={initialScore != null ? healthScore - initialScore : null}
-          ringColor={getRingColor("Health", healthScore, initialScore)}
-          dangerColor={getRingColor("Health", healthScore, initialScore)}
-        />
-        <MetricRing
-          value={latestWeight ?? (user.bodyMetrics.weight ?? "—")}
-          label="Weight"
-          unit="kg"
-          delta={initialWeight != null && latestWeight != null ? Math.round((latestWeight - initialWeight) * 10) / 10 : null}
-          ringColor={getRingColor("Weight", typeof latestWeight === "number" ? latestWeight : (user.bodyMetrics.weight ?? NaN), initialWeight)}
-          dangerColor={getRingColor("Weight", typeof latestWeight === "number" ? latestWeight : (user.bodyMetrics.weight ?? NaN), initialWeight)}
-        />
-
-        <MetricRing
-          value={latestGlucose ?? "—"}
-          label="Blood Glucose"
-          unit="mg/dL"
-          delta={initialGlucose != null && latestGlucose != null ? Math.round(latestGlucose - initialGlucose) : null}
-          ringColor={getRingColor("Blood Glucose", typeof latestGlucose === "number" ? latestGlucose : NaN, initialGlucose)}
-          dangerColor={getRingColor("Blood Glucose", typeof latestGlucose === "number" ? latestGlucose : NaN, initialGlucose)}
-        />
-
-      </div>
+      {/* ─── Metric Rings: Health, Weight, Blood Glucose, BMI/Obesity ─── */}
+      {(() => {
+        const wForBmi = typeof latestWeight === "number" ? latestWeight : (typeof user.bodyMetrics?.weight === "number" ? user.bodyMetrics.weight : null);
+        const hForBmi = typeof user.bodyMetrics?.height === "number" ? user.bodyMetrics.height : (typeof userHeightCm === "number" ? userHeightCm : null);
+        const bmi = wForBmi && hForBmi && hForBmi > 0 ? +(wForBmi / Math.pow(hForBmi / 100, 2)).toFixed(1) : null;
+        const isObese = bmi != null && bmi >= 30;
+        const bmiColor = bmi == null ? "hsl(var(--primary))" : (isObese ? "var(--bbdo-red)" : "var(--bbdo-mint)");
+        const bmiStatus = bmi == null ? "—" : (isObese ? "Obese" : "Healthy");
+        return (
+          <div className="grid grid-cols-2 gap-3">
+            <MetricRing
+              value={healthScore}
+              label="Health"
+              delta={initialScore != null ? healthScore - initialScore : null}
+              ringColor={getRingColor("Health", healthScore, initialScore)}
+              dangerColor={getRingColor("Health", healthScore, initialScore)}
+            />
+            <MetricRing
+              value={latestWeight ?? (user.bodyMetrics.weight ?? "—")}
+              label="Weight"
+              unit="kg"
+              delta={initialWeight != null && latestWeight != null ? Math.round((latestWeight - initialWeight) * 10) / 10 : null}
+              ringColor={getRingColor("Weight", typeof latestWeight === "number" ? latestWeight : (user.bodyMetrics.weight ?? NaN), initialWeight)}
+              dangerColor={getRingColor("Weight", typeof latestWeight === "number" ? latestWeight : (user.bodyMetrics.weight ?? NaN), initialWeight)}
+            />
+            <MetricRing
+              value={latestGlucose ?? "—"}
+              label="Blood Glucose"
+              unit="mg/dL"
+              delta={initialGlucose != null && latestGlucose != null ? Math.round(latestGlucose - initialGlucose) : null}
+              ringColor={getRingColor("Blood Glucose", typeof latestGlucose === "number" ? latestGlucose : NaN, initialGlucose)}
+              dangerColor={getRingColor("Blood Glucose", typeof latestGlucose === "number" ? latestGlucose : NaN, initialGlucose)}
+            />
+            <BmiTile bmi={bmi} status={bmiStatus} color={bmiColor} />
+          </div>
+        );
+      })()}
 
 
       {/* Health Markers from lab reports */}

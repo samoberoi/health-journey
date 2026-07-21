@@ -392,6 +392,8 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
   const [waterDone, setWaterDone] = useState(false);
   const [waterGlasses, setWaterGlasses] = useState(0);
   const { minutes: completedExercisesToday, goal: EXERCISE_DAILY_GOAL } = useTodayExerciseProgress();
+  const { count: breathCountToday, goal: breathGoalToday } = useBreathSessionsToday();
+  const { count: soleusCountToday, goal: soleusGoalToday } = useSoleusSessionsToday();
   const [yogaMinutesToday, setYogaMinutesToday] = useState(0);
   const YOGA_DAILY_MINUTES = useDailyYogaMinutes();
    const [movementDone, setMovementDone] = useState(false);

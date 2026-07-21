@@ -497,21 +497,6 @@ export default function AdminFoodConditionRules() {
               </p>
             </div>
 
-
-            <div>
-              <Label>Scope to filter (optional)</Label>
-              <Select
-                value={form.filter_id || "__all__"}
-                onValueChange={(v) => setForm((f) => ({ ...f, filter_id: v === "__all__" ? null : v }))}
-              >
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__all__">All food filters</SelectItem>
-                  {filters.map((f) => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-
             <div>
               <Label>Reason (shown to user) *</Label>
               <Textarea

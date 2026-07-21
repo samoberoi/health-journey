@@ -17,8 +17,8 @@ import { getNotificationSoundSettings } from "@/lib/notificationSoundService";
 import { getMuted, playNotificationSound, setMasterVolume } from "@/lib/soundEngine";
 
 const APP_VERSION = (globalThis as any).__APP_VERSION__ ?? "1.0.0";
-export const BBDO_PUSH_CHANNEL_ID = "bbdo-alerts-v8";
-const ANDROID_FIREBASE_GENERATION = "com.hyperrevamp.bbdo:bbdoapp:73939371932:v3";
+export const BBDO_PUSH_CHANNEL_ID = "bbdo-alerts-v9";
+const ANDROID_FIREBASE_GENERATION = "com.hyperrevamp.bbdo:bbdoapp:73939371932:v4";
 const ANDROID_TOKEN_RESET_KEY = `bbdo_fcm_token_reset_${ANDROID_FIREBASE_GENERATION}`;
 
 const BBDONotifications = registerPlugin<{
@@ -138,12 +138,12 @@ async function playNativePushAppSound() {
 
 async function resetAndroidFcmTokenAfterChannelUpgrade() {
   if (currentPlatform() !== "android") return;
-  const hasStoredToken = Boolean(activeUserId ? await fetchStoredToken(activeUserId) : null);
-  if (hasStoredToken && localStorage.getItem(ANDROID_TOKEN_RESET_KEY) === "1") return;
+  if (localStorage.getItem(ANDROID_TOKEN_RESET_KEY) === "1") return;
 
   try {
     localStorage.removeItem("bbdo_fcm_token_reset_bbdo-alerts-v7");
     localStorage.removeItem("bbdo_fcm_token_reset_com.hyperrevamp.bbdo:bbdoapp:73939371932:v2");
+    localStorage.removeItem("bbdo_fcm_token_reset_com.hyperrevamp.bbdo:bbdoapp:73939371932:v3");
     // Also purge any stale token rows in the DB for this user so FCM stops
     // sending to UNREGISTERED tokens minted under the previous app package.
     if (activeUserId) {

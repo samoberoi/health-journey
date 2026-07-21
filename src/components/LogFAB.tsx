@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import { useUserStore } from "@/hooks/useUserStore";
 import { useBreathSessionsToday } from "@/hooks/useBreathSessionsToday";
 import BreathProtocolDrawer from "@/components/BreathProtocolDrawer";
+import { useSoleusSessionsToday } from "@/hooks/useSoleusSessionsToday";
+import SoleusProtocolDrawer from "@/components/SoleusProtocolDrawer";
 import { useTodayExerciseProgress } from "@/hooks/useTodayExerciseProgress";
 
 type LogType = "diabetes" | "bp" | "weight" | "water" | null;
@@ -54,6 +56,8 @@ export default function LogFAB(_props: { packageKey?: string | null }) {
   const [activeLog, setActiveLog] = useState<LogType>(null);
   const [breathOpen, setBreathOpen] = useState(false);
   const { count: breathCount, goal: breathGoal, completed: breathDone } = useBreathSessionsToday();
+  const [soleusOpen, setSoleusOpen] = useState(false);
+  const { count: soleusCount, goal: soleusGoal, completed: soleusDone } = useSoleusSessionsToday();
   const [saving, setSaving] = useState(false);
   const [currentDateTime, setCurrentDateTime] = useState(formatCurrentDateTime());
   const [keyboardInset, setKeyboardInset] = useState(0);
@@ -395,11 +399,42 @@ export default function LogFAB(_props: { packageKey?: string | null }) {
                 </span>
               </span>
             </motion.button>
+            <motion.button
+              key="soleus-shortcut"
+              onClick={() => {
+                setOpen(false);
+                setTimeout(() => setSoleusOpen(true), 180);
+              }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ duration: 0.12, ease: [0.22, 1, 0.36, 1] }}
+              className="no-pill relative flex flex-col items-center justify-center gap-2 rounded-2xl py-4 px-2 bg-card border border-border"
+            >
+              <span
+                className="w-11 h-11 rounded-xl flex items-center justify-center"
+                style={{ background: soleusDone ? "#10B981" : "var(--bbdo-blue)" }}
+              >
+                <Dumbbell className="w-5 h-5 text-white" strokeWidth={1.7} />
+              </span>
+              <span className="text-[11px] font-semibold text-foreground text-center leading-none inline-flex items-center gap-1">
+                Soleus Push-Ups
+                <span
+                  className="text-[9px] font-black px-1.5 py-0.5 rounded-md"
+                  style={{
+                    background: soleusDone ? "#10B98122" : "rgba(36,140,203,0.14)",
+                    color: soleusDone ? "#10B981" : "var(--bbdo-blue)",
+                  }}
+                >
+                  {soleusCount}/{soleusGoal}
+                </span>
+              </span>
+            </motion.button>
           </div>
         </DrawerContent>
       </Drawer>
 
       <BreathProtocolDrawer open={breathOpen} onOpenChange={setBreathOpen} />
+      <SoleusProtocolDrawer open={soleusOpen} onOpenChange={setSoleusOpen} />
+
 
 
 

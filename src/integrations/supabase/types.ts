@@ -4462,6 +4462,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_soleus_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          session_at: string
+          source: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          session_at?: string
+          source?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          session_at?: string
+          source?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_supplement_badges: {
         Row: {
           badge_id: string

@@ -24,6 +24,9 @@ import {
 } from "@/lib/exerciseService";
 import { useTodayExerciseProgress } from "@/hooks/useTodayExerciseProgress";
 import { EmptyState } from "@/components/shared";
+import SoleusProtocolDrawer from "@/components/SoleusProtocolDrawer";
+import { useSoleusSessionsToday } from "@/hooks/useSoleusSessionsToday";
+import { SOLEUS_PROTOCOL_VIDEO } from "@/lib/soleusProtocol";
 
 import NativeYouTubePlayer from "@/components/exercises/NativeYouTubePlayer";
 import { isNativeAndroidApp, isNativeIOSApp, isYoutubePlayerMessage, youtubePlayerProxyUrl } from "@/lib/youtubeEmbed";
@@ -291,6 +294,8 @@ export default function ExerciseTab({ packageKey }: Props) {
   const [watching, setWatching] = useState<Exercise | null>(null);
   const [todayLogs, setTodayLogs] = useState<LogRow[]>([]);
   const [allLogs, setAllLogs] = useState<LogRow[]>([]);
+  const [soleusOpen, setSoleusOpen] = useState(false);
+  const { count: soleusCount, goal: soleusGoal, completed: soleusDone } = useSoleusSessionsToday();
 
 
   const loadLogs = useCallback(async () => {
@@ -445,6 +450,43 @@ export default function ExerciseTab({ packageKey }: Props) {
 
   return (
     <div className="theme-exercise px-4 md:px-6 pt-3 md:pt-8 pb-10 space-y-6">
+      {/* Soleus Push-Ups — BBDO daily ritual, 3x/day */}
+      <motion.button
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+        onClick={() => setSoleusOpen(true)}
+        className="w-full text-left rounded-2xl p-4 shadow-card relative overflow-hidden active:scale-[0.995] transition-transform"
+        style={{ background: "linear-gradient(135deg, var(--bbdo-red), #B80000)" }}
+      >
+        <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+        <div className="relative flex items-center gap-3.5 text-white">
+          <span
+            className="w-14 h-14 rounded-2xl shrink-0 bg-white/15 ring-1 ring-white/25 flex items-center justify-center overflow-hidden"
+            style={{
+              backgroundImage: `url(${SOLEUS_PROTOCOL_VIDEO.thumbnailUrl})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+            aria-hidden
+          >
+            {!SOLEUS_PROTOCOL_VIDEO.thumbnailUrl && <Dumbbell className="w-6 h-6 text-white" />}
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-black tracking-[0.18em] uppercase text-white/80">BBDO Ritual</p>
+            <p className="text-[15px] font-black leading-tight truncate">Soleus Push-Ups · {soleusCount}/{soleusGoal} today</p>
+            <p className="text-[11px] text-white/85 leading-snug mt-0.5">
+              {soleusDone ? "All 3 rounds done — beautiful work." : "Post-meal calf pump · complete 3 rounds a day"}
+            </p>
+          </div>
+          {soleusDone ? (
+            <CheckCircle2 className="w-6 h-6 text-white shrink-0" strokeWidth={2.2} />
+          ) : (
+            <Play className="w-5 h-5 text-white shrink-0" fill="currentColor" />
+          )}
+        </div>
+      </motion.button>
+
       {/* Hero */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
@@ -787,6 +829,8 @@ export default function ExerciseTab({ packageKey }: Props) {
           }}
         />
       )}
+
+      <SoleusProtocolDrawer open={soleusOpen} onOpenChange={setSoleusOpen} />
     </div>
   );
 }

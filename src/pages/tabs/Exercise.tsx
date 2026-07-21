@@ -24,6 +24,9 @@ import {
 } from "@/lib/exerciseService";
 import { useTodayExerciseProgress } from "@/hooks/useTodayExerciseProgress";
 import { EmptyState } from "@/components/shared";
+import SoleusProtocolDrawer from "@/components/SoleusProtocolDrawer";
+import { useSoleusSessionsToday } from "@/hooks/useSoleusSessionsToday";
+import { SOLEUS_PROTOCOL_VIDEO } from "@/lib/soleusProtocol";
 
 import NativeYouTubePlayer from "@/components/exercises/NativeYouTubePlayer";
 import { isNativeAndroidApp, isNativeIOSApp, isYoutubePlayerMessage, youtubePlayerProxyUrl } from "@/lib/youtubeEmbed";

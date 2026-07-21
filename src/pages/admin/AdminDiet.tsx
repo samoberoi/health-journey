@@ -15,6 +15,7 @@ import { useConfirm } from "@/components/ConfirmProvider";
 import { logAudit } from "@/lib/auditLog";
 import ExportCsvButton from "@/components/admin/ExportCsvButton";
 import ImportCsvButton from "@/components/admin/ImportCsvButton";
+import DietBackupToolbar from "@/components/admin/DietBackupToolbar";
 import TaxonomyImageUploader from "@/components/admin/TaxonomyImageUploader";
 import { uploadCategoryImage, uploadFilterImage } from "@/lib/foodTaxonomyImageService";
 import {
@@ -262,8 +263,13 @@ export default function AdminDiet() {
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground tracking-tight">Diet Intelligence</h1>
           <p className="text-sm text-muted-foreground mt-1.5 max-w-2xl">Three-tier food taxonomy powering the reversal programme. Curate categories, filters and items — diet flags travel with every food.</p>
         </div>
-        <div className="shrink-0 self-start"><ExportCsvButton filename="diet-items" rows={items as any} />
-<ImportCsvButton table="food_items" onImported={() => window.location.reload()} /></div>
+        <div className="shrink-0 self-start flex flex-col items-end gap-2">
+          <DietBackupToolbar onRestored={() => window.location.reload()} />
+          <div className="flex items-center gap-2">
+            <ExportCsvButton filename="diet-items" rows={items as any} />
+            <ImportCsvButton table="food_items" onImported={() => window.location.reload()} />
+          </div>
+        </div>
       </div>
 
       {/* Category pills */}

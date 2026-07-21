@@ -44,6 +44,8 @@ import { Wind } from "lucide-react";
 import { useDailyYogaMinutes } from "@/hooks/useAppSettings";
 import { getTodayYogaMinutes } from "@/lib/yogaProgressService";
 import { useTodayExerciseProgress } from "@/hooks/useTodayExerciseProgress";
+import { useBreathSessionsToday } from "@/hooks/useBreathSessionsToday";
+import { useSoleusSessionsToday } from "@/hooks/useSoleusSessionsToday";
 import { createNotification } from "@/lib/notificationService";
 import { whatsappCallUrl, isMeetingCallable } from "@/lib/coachAvailability";
 import { Phone } from "lucide-react";

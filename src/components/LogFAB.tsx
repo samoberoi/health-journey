@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Activity, Heart, Scale, Droplets, Camera, Loader2, Clock, Dumbbell, Sunrise, Sun, Moon, Wind } from "lucide-react";
+import { Activity, Heart, Scale, Droplets, Camera, Loader2, Clock, Dumbbell, Sunrise, Sun, Moon, Wind, Timer, Pill } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -426,6 +426,46 @@ export default function LogFAB(_props: { packageKey?: string | null }) {
                 >
                   {soleusCount}/{soleusGoal}
                 </span>
+              </span>
+            </motion.button>
+            <motion.button
+              key="fasting-shortcut"
+              onClick={() => {
+                setOpen(false);
+                navigate("/dashboard?tab=fasting");
+              }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ duration: 0.12, ease: [0.22, 1, 0.36, 1] }}
+              className="no-pill relative flex flex-col items-center justify-center gap-2 rounded-2xl py-4 px-2 bg-card border border-border"
+            >
+              <span
+                className="w-11 h-11 rounded-xl flex items-center justify-center"
+                style={{ background: "#0F1A3D" }}
+              >
+                <Timer className="w-5 h-5 text-white" strokeWidth={1.7} />
+              </span>
+              <span className="text-[11px] font-semibold text-foreground text-center leading-none">
+                Fasting
+              </span>
+            </motion.button>
+            <motion.button
+              key="supplements-shortcut"
+              onClick={() => {
+                setOpen(false);
+                navigate("/dashboard?tab=supplements");
+              }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ duration: 0.12, ease: [0.22, 1, 0.36, 1] }}
+              className="no-pill relative flex flex-col items-center justify-center gap-2 rounded-2xl py-4 px-2 bg-card border border-border"
+            >
+              <span
+                className="w-11 h-11 rounded-xl flex items-center justify-center"
+                style={{ background: "#F59E0B" }}
+              >
+                <Pill className="w-5 h-5 text-white" strokeWidth={1.7} />
+              </span>
+              <span className="text-[11px] font-semibold text-foreground text-center leading-none">
+                Supplements
               </span>
             </motion.button>
           </div>

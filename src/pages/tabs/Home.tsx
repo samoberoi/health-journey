@@ -44,6 +44,8 @@ import { Wind } from "lucide-react";
 import { useDailyYogaMinutes } from "@/hooks/useAppSettings";
 import { getTodayYogaMinutes } from "@/lib/yogaProgressService";
 import { useTodayExerciseProgress } from "@/hooks/useTodayExerciseProgress";
+import { useBreathSessionsToday } from "@/hooks/useBreathSessionsToday";
+import { useSoleusSessionsToday } from "@/hooks/useSoleusSessionsToday";
 import { createNotification } from "@/lib/notificationService";
 import { whatsappCallUrl, isMeetingCallable } from "@/lib/coachAvailability";
 import { Phone } from "lucide-react";
@@ -390,6 +392,8 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
   const [waterDone, setWaterDone] = useState(false);
   const [waterGlasses, setWaterGlasses] = useState(0);
   const { minutes: completedExercisesToday, goal: EXERCISE_DAILY_GOAL } = useTodayExerciseProgress();
+  const { count: breathCountToday, goal: breathGoalToday } = useBreathSessionsToday();
+  const { count: soleusCountToday, goal: soleusGoalToday } = useSoleusSessionsToday();
   const [yogaMinutesToday, setYogaMinutesToday] = useState(0);
   const YOGA_DAILY_MINUTES = useDailyYogaMinutes();
    const [movementDone, setMovementDone] = useState(false);
@@ -1483,6 +1487,20 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
           ratio: waterRatio,
           color: "#38BDF8",
           hint: `${waterGlasses} / 8 glasses`,
+        });
+        rings.push({
+          key: "breath",
+          label: "Breath Protocol",
+          ratio: breathGoalToday > 0 ? Math.min(1, breathCountToday / breathGoalToday) : 0,
+          color: "#EA6A5E",
+          hint: `${Math.min(breathCountToday, breathGoalToday)} / ${breathGoalToday} sessions`,
+        });
+        rings.push({
+          key: "soleus",
+          label: "Soleus Push-Ups",
+          ratio: soleusGoalToday > 0 ? Math.min(1, soleusCountToday / soleusGoalToday) : 0,
+          color: "#B91C1C",
+          hint: `${Math.min(soleusCountToday, soleusGoalToday)} / ${soleusGoalToday} rounds`,
         });
         if (hasDiabetesFlag) {
           rings.push({

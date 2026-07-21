@@ -310,8 +310,8 @@ export function installNativePersistenceLifecycleFlush() {
 
 export async function syncNativePersistenceFromLocalStorage() {
   if (!isNativeApp()) return;
-  return serializeNativePersistence(async () => {
   await flushNativePersistenceWrites();
+  return serializeNativePersistence(async () => {
   const previousKeys = await readPersistedKeyList();
   const keys: string[] = [];
   for (let index = 0; index < localStorage.length; index += 1) {
@@ -349,8 +349,8 @@ export async function syncNativePersistenceFromLocalStorage() {
 
 export async function persistAuthSessionToNative() {
   if (!isNativeApp()) return;
-  return serializeNativePersistence(async () => {
   await flushNativePersistenceWrites();
+  return serializeNativePersistence(async () => {
   const authKeys: string[] = [];
   for (let index = 0; index < localStorage.length; index += 1) {
     const key = localStorage.key(index);
@@ -368,7 +368,6 @@ export async function persistAuthSessionToNative() {
   );
   const persistedKeys = await readPersistedKeyList();
   await Preferences.set({ key: KEY_LIST, value: JSON.stringify([...new Set([...persistedKeys, ...authKeys])]) });
-  await flushNativePersistenceWrites();
   });
 }
 
@@ -376,8 +375,8 @@ export async function persistSupabaseSessionToNative(
   session: { access_token?: string; refresh_token?: string } | null | undefined
 ) {
   if (!isNativeApp()) return;
-  return serializeNativePersistence(async () => {
   await flushNativePersistenceWrites();
+  return serializeNativePersistence(async () => {
   await saveAuthTokensBackup(session);
   const authKeys: string[] = [];
   for (let index = 0; index < localStorage.length; index += 1) {
@@ -396,15 +395,14 @@ export async function persistSupabaseSessionToNative(
   );
   const persistedKeys = await readPersistedKeyList();
   await Preferences.set({ key: KEY_LIST, value: JSON.stringify([...new Set([...persistedKeys, AUTH_TOKENS_BACKUP_KEY, ...authKeys])]) });
-  await flushNativePersistenceWrites();
   logStartupEvent("supabase session persisted to native", `authKeys=${authKeys.length}`);
   });
 }
 
 export async function clearNativePersistedAuthState() {
   if (!isNativeApp()) return;
-  return serializeNativePersistence(async () => {
   await flushNativePersistenceWrites();
+  return serializeNativePersistence(async () => {
   const persistedKeys = await readPersistedKeyList();
   const authKeys = persistedKeys.filter((key) => {
     return isAuthStorageKey(key) || key.startsWith("bb_");

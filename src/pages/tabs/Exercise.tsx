@@ -589,7 +589,7 @@ export default function ExerciseTab({ packageKey }: Props) {
             <motion.div
               key={ex.id}
               layout
-              className="rounded-2xl overflow-hidden liquid-glass hover:-translate-y-px transition-transform"
+              className="rounded-xl overflow-hidden bg-white border border-border shadow-card hover:-translate-y-px transition-transform"
             >
               {/* Thumbnail */}
               <button

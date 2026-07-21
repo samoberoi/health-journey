@@ -83,6 +83,8 @@ const map = {
   brain: Iconoir.Brain,
   leaf: Iconoir.Leaf,
   apple: Iconoir.Apple,
+  candy: Iconoir.Chocolate,
+  sweets: Iconoir.Chocolate,
   sparkle: Iconoir.Sparks,
   bolt: Iconoir.Flash,
   shield: Iconoir.Shield,

@@ -142,10 +142,21 @@ async function resetAndroidFcmTokenAfterChannelUpgrade() {
   if (hasStoredToken && localStorage.getItem(ANDROID_TOKEN_RESET_KEY) === "1") return;
 
   try {
-    // Forces Android to mint a fresh FCM token after Firebase/channel changes.
-    // Stale tokens from an older Firebase sender are rejected by FCM with
-    // SENDER_ID_MISMATCH and never reach the phone.
     localStorage.removeItem("bbdo_fcm_token_reset_bbdo-alerts-v7");
+    localStorage.removeItem("bbdo_fcm_token_reset_com.hyperrevamp.bbdo:bbdoapp:73939371932:v2");
+    // Also purge any stale token rows in the DB for this user so FCM stops
+    // sending to UNREGISTERED tokens minted under the previous app package.
+    if (activeUserId) {
+      try {
+        await (supabase as any)
+          .from("device_push_tokens")
+          .delete()
+          .eq("user_id", activeUserId)
+          .eq("platform", "android");
+      } catch (dbErr) {
+        console.warn("[push] android stale-token purge skipped", dbErr);
+      }
+    }
     await PushNotifications.unregister();
     await new Promise((resolve) => window.setTimeout(resolve, 700));
   } catch (err) {

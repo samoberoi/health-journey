@@ -340,6 +340,9 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
 
         group.notify(queue: .main) {
             call.resolve(result)
+        }
+    }
+
 
     // MARK: - ECG (Apple Watch)
 

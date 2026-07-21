@@ -90,6 +90,23 @@ export async function fetchAppleHealthSnapshot(): Promise<HealthSnapshot | null>
   }
 }
 
+/** Fetch the most recent ECG reading (Apple Watch, iOS 14+). */
+export async function fetchLatestEcgFromAppleHealth(): Promise<EcgReading | null> {
+  if (!canUseAppleHealthSteps()) return null;
+  try {
+    const availability = await BBDOHealthKit.isAvailable();
+    if (!availability.available) return null;
+    await BBDOHealthKit.requestAuthorization();
+    if (typeof BBDOHealthKit.getLatestEcg !== "function") return null;
+    const ecg = await BBDOHealthKit.getLatestEcg();
+    if (!ecg || !ecg.startDate) return null;
+    return ecg;
+  } catch (error) {
+    reportStartupError("healthkit ecg failed", error);
+    return null;
+  }
+}
+
 /** Write a weight sample back to Apple Health. */
 export async function writeWeightToAppleHealth(kg: number, at?: Date): Promise<boolean> {
   if (!canUseAppleHealthSteps() || !kg || kg <= 0) return false;

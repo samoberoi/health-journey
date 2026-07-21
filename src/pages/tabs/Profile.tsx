@@ -1174,21 +1174,19 @@ export default function Profile({ onClose, isDark = true, onToggleTheme }: Profi
           <p className={`text-xs font-bold mt-1 leading-snug break-words ${storedUser?.profile?.gender ? "text-foreground" : "text-destructive"}`}>Gender: {userGender}</p>
         </div>
         {(() => {
-          const rc = String(userRiskCategory || "").toLowerCase();
-          let label = t("goodHealth");
-          let tone: "good" | "moderate" | "high" = "good";
-          if (rc.includes("high") || userScore < 50) {
-            tone = "high"; label = "High Risk";
-          } else if (rc.includes("moderate") || rc.includes("medium") || (userScore >= 50 && userScore < 65)) {
-            tone = "moderate"; label = "Moderate Risk";
-          } else if (userScore >= 80) {
-            label = "Excellent Health";
-          }
-          const styles = tone === "high"
-            ? "bg-destructive/10 text-destructive"
-            : tone === "moderate"
-            ? "bg-amber-500/10 text-amber-600"
-            : "bg-primary/10 text-primary";
+          let label: string;
+          let tone: "good" | "wake" | "attention" | "moderate" | "high";
+          if (userScore < 40) { tone = "high"; label = "High Risk"; }
+          else if (userScore < 50) { tone = "moderate"; label = "Moderate Risk"; }
+          else if (userScore < 60) { tone = "attention"; label = "Attention Required"; }
+          else if (userScore < 70) { tone = "wake"; label = "Wake-up Call"; }
+          else { tone = "good"; label = "Good Health"; }
+          const styles =
+            tone === "high" ? "bg-destructive/10 text-destructive" :
+            tone === "moderate" ? "bg-orange-500/10 text-orange-600" :
+            tone === "attention" ? "bg-amber-500/10 text-amber-600" :
+            tone === "wake" ? "bg-yellow-500/10 text-yellow-600" :
+            "bg-primary/10 text-primary";
           return (
             <div className={`max-w-full flex items-center gap-2 px-4 py-2 rounded-full ${styles}`}>
               <Flame className="w-4 h-4" strokeWidth={1.6} />

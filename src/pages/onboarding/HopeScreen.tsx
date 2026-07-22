@@ -12,10 +12,10 @@ export default function HopeScreen() {
   return (
     <div className="ob-screen phone-container ob-lock min-h-dvh overflow-x-hidden">
       <SoundToggle />
-      <div className="ob-content justify-end">
-        <div className="mt-[18vh]" />
+      <div className="ob-content">
         <motion.h1 className="ob-title mb-4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>This is<br /><span className="text-primary">reversible.</span></motion.h1>
         <motion.p className="ob-sub mb-5 max-w-[280px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>With the right system, your body can heal.</motion.p>
+
 
         <motion.div className="liquid-glass-strong mb-3 w-full p-4 text-left" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
           <p className="mb-2 text-[0.6rem] font-semibold uppercase tracking-[0.25em] text-muted-foreground">What the science says</p>

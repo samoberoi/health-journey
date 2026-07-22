@@ -366,9 +366,8 @@ export default function Auth() {
               <div className="relative h-[38vh] min-h-[220px] max-h-[300px] overflow-hidden shadow-card shrink-0">
 
                 <AuthHeroCarousel />
-                <div className="absolute inset-x-0 bottom-0 p-6 pb-8 bg-gradient-to-t from-black/60 via-black/20 to-transparent">
-                  <p className="text-white text-[28px] font-black tracking-[-0.02em] leading-tight drop-shadow-lg">Sign in</p>
-                </div>
+                <div className="absolute inset-x-0 bottom-0 p-6 pb-8 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+
               </div>
 
               {/* Bottom half content */}
@@ -490,9 +489,8 @@ export default function Auth() {
                 >
                   <ArrowLeft className="w-4 h-4 text-foreground" strokeWidth={2.4} />
                 </button>
-                <div className="absolute inset-x-0 bottom-0 p-6 pb-8 bg-gradient-to-t from-black/60 via-black/20 to-transparent">
-                  <p className="text-white text-[28px] font-black tracking-[-0.02em] leading-tight drop-shadow-lg">Verify code</p>
-                </div>
+                <div className="absolute inset-x-0 bottom-0 p-6 pb-8 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+
               </div>
 
               {/* Bottom half content */}
@@ -544,9 +542,10 @@ export default function Auth() {
           {step === "name" && (
             <motion.div key="name" className="flex flex-col flex-1" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}>
               <motion.div className="mt-1 mb-6 flex flex-col items-center" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-                <div className="w-16 h-16 rounded-full flex items-center justify-center mb-3 bbdo-card overflow-hidden">
-                  <img src={logoImg} alt="Bye Bye Diabetes" className="w-12 h-12 object-cover rounded-full" />
+                <div className="w-24 h-24 rounded-full flex items-center justify-center mb-3 bbdo-card overflow-hidden">
+                  <img src={logoImg} alt="Bye Bye Diabetes" className="w-20 h-20 object-cover rounded-full" />
                 </div>
+
                 <h1 className="text-foreground font-black text-[19px] tracking-tight">Welcome aboard</h1>
                 <p className="text-muted-foreground text-[12px] text-center mt-1 max-w-[240px] leading-relaxed">
                   Just a couple of details to personalise your plan.

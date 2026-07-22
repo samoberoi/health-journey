@@ -74,8 +74,9 @@ export default function TrajectoryScreen() {
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full" style={{ background: "var(--bbdo-red, #E63946)" }} />
               <span className="text-[10px] font-bold text-bbdo-ink-soft uppercase tracking-wider">
-                Without change
+                I shall pass for now
               </span>
+
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full" style={{ background: "var(--bbdo-blue, #1E3A8A)" }} />
@@ -110,8 +111,10 @@ export default function TrajectoryScreen() {
                 axisLine={false}
                 tickLine={false}
                 domain={[0, 100]}
-                width={32}
+                ticks={[0, 25, 50, 75, 100]}
+                width={36}
               />
+
               <Tooltip
                 cursor={{ stroke: "rgba(15,26,61,0.15)", strokeWidth: 1 }}
                 contentStyle={{
@@ -125,8 +128,9 @@ export default function TrajectoryScreen() {
                 labelStyle={{ color: "var(--bbdo-ink, #0F1A3D)", fontWeight: 800 }}
                 formatter={(value: number, name: string) => [
                   `${value} pts`,
-                  name === "current" ? "Without change" : "With BBDO",
+                  name === "current" ? "I shall pass for now" : "With BBDO",
                 ]}
+
               />
               {/* Downward trajectory — dashed red with soft fill */}
               <Area
@@ -159,7 +163,7 @@ export default function TrajectoryScreen() {
             <div className="rounded-xl px-3 py-2.5 flex items-center gap-2" style={{ background: "rgba(230,57,70,0.08)" }}>
               <TrendingDown className="w-4 h-4" style={{ color: "var(--bbdo-red, #E63946)" }} strokeWidth={2} />
               <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-bbdo-ink-soft">Without change</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-bbdo-ink-soft">I shall pass for now</p>
                 <p className="text-[15px] font-black tabular-nums" style={{ color: "var(--bbdo-red, #E63946)" }}>
                   {data[data.length - 1].current}
                 </p>

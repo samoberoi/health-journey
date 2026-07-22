@@ -157,7 +157,7 @@ export default function Plans() {
           ))}
         </div>
 
-        <div className="flex flex-col gap-4 mb-6">
+        <div className="flex flex-col gap-7 mb-6">
           {pkgs.map((plan, i) => {
             const row = plan.pricing.find((r) => r.billing_cycle === cycle && r.enabled);
             if (!row) return null;
@@ -216,12 +216,12 @@ export default function Plans() {
                       isPopular
                         ? "gradient-blue text-primary-foreground glow-blue"
                         : plan.accent === "premium"
-                        ? "bg-gradient-to-r from-amber-300 to-amber-500 text-emerald-800 shadow-md shadow-amber-500/40"
+                        ? "bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-white shadow-md shadow-amber-500/50"
                         : "bg-amber-100 text-amber-900"
                     )}
                   >
                     {isPopular && <Star className="w-3 h-3" strokeWidth={1.5} />}
-                    {plan.accent === "premium" && <Star className="w-3 h-3 fill-emerald-700 text-emerald-700" strokeWidth={1.5} />}
+                    {plan.accent === "premium" && <Star className="w-3 h-3 fill-white text-white" strokeWidth={1.5} />}
                     {plan.badge}
                   </div>
                 ) : null}

@@ -71,7 +71,9 @@ function WatchModal({
   const [playerError, setPlayerError] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const [useNativePlayer] = useState(() => isNativeIOSApp());
-  const [useAndroidSimpleEmbed] = useState(() => isNativeAndroidApp());
+  // Android used to force the raw youtube-nocookie embed ("simple" mode) but the nested
+  // iframe caused a play→immediate-pause loop under WebView. Use the JS-API path instead.
+  const [useAndroidSimpleEmbed] = useState(() => false);
   const playerSrc = videoId
     ? youtubePlayerProxyUrl(videoId, { autoplay: !useAndroidSimpleEmbed, simple: useAndroidSimpleEmbed })
     : "";

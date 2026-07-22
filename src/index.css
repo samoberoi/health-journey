@@ -502,12 +502,14 @@
   }
   html.bb-native.bb-android .ob-bottom {
     position: absolute;
-    left: 50%;
-    right: auto;
+    left: 0;
+    right: 0;
+    margin-left: auto;
+    margin-right: auto;
     bottom: calc(env(safe-area-inset-bottom) + var(--bbdo-native-bottom-guard, 0px) + 18px);
     z-index: 60;
     width: min(100vw, 430px);
-    transform: translateX(-50%);
+    max-width: 100%;
     margin-top: 0;
     padding: 1rem 1.25rem 0;
     background: linear-gradient(to top, var(--bbdo-cream) 0%, var(--bbdo-cream) 72%, rgba(255,255,255,0));

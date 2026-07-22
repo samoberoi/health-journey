@@ -499,9 +499,14 @@
     position: sticky;
     bottom: 0;
     z-index: 20;
-    padding-top: 0.75rem;
+    padding-top: 1rem;
     padding-bottom: calc(var(--bbdo-onboarding-bottom-guard) + 1rem);
-    background: linear-gradient(180deg, rgba(255, 251, 244, 0) 0%, var(--bbdo-cream) 34%, var(--bbdo-cream) 100%);
+    background: linear-gradient(180deg, rgba(255, 251, 244, 0) 0%, var(--bbdo-cream) 30%, var(--bbdo-cream) 100%);
+  }
+  /* Ensure last content item in ob-content has enough clearance above the sticky CTA */
+  html.bb-native.bb-android .ob-content > .ob-stack,
+  html.bb-native.bb-android .ob-content > .flex-1 {
+    padding-bottom: 1.5rem;
   }
   .ob-bg { position: absolute; inset: 0; z-index: 0; opacity: 0.14; }
   .ob-bg img { width: 100%; height: 100%; object-fit: cover; }

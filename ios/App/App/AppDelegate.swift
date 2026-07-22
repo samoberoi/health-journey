@@ -260,10 +260,10 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         healthStore.execute(q)
     }
 
-    /// Returns per-stage sleep minutes for last night (awake, rem, core, deep, asleepUnspecified).
-    private func lastNightSleepBreakdown(completion: @escaping (_ awakeMin: Double, _ remMin: Double, _ coreMin: Double, _ deepMin: Double, _ unspecifiedMin: Double) -> Void) {
+    /// Returns per-stage sleep minutes for last night plus bedtime / wake times.
+    private func lastNightSleepBreakdown(completion: @escaping (_ awakeMin: Double, _ remMin: Double, _ coreMin: Double, _ deepMin: Double, _ unspecifiedMin: Double, _ sleepStart: Date?, _ sleepEnd: Date?) -> Void) {
         guard let sleepType = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) else {
-            completion(0, 0, 0, 0, 0); return
+            completion(0, 0, 0, 0, 0, nil, nil); return
         }
         let cal = Calendar.current
         let now = Date()
@@ -278,27 +278,34 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
             var core: TimeInterval = 0
             var deep: TimeInterval = 0
             var unspec: TimeInterval = 0
+            var asleepStart: Date? = nil
+            var asleepEnd: Date? = nil
             for s in (samples as? [HKCategorySample]) ?? [] {
                 let dur = s.endDate.timeIntervalSince(s.startDate)
                 let val = s.value
+                var isAsleep = false
                 if #available(iOS 16.0, *) {
                     switch val {
                     case HKCategoryValueSleepAnalysis.awake.rawValue: awake += dur
-                    case HKCategoryValueSleepAnalysis.asleepREM.rawValue: rem += dur
-                    case HKCategoryValueSleepAnalysis.asleepCore.rawValue: core += dur
-                    case HKCategoryValueSleepAnalysis.asleepDeep.rawValue: deep += dur
-                    case HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue: unspec += dur
+                    case HKCategoryValueSleepAnalysis.asleepREM.rawValue: rem += dur; isAsleep = true
+                    case HKCategoryValueSleepAnalysis.asleepCore.rawValue: core += dur; isAsleep = true
+                    case HKCategoryValueSleepAnalysis.asleepDeep.rawValue: deep += dur; isAsleep = true
+                    case HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue: unspec += dur; isAsleep = true
                     default: break
                     }
                 } else {
                     if val == HKCategoryValueSleepAnalysis.asleep.rawValue {
-                        unspec += dur
+                        unspec += dur; isAsleep = true
                     } else if val == HKCategoryValueSleepAnalysis.awake.rawValue {
                         awake += dur
                     }
                 }
+                if isAsleep {
+                    if asleepStart == nil || s.startDate < asleepStart! { asleepStart = s.startDate }
+                    if asleepEnd == nil || s.endDate > asleepEnd! { asleepEnd = s.endDate }
+                }
             }
-            completion(awake / 60.0, rem / 60.0, core / 60.0, deep / 60.0, unspec / 60.0)
+            completion(awake / 60.0, rem / 60.0, core / 60.0, deep / 60.0, unspec / 60.0, asleepStart, asleepEnd)
         }
         healthStore.execute(q)
     }

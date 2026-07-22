@@ -184,12 +184,12 @@ export default function Plans() {
                   "relative p-5 rounded-2xl transition-colors text-left liquid-glass",
                   isSelected && "shadow-xl shadow-primary/25 ring-2 ring-primary/40 z-10",
                   isPopular && !isSelected && !isCurrent && "ring-1 ring-primary/20",
-                  plan.accent === "premium" && !isCurrent && "ring-2 ring-amber-400/70 shadow-lg shadow-amber-500/20",
+                  plan.accent === "premium" && !isCurrent && "ring-2 ring-amber-300/70 shadow-lg shadow-amber-300/20",
                   isCurrent && "opacity-60 cursor-not-allowed ring-1 ring-success/40"
                 )}
                 style={
                   plan.accent === "premium" && !isCurrent
-                    ? { background: "linear-gradient(140deg, hsl(45 95% 62%) 0%, hsl(42 92% 55%) 55%, hsl(38 90% 48%) 100%)" }
+                    ? { background: "linear-gradient(140deg, hsl(48 95% 88%) 0%, hsl(45 92% 80%) 55%, hsl(42 88% 72%) 100%)" }
                     : undefined
                 }
               >
@@ -216,12 +216,12 @@ export default function Plans() {
                       isPopular
                         ? "gradient-blue text-primary-foreground glow-blue"
                         : plan.accent === "premium"
-                        ? "bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-white shadow-md shadow-amber-500/50"
+                        ? "bg-gradient-to-r from-amber-200 via-amber-300 to-amber-400 text-amber-950 shadow-md shadow-amber-300/50"
                         : "bg-amber-100 text-amber-900"
                     )}
                   >
                     {isPopular && <Star className="w-3 h-3" strokeWidth={1.5} />}
-                    {plan.accent === "premium" && <Star className="w-3 h-3 fill-white text-white" strokeWidth={1.5} />}
+                    {plan.accent === "premium" && <Star className="w-3 h-3 fill-amber-900 text-amber-900" strokeWidth={1.5} />}
                     {plan.badge}
                   </div>
                 ) : null}

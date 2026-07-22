@@ -501,7 +501,7 @@
     padding-bottom: calc(env(safe-area-inset-bottom) + var(--bbdo-native-bottom-guard, 0px) + 7rem);
   }
   html.bb-native.bb-android .ob-bottom {
-    position: fixed;
+    position: absolute;
     left: 50%;
     right: auto;
     bottom: calc(env(safe-area-inset-bottom) + var(--bbdo-native-bottom-guard, 0px) + 14px);

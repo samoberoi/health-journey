@@ -309,6 +309,14 @@ export default function FoundationLabCard({ userId }: Props) {
         productCodes={basicCode ? [basicCode] : []}
         onBooked={() => setHasResults((v) => v)}
       />
+
+      <LabTestParametersDialog
+        open={showDetails}
+        onOpenChange={setShowDetails}
+        testId={basicId}
+        testName={basicName}
+        productCode={basicCode}
+      />
     </>
   );
 }

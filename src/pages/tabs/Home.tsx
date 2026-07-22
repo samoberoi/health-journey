@@ -33,6 +33,7 @@ import { calculateSupplementStreak, checkAndAwardSupplementBadges } from "@/lib/
 import TodayStepsCard from "@/components/TodayStepsCard";
 import AppleHealthSnapshotCard from "@/components/AppleHealthSnapshotCard";
 import AppleHealthEcgCard from "@/components/AppleHealthEcgCard";
+import SleepBreakdownCard from "@/components/SleepBreakdownCard";
 import HealthTrendsCard from "@/components/HealthTrendsCard";
 import { fetchMovementOverview } from "@/lib/movementUserService";
 import { fetchUserStats } from "@/lib/userStatsService";
@@ -1534,7 +1535,7 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
           : bmi < 30 ? "var(--bbdo-amber)"
           : "var(--bbdo-red)";
         return (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-4 gap-2">
             <MetricRing
               value={healthScore}
               label="Health"
@@ -1967,6 +1968,8 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
 
       {/* ─── Apple Watch ECG ─── */}
       <AppleHealthEcgCard />
+      <SleepBreakdownCard />
+
 
       {/* ─── Apple Health 30-day trends ─── */}
       <HealthTrendsCard days={30} />

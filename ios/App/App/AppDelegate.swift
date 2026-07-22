@@ -260,34 +260,45 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         healthStore.execute(q)
     }
 
-    private func lastNightSleepHours(completion: @escaping (Double) -> Void) {
-        guard let sleepType = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) else { completion(0); return }
+    /// Returns per-stage sleep minutes for last night (awake, rem, core, deep, asleepUnspecified).
+    private func lastNightSleepBreakdown(completion: @escaping (_ awakeMin: Double, _ remMin: Double, _ coreMin: Double, _ deepMin: Double, _ unspecifiedMin: Double) -> Void) {
+        guard let sleepType = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) else {
+            completion(0, 0, 0, 0, 0); return
+        }
         let cal = Calendar.current
         let now = Date()
-        // Window: yesterday 18:00 → today 12:00
         var comps = cal.dateComponents([.year, .month, .day], from: now)
         comps.hour = 12
         let noonToday = cal.date(from: comps) ?? now
         let start = cal.date(byAdding: .hour, value: -18, to: noonToday) ?? now
         let predicate = HKQuery.predicateForSamples(withStart: start, end: noonToday, options: [])
         let q = HKSampleQuery(sampleType: sleepType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, samples, _ in
-            var seconds: TimeInterval = 0
+            var awake: TimeInterval = 0
+            var rem: TimeInterval = 0
+            var core: TimeInterval = 0
+            var deep: TimeInterval = 0
+            var unspec: TimeInterval = 0
             for s in (samples as? [HKCategorySample]) ?? [] {
+                let dur = s.endDate.timeIntervalSince(s.startDate)
                 let val = s.value
-                let isAsleep: Bool
                 if #available(iOS 16.0, *) {
-                    isAsleep = val == HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue
-                        || val == HKCategoryValueSleepAnalysis.asleepCore.rawValue
-                        || val == HKCategoryValueSleepAnalysis.asleepDeep.rawValue
-                        || val == HKCategoryValueSleepAnalysis.asleepREM.rawValue
+                    switch val {
+                    case HKCategoryValueSleepAnalysis.awake.rawValue: awake += dur
+                    case HKCategoryValueSleepAnalysis.asleepREM.rawValue: rem += dur
+                    case HKCategoryValueSleepAnalysis.asleepCore.rawValue: core += dur
+                    case HKCategoryValueSleepAnalysis.asleepDeep.rawValue: deep += dur
+                    case HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue: unspec += dur
+                    default: break
+                    }
                 } else {
-                    isAsleep = val == HKCategoryValueSleepAnalysis.asleep.rawValue
-                }
-                if isAsleep {
-                    seconds += s.endDate.timeIntervalSince(s.startDate)
+                    if val == HKCategoryValueSleepAnalysis.asleep.rawValue {
+                        unspec += dur
+                    } else if val == HKCategoryValueSleepAnalysis.awake.rawValue {
+                        awake += dur
+                    }
                 }
             }
-            completion(seconds / 3600.0)
+            completion(awake / 60.0, rem / 60.0, core / 60.0, deep / 60.0, unspec / 60.0)
         }
         healthStore.execute(q)
     }
@@ -336,7 +347,16 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
             group.leave()
         }
         group.enter()
-        lastNightSleepHours { hours in result["sleepHours"] = (hours * 10).rounded() / 10.0; group.leave() }
+        lastNightSleepBreakdown { awake, rem, core, deep, unspec in
+            let totalAsleep = rem + core + deep + unspec
+            result["sleepHours"] = (totalAsleep / 60.0 * 10).rounded() / 10.0
+            result["sleepAwakeMin"] = Int(awake.rounded())
+            result["sleepRemMin"] = Int(rem.rounded())
+            result["sleepCoreMin"] = Int(core.rounded())
+            result["sleepDeepMin"] = Int(deep.rounded())
+            result["sleepUnspecifiedMin"] = Int(unspec.rounded())
+            group.leave()
+        }
 
         group.notify(queue: .main) {
             call.resolve(result)

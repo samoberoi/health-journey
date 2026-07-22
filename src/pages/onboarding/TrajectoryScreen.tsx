@@ -51,7 +51,7 @@ export default function TrajectoryScreen() {
   return (
     <div className="phone-container ob-lock min-h-dvh flex flex-col overflow-x-hidden">
       <SoundToggle />
-      <div className="flex-1 flex flex-col px-5 pt-[calc(env(safe-area-inset-top)+1rem)] mobile-bottom-safe">
+      <div className="flex-1 flex flex-col px-5 pt-[calc(env(safe-area-inset-top)+2rem)] mobile-bottom-safe">
         <HeroCard variant="navy" className="pb-5">
           <p className="bbdo-eyebrow text-white mb-2">Health Score Trajectory</p>
           <h1 className="text-[24px] leading-[1.05] font-extrabold tracking-tight text-white">
@@ -87,7 +87,7 @@ export default function TrajectoryScreen() {
           </div>
 
           <ResponsiveContainer width="100%" height={170}>
-            <AreaChart data={data} margin={{ top: 8, right: 6, left: -18, bottom: 0 }}>
+            <AreaChart data={data} margin={{ top: 8, right: 8, left: 4, bottom: 0 }}>
               <defs>
                 <linearGradient id="gradImproved" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="var(--bbdo-blue, #1E3A8A)" stopOpacity={0.35} />
@@ -112,7 +112,8 @@ export default function TrajectoryScreen() {
                 tickLine={false}
                 domain={[0, 100]}
                 ticks={[0, 25, 50, 75, 100]}
-                width={36}
+                width={32}
+                tickMargin={4}
               />
 
               <Tooltip
@@ -198,7 +199,7 @@ export default function TrajectoryScreen() {
         </motion.div>
 
         <motion.div
-          className="pt-3 mt-auto flex justify-end shrink-0"
+          className="ob-bottom flex justify-end"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}

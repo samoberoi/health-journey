@@ -247,18 +247,28 @@ export default function FoundationLabCard({ userId }: Props) {
               )}
             </div>
           )}
-          <button
-            type="button"
-            onClick={openBooking}
-            disabled={!basicCode}
-            className="mt-4 inline-flex items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-bold text-white active:scale-[0.98] transition-transform disabled:opacity-60"
-            style={{ background: "var(--bbdo-red)" }}
-          >
-            {basicPrice && basicPrice.price > 0
-              ? `Book for ₹${basicPrice.price.toLocaleString("en-IN")}`
-              : "Book lab test"}
-            <ChevronRight className="w-4 h-4" />
-          </button>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={openBooking}
+              disabled={!basicCode}
+              className="inline-flex items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-bold text-white active:scale-[0.98] transition-transform disabled:opacity-60"
+              style={{ background: "var(--bbdo-red)" }}
+            >
+              {basicPrice && basicPrice.price > 0
+                ? `Book for ₹${basicPrice.price.toLocaleString("en-IN")}`
+                : "Book lab test"}
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowDetails(true)}
+              disabled={!basicId}
+              className="inline-flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-bold border border-border bg-background text-foreground active:scale-[0.98] transition-transform disabled:opacity-60"
+            >
+              View details
+            </button>
+          </div>
         </motion.div>
       )}
 

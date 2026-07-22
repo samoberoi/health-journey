@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Users, Stethoscope, CalendarCheck, HeartHandshake } from "lucide-react";
+import { ArrowRight, Users, Compass, CalendarCheck, HeartHandshake } from "lucide-react";
 import SoundToggle from "@/components/SoundToggle";
 import { setPhase } from "@/lib/musicEngine";
 

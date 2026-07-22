@@ -271,18 +271,25 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     private func sleepStage(for rawValue: Int) -> BBDOSleepStage {
-        if rawValue == HKCategoryValueSleepAnalysis.inBed.rawValue { return .inBed }
-        if rawValue == HKCategoryValueSleepAnalysis.asleep.rawValue { return .unspecified }
-
-        if #available(iOS 16.0, *) {
-            if rawValue == HKCategoryValueSleepAnalysis.awake.rawValue { return .awake }
-            if rawValue == HKCategoryValueSleepAnalysis.asleepREM.rawValue { return .rem }
-            if rawValue == HKCategoryValueSleepAnalysis.asleepCore.rawValue { return .core }
-            if rawValue == HKCategoryValueSleepAnalysis.asleepDeep.rawValue { return .deep }
-            if rawValue == HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue { return .unspecified }
+        // HealthKit stores sleep stage samples as integer category values.
+        // Use Apple's documented raw values directly so stage reads do not depend
+        // on SDK/runtime enum bridging and cannot silently drop Watch stages.
+        switch rawValue {
+        case 0:
+            return .inBed
+        case 1:
+            return .unspecified
+        case 2:
+            return .awake
+        case 3:
+            return .core
+        case 4:
+            return .deep
+        case 5:
+            return .rem
+        default:
+            return .ignored
         }
-
-        return .ignored
     }
 
     private func sleepStageName(_ stage: BBDOSleepStage) -> String {
@@ -321,6 +328,12 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 
+    private func clippedDuration(_ sample: HKCategorySample, start: Date, end: Date) -> TimeInterval {
+        let s = max(sample.startDate, start)
+        let e = min(sample.endDate, end)
+        return max(0, e.timeIntervalSince(s))
+    }
+
     /// Returns per-stage sleep minutes for last night plus bedtime / wake times.
     private func lastNightSleepBreakdown(completion: @escaping (_ awakeMin: Double, _ remMin: Double, _ coreMin: Double, _ deepMin: Double, _ unspecifiedMin: Double, _ sleepStart: Date?, _ sleepEnd: Date?) -> Void) {
         guard let sleepType = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) else {
@@ -328,55 +341,47 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         }
         let cal = Calendar.current
         let now = Date()
-        var comps = cal.dateComponents([.year, .month, .day], from: now)
-        comps.hour = 12
-        let noonToday = cal.date(from: comps) ?? now
-        let start = cal.date(byAdding: .hour, value: -24, to: noonToday) ?? now
-        let datePredicate = HKQuery.predicateForSamples(withStart: start, end: noonToday, options: [])
-        var valuePredicates: [NSPredicate] = [
-            HKQuery.predicateForCategorySamples(with: .equalTo, value: HKCategoryValueSleepAnalysis.inBed.rawValue),
-            HKQuery.predicateForCategorySamples(with: .equalTo, value: HKCategoryValueSleepAnalysis.asleep.rawValue),
-        ]
-        if #available(iOS 16.0, *) {
-            valuePredicates.append(contentsOf: [
-                HKQuery.predicateForCategorySamples(with: .equalTo, value: HKCategoryValueSleepAnalysis.awake.rawValue),
-                HKQuery.predicateForCategorySamples(with: .equalTo, value: HKCategoryValueSleepAnalysis.asleepREM.rawValue),
-                HKQuery.predicateForCategorySamples(with: .equalTo, value: HKCategoryValueSleepAnalysis.asleepCore.rawValue),
-                HKQuery.predicateForCategorySamples(with: .equalTo, value: HKCategoryValueSleepAnalysis.asleepDeep.rawValue),
-                HKQuery.predicateForCategorySamples(with: .equalTo, value: HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue),
-            ])
-        }
-        let stagePredicate = NSCompoundPredicate(orPredicateWithSubpredicates: valuePredicates)
-        let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [datePredicate, stagePredicate])
+        var noonComps = cal.dateComponents([.year, .month, .day], from: now)
+        noonComps.hour = 12
+        noonComps.minute = 0
+        noonComps.second = 0
+        let noonToday = cal.date(from: noonComps) ?? now
+        let rollingStart = cal.date(byAdding: .hour, value: -36, to: now) ?? now
+        let previousNoon = cal.date(byAdding: .day, value: -1, to: noonToday) ?? rollingStart
+        let start = min(rollingStart, previousNoon)
+
+        // Deliberately fetch ALL sleepAnalysis category samples in the window.
+        // Applying a value predicate here has proven brittle across iOS versions:
+        // it can return generic asleep/awake while excluding Watch stage rows.
+        // We filter by raw category value ourselves below.
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: now, options: [])
         let sort = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)
         let q = HKSampleQuery(sampleType: sleepType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sort]) { _, samples, _ in
             let all = (samples as? [HKCategorySample]) ?? []
 
-            // Apple Health can return overlapping records: iPhone may write one
-            // generic "asleep" block while Apple Watch writes REM/Core/Deep/awake
-            // segments inside the same block. Summing samples directly hides the
-            // real stages. Instead, find last night's sleep session, split it at
-            // every HealthKit boundary, then choose the most specific stage for
-            // each interval. This preserves Watch stages and ignores duplicate
-            // generic asleep data only where a stage exists.
-            let sleepRelatedSamples = all
+            // Apple Health can return overlapping records: iPhone may write an
+            // in-bed/generic asleep block while Apple Watch writes REM/Core/Deep
+            // segments inside the same window. Summing samples directly hides or
+            // double-counts the real stages. We build the latest overnight session,
+            // split it at every boundary, and let specific Watch stages win.
+            let sessionSamples = all
                 .filter {
                     let stage = self.sleepStage(for: $0.value)
-                    return stage != .ignored && stage != .inBed
+                    return stage != .ignored
                 }
                 .sorted { $0.startDate < $1.startDate }
 
-            guard !sleepRelatedSamples.isEmpty else {
+            guard !sessionSamples.isEmpty else {
                 completion(0, 0, 0, 0, 0, nil, nil)
                 return
             }
 
-            let maxSessionGap: TimeInterval = 90 * 60
+            let maxSessionGap: TimeInterval = 3 * 60 * 60
             var sessions: [(start: Date, end: Date)] = []
             var currentStart: Date? = nil
             var currentEnd: Date? = nil
 
-            for sample in sleepRelatedSamples {
+            for sample in sessionSamples {
                 if currentStart == nil || currentEnd == nil {
                     currentStart = sample.startDate
                     currentEnd = sample.endDate
@@ -398,7 +403,7 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
             func sessionScore(_ session: (start: Date, end: Date)) -> (specific: TimeInterval, asleep: TimeInterval, end: TimeInterval) {
                 var specific: TimeInterval = 0
                 var asleep: TimeInterval = 0
-                let overlapping = all.filter { $0.endDate > session.start && $0.startDate < session.end }
+                let overlapping = sessionSamples.filter { $0.endDate > session.start && $0.startDate < session.end }
                 var boundaries = Set<Date>()
                 boundaries.insert(session.start)
                 boundaries.insert(session.end)
@@ -442,7 +447,7 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
 
             let sessionStart = sleepSession.start
             let sessionEnd = sleepSession.end
-            let relevant = all.filter { $0.endDate > sessionStart && $0.startDate < sessionEnd }
+            let relevant = sessionSamples.filter { $0.endDate > sessionStart && $0.startDate < sessionEnd }
             var boundaries = Set<Date>()
             boundaries.insert(sessionStart)
             boundaries.insert(sessionEnd)
@@ -492,13 +497,45 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
                 }
             }
 
+            // Safety net: if the segmentation path still produced no specific
+            // stage minutes but HealthKit did return REM/Core/Deep samples, use
+            // direct clipped sums for those stages rather than displaying blanks.
+            if rem + core + deep <= 0 {
+                var directRem: TimeInterval = 0
+                var directCore: TimeInterval = 0
+                var directDeep: TimeInterval = 0
+                for sample in relevant {
+                    let duration = self.clippedDuration(sample, start: sessionStart, end: sessionEnd)
+                    if duration <= 0 { continue }
+                    switch self.sleepStage(for: sample.value) {
+                    case .rem:
+                        directRem += duration
+                    case .core:
+                        directCore += duration
+                    case .deep:
+                        directDeep += duration
+                    default:
+                        break
+                    }
+                }
+                if directRem + directCore + directDeep > 0 {
+                    rem = directRem
+                    core = directCore
+                    deep = directDeep
+                    unspec = max(0, unspec - (directRem + directCore + directDeep))
+                }
+            }
+
             var rawCounts: [String: Int] = [:]
             for sample in relevant {
                 let stageName = self.sleepStageName(self.sleepStage(for: sample.value))
                 rawCounts["\(sample.value):\(stageName)", default: 0] += 1
             }
+            let nonBed = relevant.filter { self.sleepStage(for: $0.value) != .inBed }
+            let displayStart = nonBed.map { $0.startDate }.min() ?? sessionStart
+            let displayEnd = nonBed.map { $0.endDate }.max() ?? sessionEnd
             bbdoNativeLog("Sleep breakdown samples=\(all.count) relevant=\(relevant.count) raw=\(rawCounts) REM=\(Int(rem / 60)) Core=\(Int(core / 60)) Deep=\(Int(deep / 60)) Awake=\(Int(awake / 60)) Unspecified=\(Int(unspec / 60))")
-            completion(awake / 60.0, rem / 60.0, core / 60.0, deep / 60.0, unspec / 60.0, sessionStart, sessionEnd)
+            completion(awake / 60.0, rem / 60.0, core / 60.0, deep / 60.0, unspec / 60.0, displayStart, displayEnd)
         }
         healthStore.execute(q)
     }

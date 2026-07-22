@@ -65,22 +65,21 @@ export default function RealityHook() {
           ))}
         </div>
 
-        <motion.div
-          className="ob-bottom flex items-center justify-between gap-3"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-        >
+        <div className="ob-bottom flex items-center justify-between gap-3">
           <button
             onClick={goToLogin}
-            className="text-bbdo-inksoft text-[13px] font-medium min-h-11 px-2 hover:text-bbdo-ink transition-colors"
+            className="text-bbdo-inksoft text-[13px] font-medium min-h-11 px-2 hover:text-bbdo-ink transition-colors shrink-0"
           >
             Skip to Login
           </button>
-          <button onClick={() => navigate("/tension")} className="ob-cta ios-tap max-w-[240px] px-6">
-            This is me <AppIcon name="arrowRight" size={18} />
+          <button
+            onClick={() => navigate("/tension")}
+            className="ob-cta ios-tap flex-1 min-w-0 max-w-[240px] px-6"
+          >
+            <span className="truncate">This is me</span>
+            <AppIcon name="arrowRight" size={18} />
           </button>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

@@ -251,11 +251,11 @@ export default function Tour() {
                   </div>
                 </div>
 
-                <div className="mt-6 grid grid-cols-3 gap-3">
+                <div className="mt-6 grid grid-cols-3 gap-2">
                   {p.stats.map((s) => (
-                    <div key={s.label} className="rounded-2xl bg-white/10 backdrop-blur px-3 py-3 border border-white/10">
-                      <div className="font-display font-black text-lg md:text-xl leading-none">{s.value}</div>
-                      <div className="mt-1.5 text-[10px] md:text-[11px] uppercase tracking-wide text-white/70 leading-tight">{s.label}</div>
+                    <div key={s.label} className="min-w-0 rounded-2xl bg-white/10 backdrop-blur px-2.5 py-3 border border-white/10">
+                      <div className="font-display font-black text-[clamp(0.95rem,4vw,1.25rem)] md:text-xl leading-none break-words">{s.value}</div>
+                      <div className="mt-1.5 text-[10px] md:text-[11px] uppercase tracking-wide text-white/70 leading-tight break-words">{s.label}</div>
                     </div>
                   ))}
                 </div>

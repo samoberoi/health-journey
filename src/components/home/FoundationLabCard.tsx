@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import LabHistorySection from "@/components/lab/LabHistorySection";
 import ThyrocarePoweredBy from "@/components/lab/ThyrocarePoweredBy";
 import LabBookingDialog from "@/components/lab/LabBookingDialog";
+import { LabTestParametersDialog } from "@/components/lab/LabTestParametersDialog";
 import { patientPriceFor, useLabTestMarkup } from "@/lib/labTestMarkup";
 
 interface Props {

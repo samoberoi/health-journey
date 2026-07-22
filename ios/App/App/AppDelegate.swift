@@ -354,7 +354,7 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
             group.leave()
         }
         group.enter()
-        lastNightSleepBreakdown { awake, rem, core, deep, unspec in
+        lastNightSleepBreakdown { awake, rem, core, deep, unspec, sStart, sEnd in
             let totalAsleep = rem + core + deep + unspec
             result["sleepHours"] = (totalAsleep / 60.0 * 10).rounded() / 10.0
             result["sleepAwakeMin"] = Int(awake.rounded())
@@ -362,6 +362,9 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
             result["sleepCoreMin"] = Int(core.rounded())
             result["sleepDeepMin"] = Int(deep.rounded())
             result["sleepUnspecifiedMin"] = Int(unspec.rounded())
+            let iso = ISO8601DateFormatter()
+            if let s = sStart { result["sleepStart"] = iso.string(from: s) }
+            if let e = sEnd { result["sleepEnd"] = iso.string(from: e) }
             group.leave()
         }
 

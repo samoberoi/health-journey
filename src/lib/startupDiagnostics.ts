@@ -61,8 +61,17 @@ export function installStartupDiagnostics() {
 
   const syncViewportHeight = () => {
     try {
-      const viewportHeight = window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight;
-      document.documentElement.style.setProperty("--bbdo-viewport-height", `${Math.max(1, Math.floor(viewportHeight))}px`);
+      const layoutHeight = Math.max(
+        window.innerHeight || 0,
+        document.documentElement.clientHeight || 0,
+        window.visualViewport?.height || 0,
+      );
+      const visualBottomInset = window.visualViewport
+        ? Math.max(0, layoutHeight - window.visualViewport.height - window.visualViewport.offsetTop)
+        : 0;
+
+      document.documentElement.style.setProperty("--bbdo-viewport-height", `${Math.max(1, Math.floor(layoutHeight))}px`);
+      document.documentElement.style.setProperty("--bbdo-native-bottom-guard", `${Math.round(visualBottomInset)}px`);
     } catch {
       /* viewport syncing must never block startup */
     }

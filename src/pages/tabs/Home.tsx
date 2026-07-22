@@ -1520,9 +1520,19 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
         const wForBmi = typeof latestWeight === "number" ? latestWeight : (typeof user.bodyMetrics?.weight === "number" ? user.bodyMetrics.weight : null);
         const hForBmi = typeof user.bodyMetrics?.height === "number" ? user.bodyMetrics.height : (typeof userHeightCm === "number" ? userHeightCm : null);
         const bmi = wForBmi && hForBmi && hForBmi > 0 ? +(wForBmi / Math.pow(hForBmi / 100, 2)).toFixed(1) : null;
-        const isObese = bmi != null && bmi >= 30;
-        const bmiColor = bmi == null ? "hsl(var(--primary))" : (isObese ? "var(--bbdo-red)" : "var(--bbdo-mint)");
-        const bmiStatus = bmi == null ? "—" : (isObese ? "Obese" : "Healthy");
+        // WHO adult BMI: <18.5 Underweight, 18.5–24.9 Healthy, 25–29.9 Overweight, ≥30 Obese
+        const bmiStatus = bmi == null
+          ? "—"
+          : bmi < 18.5 ? "Underweight"
+          : bmi < 25 ? "Healthy"
+          : bmi < 30 ? "Overweight"
+          : "Obese";
+        const bmiColor = bmi == null
+          ? "hsl(var(--primary))"
+          : bmi < 18.5 ? "var(--bbdo-amber)"
+          : bmi < 25 ? "var(--bbdo-mint)"
+          : bmi < 30 ? "var(--bbdo-amber)"
+          : "var(--bbdo-red)";
         return (
           <div className="grid grid-cols-2 gap-3">
             <MetricRing

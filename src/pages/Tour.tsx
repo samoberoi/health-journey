@@ -234,20 +234,20 @@ export default function Tour() {
             >
               {/* Hero */}
               <div className="relative overflow-hidden rounded-3xl p-6 md:p-8 text-white shadow-lift" style={{ backgroundImage: p.gradient }}>
-                <div className="flex items-start justify-between gap-4">
-                  <div>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 text-white/70 text-[11px] font-semibold tracking-[0.18em] uppercase">
                       <span>Pillar {p.index} of 05</span>
                     </div>
-                    <h1 className="mt-3 font-display font-black text-4xl md:text-5xl leading-[0.95] tracking-tight">
+                    <h1 className="mt-3 font-display font-black text-[clamp(1.75rem,8vw,3rem)] md:text-5xl leading-[0.95] tracking-tight break-words">
                       {p.name}.
                     </h1>
                     <p className="mt-3 text-white/85 text-sm md:text-base leading-relaxed max-w-[36ch]">
                       {p.tagline}
                     </p>
                   </div>
-                  <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center shrink-0 overflow-hidden">
-                    <p.Icon className="w-7 h-7 md:w-8 md:h-8" strokeWidth={1.75} />
+                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center shrink-0 overflow-hidden">
+                    <p.Icon className="w-6 h-6 md:w-8 md:h-8" strokeWidth={1.75} />
                   </div>
                 </div>
 

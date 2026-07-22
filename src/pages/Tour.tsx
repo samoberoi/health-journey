@@ -325,13 +325,13 @@ export default function Tour() {
                 Alone they help. Together, they transform. Your dashboard is set up around these five — one tab per pillar!
               </p>
 
-              <div className="mt-8 grid grid-cols-5 gap-2 max-w-md mx-auto">
+              <div className="mt-8 grid grid-cols-5 gap-1.5 max-w-md mx-auto px-1">
                 {PILLARS.map((pl) => (
-                  <div key={pl.key} className="flex flex-col items-center gap-1.5">
-                    <div className="w-10 h-10 rounded-xl text-white flex items-center justify-center overflow-hidden" style={{ backgroundImage: pl.gradient }}>
+                  <div key={pl.key} className="flex flex-col items-center gap-1.5 min-w-0">
+                    <div className="w-10 h-10 rounded-xl text-white flex items-center justify-center overflow-hidden shrink-0" style={{ backgroundImage: pl.gradient }}>
                       <pl.Icon className="w-5 h-5" strokeWidth={1.75} />
                     </div>
-                    <span className="text-[10px] font-semibold tracking-tight text-foreground/80">{pl.name.split(" ")[0]}</span>
+                    <span className="w-full text-center text-[9px] leading-tight font-semibold tracking-tight text-foreground/80 break-words">{pl.name.split(" ")[0]}</span>
                   </div>
                 ))}
               </div>

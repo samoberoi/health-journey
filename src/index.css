@@ -198,7 +198,6 @@
       scroll-behavior: auto !important;
     }
   }
-}
 
 @layer utilities {
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

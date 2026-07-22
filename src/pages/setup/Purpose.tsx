@@ -66,11 +66,13 @@ export default function Purpose() {
           })}
         </div>
 
-        <motion.button onClick={handleContinue} disabled={selected.length === 0}
-          className="gradient-blue text-primary-foreground font-bold py-4 rounded-xl glow-blue disabled:opacity-40 flex items-center justify-center gap-2"
-          whileTap={{ scale: 0.98 }}>
-          Continue <ArrowRight className="w-5 h-5" />
-        </motion.button>
+        <div className="ob-bottom">
+          <motion.button onClick={handleContinue} disabled={selected.length === 0}
+            className="ob-cta gradient-blue glow-blue disabled:opacity-40"
+            whileTap={{ scale: 0.98 }}>
+            Continue <ArrowRight className="w-5 h-5" />
+          </motion.button>
+        </div>
       </motion.div>
     </div>
   );

@@ -81,12 +81,12 @@ export default function BasicDetails() {
           </div>
         </div>
 
-        <div className="flex gap-3 mt-8 shrink-0">
+        <div className="ob-bottom flex gap-3 shrink-0">
           <button onClick={() => navigate("/setup/purpose")} className="w-14 h-14 rounded-xl flex items-center justify-center text-muted-foreground bg-card">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <motion.button onClick={handleContinue} disabled={!canProceed}
-            className="flex-1 gradient-blue text-primary-foreground font-bold py-4 rounded-xl glow-blue disabled:opacity-40 flex items-center justify-center gap-2"
+            className="ob-cta flex-1 gradient-blue glow-blue disabled:opacity-40"
             whileTap={{ scale: 0.98 }}>
             Continue <ArrowRight className="w-5 h-5" />
           </motion.button>

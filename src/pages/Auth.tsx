@@ -579,11 +579,13 @@ export default function Auth() {
                 )}
               </div>
 
-              <motion.button onClick={submitName} disabled={name.trim().length < 2 || !emailInput.trim() || loading}
-                className="ob-cta gradient-blue glow-blue disabled:opacity-40 mt-auto"
-                whileTap={{ scale: 0.98 }}>
-                {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <>Let's Go <ChevronRight className="w-4 h-4" /></>}
-              </motion.button>
+              <div className="ob-bottom">
+                <motion.button onClick={submitName} disabled={name.trim().length < 2 || !emailInput.trim() || loading}
+                  className="ob-cta gradient-blue glow-blue disabled:opacity-40"
+                  whileTap={{ scale: 0.98 }}>
+                  {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <>Let's Go <ChevronRight className="w-4 h-4" /></>}
+                </motion.button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

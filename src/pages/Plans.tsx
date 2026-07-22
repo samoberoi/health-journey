@@ -157,7 +157,7 @@ export default function Plans() {
           ))}
         </div>
 
-        <div className="flex flex-col gap-4 mb-6">
+        <div className="flex flex-col gap-7 mb-6">
           {pkgs.map((plan, i) => {
             const row = plan.pricing.find((r) => r.billing_cycle === cycle && r.enabled);
             if (!row) return null;

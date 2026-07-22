@@ -371,7 +371,7 @@ export default function Auth() {
               </div>
 
               {/* Bottom half content */}
-              <div className="flex flex-col flex-1 px-6 mobile-bottom-safe pt-8">
+              <div className="flex flex-col flex-1 px-6 pt-8 pb-[calc(env(safe-area-inset-bottom)+var(--bbdo-native-bottom-guard,0px)+1rem)]">
                 <h1 className="text-foreground text-[32px] leading-[1.05] font-black tracking-[-0.03em]">
                   What's your <br /> phone number?
                 </h1>

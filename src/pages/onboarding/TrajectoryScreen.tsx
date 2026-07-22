@@ -128,8 +128,9 @@ export default function TrajectoryScreen() {
                 labelStyle={{ color: "var(--bbdo-ink, #0F1A3D)", fontWeight: 800 }}
                 formatter={(value: number, name: string) => [
                   `${value} pts`,
-                  name === "current" ? "Without change" : "With BBDO",
+                  name === "current" ? "I shall pass for now" : "With BBDO",
                 ]}
+
               />
               {/* Downward trajectory — dashed red with soft fill */}
               <Area

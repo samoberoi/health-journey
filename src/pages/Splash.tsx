@@ -32,8 +32,8 @@ export default function Splash() {
     } catch {
       /* ignore */
     }
-    const tExit = window.setTimeout(() => setGone(true), 1400);
-    const tReady = window.setTimeout(() => setMinimumSplashDone(true), 1800);
+    const tExit = window.setTimeout(() => setGone(true), 1700);
+    const tReady = window.setTimeout(() => setMinimumSplashDone(true), 2100);
 
     return () => {
       window.clearTimeout(tExit);
@@ -78,6 +78,12 @@ export default function Splash() {
     { text: "&", color: "var(--bbdo-ink)" },
     { text: "Obesity", color: "var(--bbdo-blue)" },
   ];
+  const acronym = [
+    { text: "(", color: "var(--bbdo-ink)" },
+    { text: "BB", color: "var(--bbdo-red)" },
+    { text: "DO", color: "var(--bbdo-blue)" },
+    { text: ")", color: "var(--bbdo-ink)" },
+  ];
 
   return (
     <div className="min-h-dvh w-full relative overflow-hidden bg-background flex items-center justify-center px-6">
@@ -104,7 +110,7 @@ export default function Splash() {
           >
             {/* Logo mark */}
             <motion.div
-              className="w-20 h-20 rounded-2xl bg-white flex items-center justify-center mb-8"
+              className="w-28 h-28 rounded-2xl bg-white flex items-center justify-center mb-8"
               style={{
                 boxShadow:
                   "0 12px 32px -14px rgba(15,26,61,0.18), 0 0 0 1px rgba(15,26,61,0.04)",
@@ -116,7 +122,7 @@ export default function Splash() {
               <img
                 src={logoImg}
                 alt="BBDO"
-                className="w-12 h-12 object-contain"
+                className="w-20 h-20 object-contain"
                 onError={(e) => {
                   const t = e.currentTarget;
                   t.style.display = "none";
@@ -125,7 +131,7 @@ export default function Splash() {
             </motion.div>
 
             {/* Wordmark */}
-            <h1 className="flex flex-wrap justify-center gap-x-2 text-[26px] sm:text-[30px] font-black tracking-tight leading-none">
+            <h1 className="flex flex-wrap justify-center gap-x-2 text-[24px] sm:text-[28px] font-black tracking-tight leading-none">
               {wordmark.map((w, i) => (
                 <motion.span
                   key={i}
@@ -142,6 +148,18 @@ export default function Splash() {
                 </motion.span>
               ))}
             </h1>
+
+            {/* Acronym (BBDO) */}
+            <motion.h2
+              className="flex justify-center text-[28px] sm:text-[32px] font-black tracking-tight leading-none mt-3"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.95, duration: 0.45, ease: EASE }}
+            >
+              {acronym.map((w, i) => (
+                <span key={i} style={{ color: w.color }}>{w.text}</span>
+              ))}
+            </motion.h2>
 
             {/* Hairline */}
             <motion.div

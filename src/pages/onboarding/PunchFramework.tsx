@@ -45,16 +45,15 @@ export default function PunchFramework() {
           })}
         </div>
 
-        <motion.p
-          className="text-muted-foreground/60 text-xs text-center mt-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-        >
-          Alone they help. Together, they transform.
-        </motion.p>
-
         <motion.div className="ob-bottom" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}>
+          <motion.p
+            className="text-muted-foreground/70 text-xs text-center mb-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+          >
+            Alone they help. Together, they transform.
+          </motion.p>
           <motion.button onClick={() => navigate("/start-assessment")} className="ob-cta gradient-blue glow-blue" whileTap={{ scale: 0.98 }}>
             Let's personalise this <ArrowRight className="h-5 w-5" />
           </motion.button>

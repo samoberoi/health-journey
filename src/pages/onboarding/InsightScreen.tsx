@@ -1,13 +1,13 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ChevronRight, Lock, AlertTriangle, RefreshCw } from "lucide-react";
+import { ChevronRight, Lock, Heart, RefreshCw } from "lucide-react";
 import SoundToggle from "@/components/SoundToggle";
 import { setPhase } from "@/lib/musicEngine";
 
 const insights = [
   { title: "Insulin Resistance", desc: "When your cells stop responding to insulin, glucose stays in your blood.", icon: Lock },
-  { title: "Visceral Fat", desc: "Fat around organs worsens insulin resistance — a vicious cycle.", icon: AlertTriangle },
+  { title: "Visceral Fat", desc: "Fat around organs worsens insulin resistance — a vicious cycle.", icon: Heart },
   { title: "Lifestyle Triggers", desc: "Poor sleep, stress, and sedentary habits amplify metabolic dysfunction.", icon: RefreshCw },
 ];
 
@@ -20,7 +20,7 @@ export default function InsightScreen() {
       <SoundToggle />
       <div className="ob-content">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-          <span className="ob-kicker !text-destructive mb-2 flex items-center gap-1.5"><AlertTriangle className="h-3 w-3" /> Understanding Your Body</span>
+          <span className="ob-kicker !text-[color:var(--bbdo-red)] mb-2 flex items-center gap-1.5"><Heart className="h-3.5 w-3.5 fill-current" /> Understanding Your Body</span>
           <h1 className="ob-title mt-2">Here's what's happening <span className="text-primary">inside.</span></h1>
         </motion.div>
         <div className="ob-stack flex-1">

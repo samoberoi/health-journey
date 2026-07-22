@@ -464,7 +464,7 @@
   }
 
   html.bb-native.bb-android .phone-container {
-    scroll-padding-bottom: calc(var(--bbdo-native-bottom-guard) + 1.5rem);
+    scroll-padding-bottom: calc(var(--bbdo-native-bottom-guard) + 6.5rem);
   }
 
   .mobile-bottom-safe {
@@ -495,13 +495,16 @@
   html.bb-native.bb-android .ob-lock > .flex-1 {
     min-height: 100%;
     padding-top: calc(env(safe-area-inset-top) + var(--bbdo-native-top-guard, 0px) + 1.75rem) !important;
-    padding-bottom: calc(env(safe-area-inset-bottom) + var(--bbdo-native-bottom-guard, 0px) + 1rem) !important;
+    padding-bottom: calc(env(safe-area-inset-bottom) + var(--bbdo-native-bottom-guard, 0px) + 6rem) !important;
   }
   html.bb-native.bb-android .ob-content {
     padding-top: calc(1.75rem + env(safe-area-inset-top) + var(--bbdo-native-top-guard, 0px));
-    padding-bottom: calc(env(safe-area-inset-bottom) + var(--bbdo-native-bottom-guard, 0px) + 1rem);
+    padding-bottom: calc(env(safe-area-inset-bottom) + var(--bbdo-native-bottom-guard, 0px) + 6rem);
   }
   html.bb-native.bb-android .ob-bottom {
+    position: sticky;
+    bottom: calc(env(safe-area-inset-bottom) + var(--bbdo-native-bottom-guard, 0px) + 1rem);
+    z-index: 20;
     margin-top: auto;
     padding-top: 1rem;
     background: transparent;

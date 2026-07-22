@@ -1966,9 +1966,11 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
       {/* ─── Apple Health snapshot ─── */}
       <AppleHealthSnapshotCard />
 
+      {/* ─── Last night's sleep breakdown ─── */}
+      <SleepBreakdownCard />
+
       {/* ─── Apple Watch ECG ─── */}
       <AppleHealthEcgCard />
-      <SleepBreakdownCard />
 
 
       {/* ─── Apple Health 30-day trends ─── */}

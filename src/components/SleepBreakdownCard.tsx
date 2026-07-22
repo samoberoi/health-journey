@@ -34,6 +34,11 @@ function fmt(min?: number) {
   return `${h}h ${m}m`;
 }
 
+function fmtSleepHours(hours?: number) {
+  if (hours == null || hours <= 0) return "—";
+  return fmt(hours * 60);
+}
+
 function fmtTime(iso?: string) {
   if (!iso) return "—";
   try {
@@ -76,7 +81,9 @@ export default function SleepBreakdownCard() {
     const core = snap?.sleepCoreMin ?? 0;
     const deep = snap?.sleepDeepMin ?? 0;
     const unspec = snap?.sleepUnspecifiedMin ?? 0;
-    const asleep = rem + core + deep + unspec;
+    const reportedAsleep = (snap?.sleepHours ?? 0) * 60;
+    const stagedAsleep = rem + core + deep + unspec;
+    const asleep = stagedAsleep > 0 ? stagedAsleep : reportedAsleep;
     return { awake, rem, core, deep, unspec, asleep, total: asleep + awake };
   }, [snap]);
 
@@ -106,7 +113,7 @@ export default function SleepBreakdownCard() {
             </p>
             <p className="text-base font-black text-foreground flex items-center gap-1.5">
               <Moon className="h-4 w-4 text-primary" />
-              {fmt(totals.asleep)} asleep
+              {fmt(totals.asleep) !== "—" ? fmt(totals.asleep) : fmtSleepHours(snap?.sleepHours)} asleep
             </p>
             {(snap?.sleepStart || snap?.sleepEnd) && (
               <p className="mt-0.5 text-[11px] font-medium text-muted-foreground truncate">
@@ -144,7 +151,9 @@ export default function SleepBreakdownCard() {
                   <span className="h-2 w-2 rounded-full shrink-0" style={{ background: s.color }} />
                   <span className="truncate">{s.label}</span>
                 </div>
-                <div className="mt-0.5 text-sm font-black leading-tight text-foreground truncate">{fmt(v)}</div>
+                <div className="mt-0.5 text-sm font-black leading-tight text-foreground truncate">
+                  {fmt(v)}
+                </div>
                 <div className="text-[9px] font-medium text-muted-foreground truncate">
                   {totals.total > 0 ? `${Math.round(pct(v))}%` : "—"}
                 </div>

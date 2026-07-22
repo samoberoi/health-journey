@@ -260,6 +260,65 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         healthStore.execute(q)
     }
 
+    private enum BBDOSleepStage {
+        case ignored
+        case inBed
+        case unspecified
+        case core
+        case deep
+        case rem
+        case awake
+    }
+
+    private func sleepStage(for rawValue: Int) -> BBDOSleepStage {
+        if #available(iOS 16.0, *) {
+            switch rawValue {
+            case HKCategoryValueSleepAnalysis.awake.rawValue:
+                return .awake
+            case HKCategoryValueSleepAnalysis.asleepREM.rawValue:
+                return .rem
+            case HKCategoryValueSleepAnalysis.asleepCore.rawValue:
+                return .core
+            case HKCategoryValueSleepAnalysis.asleepDeep.rawValue:
+                return .deep
+            case HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue:
+                return .unspecified
+            case HKCategoryValueSleepAnalysis.inBed.rawValue:
+                return .inBed
+            default:
+                return .ignored
+            }
+        }
+
+        if rawValue == HKCategoryValueSleepAnalysis.asleep.rawValue { return .unspecified }
+        if rawValue == HKCategoryValueSleepAnalysis.inBed.rawValue { return .inBed }
+        return .ignored
+    }
+
+    private func isAsleepStage(_ stage: BBDOSleepStage) -> Bool {
+        switch stage {
+        case .unspecified, .core, .deep, .rem:
+            return true
+        default:
+            return false
+        }
+    }
+
+    private func sleepStagePriority(_ stage: BBDOSleepStage) -> Int {
+        switch stage {
+        case .awake:
+            return 5
+        case .rem, .core, .deep:
+            return 4
+        case .unspecified:
+            return 2
+        case .inBed:
+            return 1
+        case .ignored:
+            return 0
+        }
+    }
+
     /// Returns per-stage sleep minutes for last night plus bedtime / wake times.
     private func lastNightSleepBreakdown(completion: @escaping (_ awakeMin: Double, _ remMin: Double, _ coreMin: Double, _ deepMin: Double, _ unspecifiedMin: Double, _ sleepStart: Date?, _ sleepEnd: Date?) -> Void) {
         guard let sleepType = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) else {
@@ -270,83 +329,112 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         var comps = cal.dateComponents([.year, .month, .day], from: now)
         comps.hour = 12
         let noonToday = cal.date(from: comps) ?? now
-        let start = cal.date(byAdding: .hour, value: -18, to: noonToday) ?? now
+        let start = cal.date(byAdding: .hour, value: -24, to: noonToday) ?? now
         let predicate = HKQuery.predicateForSamples(withStart: start, end: noonToday, options: [])
         let q = HKSampleQuery(sampleType: sleepType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, samples, _ in
             let all = (samples as? [HKCategorySample]) ?? []
 
-            // Determine which sources recorded staged sleep (REM/Core/Deep).
-            // Apple Watch typically writes staged samples; iPhone / third-party
-            // apps may only write generic "asleep" samples that overlap the same
-            // window. If we sum both we double-count and stages read as 0.
-            var stagedSources = Set<String>()
-            if #available(iOS 16.0, *) {
-                for s in all {
-                    switch s.value {
-                    case HKCategoryValueSleepAnalysis.asleepREM.rawValue,
-                         HKCategoryValueSleepAnalysis.asleepCore.rawValue,
-                         HKCategoryValueSleepAnalysis.asleepDeep.rawValue:
-                        stagedSources.insert(s.sourceRevision.source.bundleIdentifier)
-                    default:
-                        break
-                    }
+            // Apple Health can return overlapping records: iPhone may write one
+            // generic "asleep" block while Apple Watch writes REM/Core/Deep/awake
+            // segments inside the same block. Summing samples directly hides the
+            // real stages. Instead, find last night's sleep session, split it at
+            // every HealthKit boundary, then choose the most specific stage for
+            // each interval. This preserves Watch stages and ignores duplicate
+            // generic asleep data only where a stage exists.
+            let asleepSamples = all
+                .filter { self.isAsleepStage(self.sleepStage(for: $0.value)) }
+                .sorted { $0.startDate < $1.startDate }
+
+            guard !asleepSamples.isEmpty else {
+                completion(0, 0, 0, 0, 0, nil, nil)
+                return
+            }
+
+            let maxSessionGap: TimeInterval = 90 * 60
+            var sessions: [(start: Date, end: Date)] = []
+            var currentStart: Date? = nil
+            var currentEnd: Date? = nil
+
+            for sample in asleepSamples {
+                if currentStart == nil || currentEnd == nil {
+                    currentStart = sample.startDate
+                    currentEnd = sample.endDate
+                    continue
+                }
+
+                if sample.startDate.timeIntervalSince(currentEnd!) <= maxSessionGap {
+                    if sample.endDate > currentEnd! { currentEnd = sample.endDate }
+                } else {
+                    sessions.append((start: currentStart!, end: currentEnd!))
+                    currentStart = sample.startDate
+                    currentEnd = sample.endDate
                 }
             }
-            let preferStaged = !stagedSources.isEmpty
+            if let cs = currentStart, let ce = currentEnd {
+                sessions.append((start: cs, end: ce))
+            }
+
+            guard let sleepSession = sessions
+                .filter({ $0.end.timeIntervalSince($0.start) >= 20 * 60 })
+                .max(by: { $0.end < $1.end }) else {
+                completion(0, 0, 0, 0, 0, nil, nil)
+                return
+            }
+
+            let sessionStart = sleepSession.start
+            let sessionEnd = sleepSession.end
+            let relevant = all.filter { $0.endDate > sessionStart && $0.startDate < sessionEnd }
+            var boundaries = Set<Date>()
+            boundaries.insert(sessionStart)
+            boundaries.insert(sessionEnd)
+            for sample in relevant {
+                boundaries.insert(max(sample.startDate, sessionStart))
+                boundaries.insert(min(sample.endDate, sessionEnd))
+            }
+            let points = boundaries.sorted()
 
             var awake: TimeInterval = 0
             var rem: TimeInterval = 0
             var core: TimeInterval = 0
             var deep: TimeInterval = 0
             var unspec: TimeInterval = 0
-            var asleepStart: Date? = nil
-            var asleepEnd: Date? = nil
 
-            for s in all {
-                let dur = s.endDate.timeIntervalSince(s.startDate)
-                let val = s.value
-                let bundle = s.sourceRevision.source.bundleIdentifier
-                var isAsleep = false
+            if points.count >= 2 {
+                for idx in 0..<(points.count - 1) {
+                    let segmentStart = points[idx]
+                    let segmentEnd = points[idx + 1]
+                    let duration = segmentEnd.timeIntervalSince(segmentStart)
+                    if duration <= 0 { continue }
 
-                if #available(iOS 16.0, *) {
-                    // When at least one source recorded staged sleep, only
-                    // count samples from those sources so we don't double-add
-                    // generic "asleep" samples from a different source.
-                    if preferStaged && !stagedSources.contains(bundle) { continue }
+                    var chosenStage = BBDOSleepStage.ignored
+                    for sample in relevant {
+                        if sample.startDate < segmentEnd && sample.endDate > segmentStart {
+                            let stage = self.sleepStage(for: sample.value)
+                            if self.sleepStagePriority(stage) > self.sleepStagePriority(chosenStage) {
+                                chosenStage = stage
+                            }
+                        }
+                    }
 
-                    switch val {
-                    case HKCategoryValueSleepAnalysis.awake.rawValue:
-                        awake += dur
-                    case HKCategoryValueSleepAnalysis.asleepREM.rawValue:
-                        rem += dur; isAsleep = true
-                    case HKCategoryValueSleepAnalysis.asleepCore.rawValue:
-                        core += dur; isAsleep = true
-                    case HKCategoryValueSleepAnalysis.asleepDeep.rawValue:
-                        deep += dur; isAsleep = true
-                    case HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue:
-                        // Only bucket as unspecified when we don't have staged
-                        // data — otherwise this legacy value is duplicating
-                        // the REM/Core/Deep totals.
-                        if !preferStaged { unspec += dur; isAsleep = true }
-                    case HKCategoryValueSleepAnalysis.inBed.rawValue:
-                        break // ignore "in bed" — not sleep
+                    switch chosenStage {
+                    case .awake:
+                        awake += duration
+                    case .rem:
+                        rem += duration
+                    case .core:
+                        core += duration
+                    case .deep:
+                        deep += duration
+                    case .unspecified:
+                        unspec += duration
                     default:
                         break
                     }
-                } else {
-                    if val == HKCategoryValueSleepAnalysis.asleep.rawValue {
-                        unspec += dur; isAsleep = true
-                    } else if val == HKCategoryValueSleepAnalysis.awake.rawValue {
-                        awake += dur
-                    }
-                }
-
-                if isAsleep {
-                    if asleepStart == nil || s.startDate < asleepStart! { asleepStart = s.startDate }
-                    if asleepEnd == nil || s.endDate > asleepEnd! { asleepEnd = s.endDate }
                 }
             }
-            completion(awake / 60.0, rem / 60.0, core / 60.0, deep / 60.0, unspec / 60.0, asleepStart, asleepEnd)
+
+            bbdoNativeLog("Sleep breakdown samples=\(all.count) relevant=\(relevant.count) REM=\(Int(rem / 60)) Core=\(Int(core / 60)) Deep=\(Int(deep / 60)) Awake=\(Int(awake / 60)) Unspecified=\(Int(unspec / 60))")
+            completion(awake / 60.0, rem / 60.0, core / 60.0, deep / 60.0, unspec / 60.0, sessionStart, sessionEnd)
         }
         healthStore.execute(q)
     }

@@ -16,7 +16,7 @@ export default function ProjectionPreview() {
   ];
 
   return (
-    <div className="phone-container ob-lock min-h-dvh flex flex-col px-6 pt-10 pb-6 bg-background">
+    <div className="phone-container ob-lock min-h-dvh flex flex-col px-6 pt-[calc(env(safe-area-inset-top)+2rem)] mobile-bottom-safe bg-background">
       <SoundToggle />
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-5">
         <span className="text-xs font-semibold text-primary uppercase tracking-[0.2em]">Your Potential</span>
@@ -49,8 +49,8 @@ export default function ProjectionPreview() {
         <p className="text-[12px] leading-5 text-muted-foreground">For a sharper projection, we need a few more details about your health.</p>
       </motion.div>
 
-      <motion.div className="mt-auto pt-4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1 }}>
-        <motion.button onClick={() => navigate("/setup/deep-profiling")} className="w-full gradient-blue text-primary-foreground font-bold py-3.5 rounded-full glow-blue flex items-center justify-center gap-2" whileTap={{ scale: 0.98 }}>
+      <motion.div className="ob-bottom" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1 }}>
+        <motion.button onClick={() => navigate("/setup/deep-profiling")} className="ob-cta gradient-blue glow-blue" whileTap={{ scale: 0.98 }}>
           Continue to detailed assessment <ChevronRight className="h-5 w-5" />
         </motion.button>
       </motion.div>

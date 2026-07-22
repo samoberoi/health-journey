@@ -216,7 +216,7 @@ export default function Plans() {
                       isPopular
                         ? "gradient-blue text-primary-foreground glow-blue"
                         : plan.accent === "premium"
-                        ? "bg-gradient-to-r from-amber-200 via-amber-300 to-amber-400 text-amber-950 shadow-md shadow-amber-300/50"
+                        ? "bg-amber-300 text-amber-950 shadow-md shadow-amber-300/60"
                         : "bg-amber-100 text-amber-900"
                     )}
                   >

@@ -33,7 +33,7 @@ export default function Splash() {
       /* ignore */
     }
     const tExit = window.setTimeout(() => setGone(true), 1700);
-    const tReady = window.setTimeout(() => setMinimumSplashDone(true), 2100);
+    const tReady = window.setTimeout(() => setMinimumSplashDone(true), 2000);
 
     return () => {
       window.clearTimeout(tExit);

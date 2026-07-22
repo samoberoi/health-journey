@@ -30,11 +30,11 @@ export default function ScoreInterpretation() {
       <div className="absolute inset-0 z-0" style={{ background: `radial-gradient(ellipse at top, ${ambientGlow}, transparent 60%)` }} />
       <div className="relative z-10 flex flex-col flex-1">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="flex items-center gap-2 mb-2">
-            <Shield className="w-4 h-4 text-primary" strokeWidth={1.5} />
+          <div className="flex items-center gap-2 mb-3 leading-none">
+            <Shield className="w-4 h-4 text-primary shrink-0" strokeWidth={2} />
             <span className="text-xs font-semibold text-primary uppercase tracking-[0.2em]">Score Analysis</span>
           </div>
-          <h1 className="text-3xl font-black text-foreground mb-2">Your score is <span className={interp.tone}>{score}</span></h1>
+          <h1 className="text-3xl font-black text-foreground leading-tight">Your score is <span className={interp.tone}>{score}</span></h1>
         </motion.div>
 
         <div className="flex flex-col gap-5 flex-1 mt-8">

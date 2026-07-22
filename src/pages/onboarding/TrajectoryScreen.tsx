@@ -51,7 +51,7 @@ export default function TrajectoryScreen() {
   return (
     <div className="phone-container ob-lock min-h-dvh flex flex-col overflow-x-hidden">
       <SoundToggle />
-      <div className="flex-1 flex flex-col px-5 pt-[calc(env(safe-area-inset-top)+1rem)] mobile-bottom-safe">
+      <div className="flex-1 flex flex-col px-5 pt-[calc(env(safe-area-inset-top)+2rem)] mobile-bottom-safe">
         <HeroCard variant="navy" className="pb-5">
           <p className="bbdo-eyebrow text-white mb-2">Health Score Trajectory</p>
           <h1 className="text-[24px] leading-[1.05] font-extrabold tracking-tight text-white">

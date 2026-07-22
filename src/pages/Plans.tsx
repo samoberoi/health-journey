@@ -184,8 +184,14 @@ export default function Plans() {
                   "relative p-5 rounded-2xl transition-colors text-left liquid-glass",
                   isSelected && "shadow-xl shadow-primary/25 ring-2 ring-primary/40 z-10",
                   isPopular && !isSelected && !isCurrent && "ring-1 ring-primary/20",
+                  plan.accent === "premium" && !isCurrent && "ring-2 ring-amber-400/70 shadow-lg shadow-amber-500/20",
                   isCurrent && "opacity-60 cursor-not-allowed ring-1 ring-success/40"
                 )}
+                style={
+                  plan.accent === "premium" && !isCurrent
+                    ? { background: "linear-gradient(140deg, rgba(253,224,71,0.18) 0%, rgba(251,191,36,0.10) 45%, rgba(255,255,255,0.85) 100%)" }
+                    : undefined
+                }
               >
                 {isSelected && (
                   <motion.div
@@ -210,14 +216,16 @@ export default function Plans() {
                       isPopular
                         ? "gradient-blue text-primary-foreground glow-blue"
                         : plan.accent === "premium"
-                        ? "bg-destructive text-destructive-foreground"
+                        ? "bg-gradient-to-r from-amber-300 to-amber-500 text-emerald-800 shadow-md shadow-amber-500/40"
                         : "bg-amber-100 text-amber-900"
                     )}
                   >
                     {isPopular && <Star className="w-3 h-3" strokeWidth={1.5} />}
+                    {plan.accent === "premium" && <Star className="w-3 h-3 fill-emerald-700 text-emerald-700" strokeWidth={1.5} />}
                     {plan.badge}
                   </div>
                 ) : null}
+
                 <div className="flex items-start justify-between mb-4 mt-1 gap-3">
                   <div>
                     <p className="text-foreground font-bold text-base">{plan.name}</p>

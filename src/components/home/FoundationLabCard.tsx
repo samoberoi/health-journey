@@ -29,6 +29,9 @@ export default function FoundationLabCard({ userId }: Props) {
   const [open, setOpen] = useState(false);
   const [basicCode, setBasicCode] = useState<string | null>(null);
   const [basicPrice, setBasicPrice] = useState<{ price: number; original: number } | null>(null);
+  const [basicId, setBasicId] = useState<string | null>(null);
+  const [basicName, setBasicName] = useState<string | null>(null);
+  const [showDetails, setShowDetails] = useState(false);
   const [booking, setBooking] = useState(false);
   const markupPct = useLabTestMarkup();
 

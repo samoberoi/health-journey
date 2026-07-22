@@ -273,6 +273,27 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         let start = cal.date(byAdding: .hour, value: -18, to: noonToday) ?? now
         let predicate = HKQuery.predicateForSamples(withStart: start, end: noonToday, options: [])
         let q = HKSampleQuery(sampleType: sleepType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, samples, _ in
+            let all = (samples as? [HKCategorySample]) ?? []
+
+            // Determine which sources recorded staged sleep (REM/Core/Deep).
+            // Apple Watch typically writes staged samples; iPhone / third-party
+            // apps may only write generic "asleep" samples that overlap the same
+            // window. If we sum both we double-count and stages read as 0.
+            var stagedSources = Set<String>()
+            if #available(iOS 16.0, *) {
+                for s in all {
+                    switch s.value {
+                    case HKCategoryValueSleepAnalysis.asleepREM.rawValue,
+                         HKCategoryValueSleepAnalysis.asleepCore.rawValue,
+                         HKCategoryValueSleepAnalysis.asleepDeep.rawValue:
+                        stagedSources.insert(s.sourceRevision.source.bundleIdentifier)
+                    default:
+                        break
+                    }
+                }
+            }
+            let preferStaged = !stagedSources.isEmpty
+
             var awake: TimeInterval = 0
             var rem: TimeInterval = 0
             var core: TimeInterval = 0
@@ -280,18 +301,37 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
             var unspec: TimeInterval = 0
             var asleepStart: Date? = nil
             var asleepEnd: Date? = nil
-            for s in (samples as? [HKCategorySample]) ?? [] {
+
+            for s in all {
                 let dur = s.endDate.timeIntervalSince(s.startDate)
                 let val = s.value
+                let bundle = s.sourceRevision.source.bundleIdentifier
                 var isAsleep = false
+
                 if #available(iOS 16.0, *) {
+                    // When at least one source recorded staged sleep, only
+                    // count samples from those sources so we don't double-add
+                    // generic "asleep" samples from a different source.
+                    if preferStaged && !stagedSources.contains(bundle) { continue }
+
                     switch val {
-                    case HKCategoryValueSleepAnalysis.awake.rawValue: awake += dur
-                    case HKCategoryValueSleepAnalysis.asleepREM.rawValue: rem += dur; isAsleep = true
-                    case HKCategoryValueSleepAnalysis.asleepCore.rawValue: core += dur; isAsleep = true
-                    case HKCategoryValueSleepAnalysis.asleepDeep.rawValue: deep += dur; isAsleep = true
-                    case HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue: unspec += dur; isAsleep = true
-                    default: break
+                    case HKCategoryValueSleepAnalysis.awake.rawValue:
+                        awake += dur
+                    case HKCategoryValueSleepAnalysis.asleepREM.rawValue:
+                        rem += dur; isAsleep = true
+                    case HKCategoryValueSleepAnalysis.asleepCore.rawValue:
+                        core += dur; isAsleep = true
+                    case HKCategoryValueSleepAnalysis.asleepDeep.rawValue:
+                        deep += dur; isAsleep = true
+                    case HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue:
+                        // Only bucket as unspecified when we don't have staged
+                        // data — otherwise this legacy value is duplicating
+                        // the REM/Core/Deep totals.
+                        if !preferStaged { unspec += dur; isAsleep = true }
+                    case HKCategoryValueSleepAnalysis.inBed.rawValue:
+                        break // ignore "in bed" — not sleep
+                    default:
+                        break
                     }
                 } else {
                     if val == HKCategoryValueSleepAnalysis.asleep.rawValue {
@@ -300,6 +340,7 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
                         awake += dur
                     }
                 }
+
                 if isAsleep {
                     if asleepStart == nil || s.startDate < asleepStart! { asleepStart = s.startDate }
                     if asleepEnd == nil || s.endDate > asleepEnd! { asleepEnd = s.endDate }

@@ -25,6 +25,13 @@ const STAGES: Stage[] = [
   { key: "sleepDeepMin",  label: "Deep",  hint: "Physical recovery & repair",       color: "hsl(var(--primary))" },
 ];
 
+const UNSPECIFIED_STAGE: Stage = {
+  key: "sleepUnspecifiedMin",
+  label: "Asleep",
+  hint: "Sleep recorded without stage labels",
+  color: "hsl(var(--muted-foreground))",
+};
+
 function fmt(min?: number) {
   if (min == null || min <= 0) return "—";
   const h = Math.floor(min / 60);
@@ -95,6 +102,8 @@ export default function SleepBreakdownCard() {
   const bedtime = fmtTime(snap?.sleepStart);
   const wakeTime = fmtTime(snap?.sleepEnd);
   const nightLabel = fmtDateLabel(snap?.sleepStart);
+  const hasSpecificSleepStages = totals.rem + totals.core + totals.deep > 0;
+  const visibleStages = hasSpecificSleepStages ? STAGES : [...STAGES, UNSPECIFIED_STAGE];
 
   return (
     <>
@@ -128,7 +137,7 @@ export default function SleepBreakdownCard() {
 
         {/* Stacked bar */}
         <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted">
-          {STAGES.map((s) => {
+          {visibleStages.map((s) => {
             const v = (snap?.[s.key] as number | undefined) ?? 0;
             const w = pct(v);
             if (w <= 0) return null;
@@ -143,7 +152,7 @@ export default function SleepBreakdownCard() {
         </div>
 
         <div className="mt-3 grid grid-cols-4 gap-2">
-          {STAGES.map((s) => {
+          {visibleStages.map((s) => {
             const v = (snap?.[s.key] as number | undefined) ?? 0;
             return (
               <div key={s.key} className="rounded-xl border border-border bg-background/60 px-2 py-1.5 min-w-0">
@@ -206,7 +215,7 @@ export default function SleepBreakdownCard() {
                 Stages
               </p>
               <div className="flex h-3 w-full overflow-hidden rounded-full bg-muted">
-                {STAGES.map((s) => {
+                {visibleStages.map((s) => {
                   const v = (snap?.[s.key] as number | undefined) ?? 0;
                   const w = pct(v);
                   if (w <= 0) return null;
@@ -216,7 +225,7 @@ export default function SleepBreakdownCard() {
                 })}
               </div>
               <div className="mt-3 space-y-2">
-                {STAGES.map((s) => {
+                {visibleStages.map((s) => {
                   const v = (snap?.[s.key] as number | undefined) ?? 0;
                   const isAwake = s.key === "sleepAwakeMin";
                   const stagePct = isAwake ? pct(v) : asleepPct(v);

@@ -93,12 +93,14 @@ export default function FoundationLabCard({ userId }: Props) {
     (async () => {
       const { data } = await supabase
         .from("thyrocare_tests" as any)
-        .select("product_code, product_name, offer_rate, rate, markup_pct")
+        .select("id, product_code, product_name, offer_rate, rate, markup_pct")
         .eq("is_active", true);
-      const list = ((data as any) || []) as { product_code: string; product_name: string; offer_rate: number | null; rate: number | null; markup_pct: number | null }[];
+      const list = ((data as any) || []) as { id: string; product_code: string; product_name: string; offer_rate: number | null; rate: number | null; markup_pct: number | null }[];
       const basic = list.find((t) => (t.product_name || "").toUpperCase().includes("BASIC"));
       if (!cancelled && basic) {
         setBasicCode(basic.product_code);
+        setBasicId(basic.id);
+        setBasicName(basic.product_name);
         const price = patientPriceFor(basic.offer_rate ?? basic.rate, basic.markup_pct, markupPct) ?? 0;
         const original = Number(basic.rate || 0);
         setBasicPrice({ price, original });

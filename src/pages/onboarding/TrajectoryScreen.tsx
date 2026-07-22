@@ -199,7 +199,7 @@ export default function TrajectoryScreen() {
         </motion.div>
 
         <motion.div
-          className="pt-3 mt-auto flex justify-end shrink-0"
+          className="ob-bottom flex justify-end"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}

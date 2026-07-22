@@ -87,7 +87,7 @@ export default function TrajectoryScreen() {
           </div>
 
           <ResponsiveContainer width="100%" height={170}>
-            <AreaChart data={data} margin={{ top: 8, right: 6, left: -18, bottom: 0 }}>
+            <AreaChart data={data} margin={{ top: 8, right: 8, left: 4, bottom: 0 }}>
               <defs>
                 <linearGradient id="gradImproved" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="var(--bbdo-blue, #1E3A8A)" stopOpacity={0.35} />
@@ -112,7 +112,8 @@ export default function TrajectoryScreen() {
                 tickLine={false}
                 domain={[0, 100]}
                 ticks={[0, 25, 50, 75, 100]}
-                width={36}
+                width={32}
+                tickMargin={4}
               />
 
               <Tooltip

@@ -161,20 +161,20 @@ export default function TrajectoryScreen() {
 
           {/* Delta strip */}
           <div className="grid grid-cols-2 gap-2 mt-3">
-            <div className="rounded-xl px-3 py-2.5 flex items-center gap-2" style={{ background: "rgba(230,57,70,0.08)" }}>
-              <TrendingDown className="w-4 h-4" style={{ color: "var(--bbdo-red, #E63946)" }} strokeWidth={2} />
-              <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-bbdo-ink-soft">I shall pass for now</p>
-                <p className="text-[15px] font-black tabular-nums" style={{ color: "var(--bbdo-red, #E63946)" }}>
+            <div className="rounded-xl px-3 py-2.5 flex items-start gap-2 text-left" style={{ background: "rgba(230,57,70,0.08)" }}>
+              <TrendingDown className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "var(--bbdo-red, #E63946)" }} strokeWidth={2} />
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-bbdo-ink-soft leading-tight">I shall pass for now</p>
+                <p className="text-[15px] font-black tabular-nums mt-0.5" style={{ color: "var(--bbdo-red, #E63946)" }}>
                   {data[data.length - 1].current}
                 </p>
               </div>
             </div>
-            <div className="rounded-xl px-3 py-2.5 flex items-center gap-2" style={{ background: "rgba(30,58,138,0.08)" }}>
-              <TrendingUp className="w-4 h-4" style={{ color: "var(--bbdo-blue, #1E3A8A)" }} strokeWidth={2} />
-              <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-bbdo-ink-soft">With BBDO</p>
-                <p className="text-[15px] font-black tabular-nums" style={{ color: "var(--bbdo-blue, #1E3A8A)" }}>
+            <div className="rounded-xl px-3 py-2.5 flex items-start gap-2 text-left" style={{ background: "rgba(30,58,138,0.08)" }}>
+              <TrendingUp className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "var(--bbdo-blue, #1E3A8A)" }} strokeWidth={2} />
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-bbdo-ink-soft leading-tight">With BBDO</p>
+                <p className="text-[15px] font-black tabular-nums mt-0.5" style={{ color: "var(--bbdo-blue, #1E3A8A)" }}>
                   {data[data.length - 1].improved}
                 </p>
               </div>

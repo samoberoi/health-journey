@@ -189,7 +189,7 @@ export default function Plans() {
                 )}
                 style={
                   plan.accent === "premium" && !isCurrent
-                    ? { background: "linear-gradient(140deg, rgba(253,224,71,0.18) 0%, rgba(251,191,36,0.10) 45%, rgba(255,255,255,0.85) 100%)" }
+                    ? { background: "linear-gradient(140deg, hsl(45 95% 62%) 0%, hsl(42 92% 55%) 55%, hsl(38 90% 48%) 100%)" }
                     : undefined
                 }
               >

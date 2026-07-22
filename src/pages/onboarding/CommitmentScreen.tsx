@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Users, Stethoscope, CalendarCheck, HeartHandshake } from "lucide-react";
+import { ArrowRight, Users, Compass, CalendarCheck, HeartHandshake } from "lucide-react";
 import SoundToggle from "@/components/SoundToggle";
 import { setPhase } from "@/lib/musicEngine";
 
@@ -9,7 +9,7 @@ const supports = [
   { icon: CalendarCheck, label: "Your daily plan", desc: "Meals, movement, and habits mapped out" },
   { icon: Users, label: "Your community", desc: "Thousands walking this journey with you" },
   { icon: HeartHandshake, label: "Your support system", desc: "Coaching, guidance, and regular check-ins" },
-  { icon: Stethoscope, label: "Expert Guidance", desc: "Coach Review and Close Support" },
+  { icon: Compass, label: "Expert Guidance", desc: "Coach Review and Close Support" },
 
 ];
 

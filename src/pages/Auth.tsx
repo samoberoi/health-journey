@@ -542,9 +542,10 @@ export default function Auth() {
           {step === "name" && (
             <motion.div key="name" className="flex flex-col flex-1" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}>
               <motion.div className="mt-1 mb-6 flex flex-col items-center" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-                <div className="w-16 h-16 rounded-full flex items-center justify-center mb-3 bbdo-card overflow-hidden">
-                  <img src={logoImg} alt="Bye Bye Diabetes" className="w-12 h-12 object-cover rounded-full" />
+                <div className="w-24 h-24 rounded-full flex items-center justify-center mb-3 bbdo-card overflow-hidden">
+                  <img src={logoImg} alt="Bye Bye Diabetes" className="w-20 h-20 object-cover rounded-full" />
                 </div>
+
                 <h1 className="text-foreground font-black text-[19px] tracking-tight">Welcome aboard</h1>
                 <p className="text-muted-foreground text-[12px] text-center mt-1 max-w-[240px] leading-relaxed">
                   Just a couple of details to personalise your plan.

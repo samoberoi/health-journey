@@ -102,8 +102,8 @@ export default function SleepBreakdownCard() {
   const bedtime = fmtTime(snap?.sleepStart);
   const wakeTime = fmtTime(snap?.sleepEnd);
   const nightLabel = fmtDateLabel(snap?.sleepStart);
-  const hasSpecificSleepStages = totals.rem + totals.core + totals.deep > 0;
-  const visibleStages = hasSpecificSleepStages ? STAGES : [STAGES[0], UNSPECIFIED_STAGE];
+  const hasUnstagedSleep = totals.unspec > 0;
+  const visibleStages = hasUnstagedSleep ? [...STAGES, UNSPECIFIED_STAGE] : STAGES;
 
   return (
     <>
@@ -228,6 +228,7 @@ export default function SleepBreakdownCard() {
                 {visibleStages.map((s) => {
                   const v = (snap?.[s.key] as number | undefined) ?? 0;
                   const isAwake = s.key === "sleepAwakeMin";
+                  const isUnstaged = s.key === "sleepUnspecifiedMin";
                   const stagePct = isAwake ? pct(v) : asleepPct(v);
                   return (
                     <div key={s.key} className="rounded-xl border border-border bg-background/60 p-3">
@@ -242,7 +243,7 @@ export default function SleepBreakdownCard() {
                         <div className="text-right shrink-0">
                           <p className="text-sm font-black text-foreground">{fmt(v)}</p>
                           <p className="text-[10px] font-medium text-muted-foreground">
-                            {v > 0 ? `${Math.round(stagePct)}%${isAwake ? "" : " of asleep"}` : "—"}
+                            {v > 0 ? `${Math.round(stagePct)}%${isAwake || isUnstaged ? "" : " of asleep"}` : "—"}
                           </p>
                         </div>
                       </div>

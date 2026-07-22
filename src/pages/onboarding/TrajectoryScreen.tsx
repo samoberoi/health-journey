@@ -74,8 +74,9 @@ export default function TrajectoryScreen() {
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full" style={{ background: "var(--bbdo-red, #E63946)" }} />
               <span className="text-[10px] font-bold text-bbdo-ink-soft uppercase tracking-wider">
-                Without change
+                I shall pass for now
               </span>
+
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full" style={{ background: "var(--bbdo-blue, #1E3A8A)" }} />

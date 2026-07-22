@@ -67,8 +67,8 @@ export function LabTestParametersDialog({ open, onOpenChange, testId, testName, 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-        <DialogHeader>
+      <DialogContent className="w-[calc(100vw-1.5rem)] max-w-2xl max-h-[calc(100dvh-1.5rem)] overflow-hidden flex flex-col p-0">
+        <DialogHeader className="shrink-0 px-5 pt-5 pb-3 border-b border-border">
           <DialogTitle className="flex items-center gap-2">
             <FlaskConical className="w-5 h-5 text-primary" />
             {testName || "Parameters covered"}
@@ -83,7 +83,7 @@ export function LabTestParametersDialog({ open, onOpenChange, testId, testName, 
           </DialogDescription>
         </DialogHeader>
 
-        <div className="overflow-y-auto pr-1 -mr-1 space-y-4">
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 pt-4 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] space-y-4">
           {loading ? (
             <div className="flex items-center justify-center py-12 text-muted-foreground">
               <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading parameters…

@@ -111,8 +111,10 @@ export default function TrajectoryScreen() {
                 axisLine={false}
                 tickLine={false}
                 domain={[0, 100]}
-                width={32}
+                ticks={[0, 25, 50, 75, 100]}
+                width={36}
               />
+
               <Tooltip
                 cursor={{ stroke: "rgba(15,26,61,0.15)", strokeWidth: 1 }}
                 contentStyle={{

@@ -24,6 +24,8 @@ export type HealthSnapshot = {
   sleepCoreMin?: number;
   sleepDeepMin?: number;
   sleepUnspecifiedMin?: number;
+  sleepStart?: string;
+  sleepEnd?: string;
 };
 
 export type EcgReading = {

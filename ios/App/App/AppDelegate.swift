@@ -271,25 +271,18 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     private func sleepStage(for rawValue: Int) -> BBDOSleepStage {
-        // Keep this numeric first. Apple Watch sleep stages are HealthKit raw
-        // category values and can still be returned on devices where the SDK
-        // availability wrappers are not a reliable runtime discriminator.
-        switch rawValue {
-        case 5:
-            return .rem
-        case 4:
-            return .deep
-        case 3:
-            return .core
-        case 2:
-            return .awake
-        case 1:
-            return .unspecified
-        case 0:
-            return .inBed
-        default:
-            return .ignored
+        if rawValue == HKCategoryValueSleepAnalysis.inBed.rawValue { return .inBed }
+        if rawValue == HKCategoryValueSleepAnalysis.asleep.rawValue { return .unspecified }
+
+        if #available(iOS 16.0, *) {
+            if rawValue == HKCategoryValueSleepAnalysis.awake.rawValue { return .awake }
+            if rawValue == HKCategoryValueSleepAnalysis.asleepREM.rawValue { return .rem }
+            if rawValue == HKCategoryValueSleepAnalysis.asleepCore.rawValue { return .core }
+            if rawValue == HKCategoryValueSleepAnalysis.asleepDeep.rawValue { return .deep }
+            if rawValue == HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue { return .unspecified }
         }
+
+        return .ignored
     }
 
     private func sleepStageName(_ stage: BBDOSleepStage) -> String {
@@ -339,8 +332,24 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         comps.hour = 12
         let noonToday = cal.date(from: comps) ?? now
         let start = cal.date(byAdding: .hour, value: -24, to: noonToday) ?? now
-        let predicate = HKQuery.predicateForSamples(withStart: start, end: noonToday, options: [])
-        let q = HKSampleQuery(sampleType: sleepType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, samples, _ in
+        let datePredicate = HKQuery.predicateForSamples(withStart: start, end: noonToday, options: [])
+        var valuePredicates: [NSPredicate] = [
+            HKQuery.predicateForCategorySamples(with: .equalTo, value: HKCategoryValueSleepAnalysis.inBed.rawValue),
+            HKQuery.predicateForCategorySamples(with: .equalTo, value: HKCategoryValueSleepAnalysis.asleep.rawValue),
+        ]
+        if #available(iOS 16.0, *) {
+            valuePredicates.append(contentsOf: [
+                HKQuery.predicateForCategorySamples(with: .equalTo, value: HKCategoryValueSleepAnalysis.awake.rawValue),
+                HKQuery.predicateForCategorySamples(with: .equalTo, value: HKCategoryValueSleepAnalysis.asleepREM.rawValue),
+                HKQuery.predicateForCategorySamples(with: .equalTo, value: HKCategoryValueSleepAnalysis.asleepCore.rawValue),
+                HKQuery.predicateForCategorySamples(with: .equalTo, value: HKCategoryValueSleepAnalysis.asleepDeep.rawValue),
+                HKQuery.predicateForCategorySamples(with: .equalTo, value: HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue),
+            ])
+        }
+        let stagePredicate = NSCompoundPredicate(orPredicateWithSubpredicates: valuePredicates)
+        let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [datePredicate, stagePredicate])
+        let sort = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)
+        let q = HKSampleQuery(sampleType: sleepType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sort]) { _, samples, _ in
             let all = (samples as? [HKCategorySample]) ?? []
 
             // Apple Health can return overlapping records: iPhone may write one

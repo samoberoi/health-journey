@@ -103,7 +103,7 @@ export default function SleepBreakdownCard() {
   const wakeTime = fmtTime(snap?.sleepEnd);
   const nightLabel = fmtDateLabel(snap?.sleepStart);
   const hasSpecificSleepStages = totals.rem + totals.core + totals.deep > 0;
-  const visibleStages = hasSpecificSleepStages ? STAGES : [...STAGES, UNSPECIFIED_STAGE];
+  const visibleStages = hasSpecificSleepStages ? STAGES : [STAGES[0], UNSPECIFIED_STAGE];
 
   return (
     <>

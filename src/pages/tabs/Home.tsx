@@ -1534,7 +1534,7 @@ export default function Home({ onProfileOpen, packageKey }: { onProfileOpen?: ()
           : bmi < 30 ? "var(--bbdo-amber)"
           : "var(--bbdo-red)";
         return (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-4 gap-2">
             <MetricRing
               value={healthScore}
               label="Health"

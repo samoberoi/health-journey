@@ -19,6 +19,11 @@ export type HealthSnapshot = {
   glucoseMgDl?: number;
   glucoseAt?: string;
   sleepHours?: number;
+  sleepAwakeMin?: number;
+  sleepRemMin?: number;
+  sleepCoreMin?: number;
+  sleepDeepMin?: number;
+  sleepUnspecifiedMin?: number;
 };
 
 export type EcgReading = {

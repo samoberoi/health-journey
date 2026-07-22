@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import LabHistorySection from "@/components/lab/LabHistorySection";
 import ThyrocarePoweredBy from "@/components/lab/ThyrocarePoweredBy";
 import LabBookingDialog from "@/components/lab/LabBookingDialog";
+import { LabTestParametersDialog } from "@/components/lab/LabTestParametersDialog";
 import { patientPriceFor, useLabTestMarkup } from "@/lib/labTestMarkup";
 
 interface Props {
@@ -28,6 +29,9 @@ export default function FoundationLabCard({ userId }: Props) {
   const [open, setOpen] = useState(false);
   const [basicCode, setBasicCode] = useState<string | null>(null);
   const [basicPrice, setBasicPrice] = useState<{ price: number; original: number } | null>(null);
+  const [basicId, setBasicId] = useState<string | null>(null);
+  const [basicName, setBasicName] = useState<string | null>(null);
+  const [showDetails, setShowDetails] = useState(false);
   const [booking, setBooking] = useState(false);
   const markupPct = useLabTestMarkup();
 
@@ -89,12 +93,14 @@ export default function FoundationLabCard({ userId }: Props) {
     (async () => {
       const { data } = await supabase
         .from("thyrocare_tests" as any)
-        .select("product_code, product_name, offer_rate, rate, markup_pct")
+        .select("id, product_code, product_name, offer_rate, rate, markup_pct")
         .eq("is_active", true);
-      const list = ((data as any) || []) as { product_code: string; product_name: string; offer_rate: number | null; rate: number | null; markup_pct: number | null }[];
+      const list = ((data as any) || []) as { id: string; product_code: string; product_name: string; offer_rate: number | null; rate: number | null; markup_pct: number | null }[];
       const basic = list.find((t) => (t.product_name || "").toUpperCase().includes("BASIC"));
       if (!cancelled && basic) {
         setBasicCode(basic.product_code);
+        setBasicId(basic.id);
+        setBasicName(basic.product_name);
         const price = patientPriceFor(basic.offer_rate ?? basic.rate, basic.markup_pct, markupPct) ?? 0;
         const original = Number(basic.rate || 0);
         setBasicPrice({ price, original });
@@ -241,18 +247,28 @@ export default function FoundationLabCard({ userId }: Props) {
               )}
             </div>
           )}
-          <button
-            type="button"
-            onClick={openBooking}
-            disabled={!basicCode}
-            className="mt-4 inline-flex items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-bold text-white active:scale-[0.98] transition-transform disabled:opacity-60"
-            style={{ background: "var(--bbdo-red)" }}
-          >
-            {basicPrice && basicPrice.price > 0
-              ? `Book for ₹${basicPrice.price.toLocaleString("en-IN")}`
-              : "Book lab test"}
-            <ChevronRight className="w-4 h-4" />
-          </button>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={openBooking}
+              disabled={!basicCode}
+              className="inline-flex items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-bold text-white active:scale-[0.98] transition-transform disabled:opacity-60"
+              style={{ background: "var(--bbdo-red)" }}
+            >
+              {basicPrice && basicPrice.price > 0
+                ? `Book for ₹${basicPrice.price.toLocaleString("en-IN")}`
+                : "Book lab test"}
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowDetails(true)}
+              disabled={!basicId}
+              className="inline-flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-bold border border-border bg-background text-foreground active:scale-[0.98] transition-transform disabled:opacity-60"
+            >
+              View details
+            </button>
+          </div>
         </motion.div>
       )}
 
@@ -292,6 +308,14 @@ export default function FoundationLabCard({ userId }: Props) {
         onClose={() => setBooking(false)}
         productCodes={basicCode ? [basicCode] : []}
         onBooked={() => setHasResults((v) => v)}
+      />
+
+      <LabTestParametersDialog
+        open={showDetails}
+        onOpenChange={setShowDetails}
+        testId={basicId}
+        testName={basicName}
+        productCode={basicCode}
       />
     </>
   );

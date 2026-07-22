@@ -74,7 +74,7 @@ export default function TensionScreen() {
         </div>
 
         <motion.div
-          className="mt-auto pt-6 flex flex-col items-center shrink-0"
+          className="ob-bottom flex flex-col items-center shrink-0"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
@@ -86,8 +86,8 @@ export default function TensionScreen() {
           >
             What can I do? <ArrowRight className="w-4 h-4" />
           </motion.button>
-          <p className="text-muted-foreground/70 text-[11.5px] mt-2.5">It's reversible. Let's show you how.</p>
         </motion.div>
+
       </div>
     </div>
   );

@@ -66,7 +66,7 @@ export default function RealityHook() {
         </div>
 
         <motion.div
-          className="mt-auto pt-5 flex items-center justify-between gap-3 shrink-0"
+          className="ob-bottom flex items-center justify-between gap-3"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}

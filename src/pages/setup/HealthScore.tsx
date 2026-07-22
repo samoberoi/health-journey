@@ -167,10 +167,12 @@ export default function HealthScore() {
           </div>
         </div>
 
-        <motion.button onClick={() => navigate("/score-interpretation")} className="ob-cta gradient-blue glow-blue mt-auto"
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1 }} whileTap={{ scale: 0.98 }}>
-          Continue <ChevronRight className="w-5 h-5" strokeWidth={1.5} />
-        </motion.button>
+        <div className="ob-bottom">
+          <motion.button onClick={() => navigate("/score-interpretation")} className="ob-cta gradient-blue glow-blue"
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1 }} whileTap={{ scale: 0.98 }}>
+            Continue <ChevronRight className="w-5 h-5" strokeWidth={1.5} />
+          </motion.button>
+        </div>
 
       </motion.div>
     </div>

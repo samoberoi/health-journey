@@ -56,8 +56,10 @@ export default function ScoreInterpretation() {
             <p className="text-muted-foreground text-sm leading-relaxed">We'll show you exactly how your health trajectory could change — and recommend the perfect plan for your profile.</p>
           </motion.div>
         </div>
+      </div>
 
-        <motion.button onClick={() => navigate("/trajectory")} className="ob-cta gradient-blue glow-blue mt-auto" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }} whileTap={{ scale: 0.98 }}>
+      <div className="ob-bottom">
+        <motion.button onClick={() => navigate("/trajectory")} className="ob-cta gradient-blue glow-blue" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }} whileTap={{ scale: 0.98 }}>
           See my trajectory <ChevronRight className="w-5 h-5" />
         </motion.button>
       </div>

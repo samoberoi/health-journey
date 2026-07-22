@@ -19,7 +19,7 @@ export default function TensionScreen() {
   return (
     <div className="phone-container ob-lock min-h-dvh flex flex-col bg-background overflow-x-hidden">
       <SoundToggle />
-      <div className="flex-1 flex flex-col px-5 pt-[calc(env(safe-area-inset-top)+2rem)] pb-[calc(env(safe-area-inset-bottom)+2.5rem+var(--bbdo-onboarding-bottom-guard,0px))]">
+      <div className="flex-1 flex flex-col px-5 pt-[calc(env(safe-area-inset-top)+2rem)] mobile-bottom-safe">
 
 
 

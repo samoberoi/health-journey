@@ -125,11 +125,11 @@ export default function ClinicalData() {
       </div>
 
 
-      <div className="flex gap-3 mt-8 shrink-0">
+      <div className="ob-bottom flex gap-3 shrink-0">
         <button onClick={prev} className="w-14 h-14 rounded-xl flex items-center justify-center text-muted-foreground bg-card">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <motion.button onClick={next} disabled={!canGoNext()} className="flex-1 gradient-blue text-primary-foreground font-bold py-4 rounded-xl glow-blue disabled:opacity-40 flex items-center justify-center gap-2" whileTap={{ scale: 0.98 }}>
+        <motion.button onClick={next} disabled={!canGoNext()} className="ob-cta flex-1 gradient-blue glow-blue disabled:opacity-40" whileTap={{ scale: 0.98 }}>
           {isLast && !showDiabetesType ? "Continue" : "Next"} <ArrowRight className="w-5 h-5" />
         </motion.button>
       </div>

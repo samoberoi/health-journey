@@ -271,28 +271,37 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     private func sleepStage(for rawValue: Int) -> BBDOSleepStage {
-        if #available(iOS 16.0, *) {
-            switch rawValue {
-            case HKCategoryValueSleepAnalysis.awake.rawValue:
-                return .awake
-            case HKCategoryValueSleepAnalysis.asleepREM.rawValue:
-                return .rem
-            case HKCategoryValueSleepAnalysis.asleepCore.rawValue:
-                return .core
-            case HKCategoryValueSleepAnalysis.asleepDeep.rawValue:
-                return .deep
-            case HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue:
-                return .unspecified
-            case HKCategoryValueSleepAnalysis.inBed.rawValue:
-                return .inBed
-            default:
-                return .ignored
-            }
+        // Keep this numeric first. Apple Watch sleep stages are HealthKit raw
+        // category values and can still be returned on devices where the SDK
+        // availability wrappers are not a reliable runtime discriminator.
+        switch rawValue {
+        case 5:
+            return .rem
+        case 4:
+            return .deep
+        case 3:
+            return .core
+        case 2:
+            return .awake
+        case 1:
+            return .unspecified
+        case 0:
+            return .inBed
+        default:
+            return .ignored
         }
+    }
 
-        if rawValue == HKCategoryValueSleepAnalysis.asleep.rawValue { return .unspecified }
-        if rawValue == HKCategoryValueSleepAnalysis.inBed.rawValue { return .inBed }
-        return .ignored
+    private func sleepStageName(_ stage: BBDOSleepStage) -> String {
+        switch stage {
+        case .awake: return "awake"
+        case .rem: return "rem"
+        case .core: return "core"
+        case .deep: return "deep"
+        case .unspecified: return "unspecified"
+        case .inBed: return "inBed"
+        case .ignored: return "ignored"
+        }
     }
 
     private func isAsleepStage(_ stage: BBDOSleepStage) -> Bool {
@@ -341,11 +350,14 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
             // every HealthKit boundary, then choose the most specific stage for
             // each interval. This preserves Watch stages and ignores duplicate
             // generic asleep data only where a stage exists.
-            let asleepSamples = all
-                .filter { self.isAsleepStage(self.sleepStage(for: $0.value)) }
+            let sleepRelatedSamples = all
+                .filter {
+                    let stage = self.sleepStage(for: $0.value)
+                    return stage != .ignored && stage != .inBed
+                }
                 .sorted { $0.startDate < $1.startDate }
 
-            guard !asleepSamples.isEmpty else {
+            guard !sleepRelatedSamples.isEmpty else {
                 completion(0, 0, 0, 0, 0, nil, nil)
                 return
             }
@@ -355,7 +367,7 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
             var currentStart: Date? = nil
             var currentEnd: Date? = nil
 
-            for sample in asleepSamples {
+            for sample in sleepRelatedSamples {
                 if currentStart == nil || currentEnd == nil {
                     currentStart = sample.startDate
                     currentEnd = sample.endDate
@@ -374,9 +386,47 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
                 sessions.append((start: cs, end: ce))
             }
 
+            func sessionScore(_ session: (start: Date, end: Date)) -> (specific: TimeInterval, asleep: TimeInterval, end: TimeInterval) {
+                var specific: TimeInterval = 0
+                var asleep: TimeInterval = 0
+                let overlapping = all.filter { $0.endDate > session.start && $0.startDate < session.end }
+                var boundaries = Set<Date>()
+                boundaries.insert(session.start)
+                boundaries.insert(session.end)
+                for sample in overlapping {
+                    boundaries.insert(max(sample.startDate, session.start))
+                    boundaries.insert(min(sample.endDate, session.end))
+                }
+                let points = boundaries.sorted()
+                if points.count >= 2 {
+                    for idx in 0..<(points.count - 1) {
+                        let segmentStart = points[idx]
+                        let segmentEnd = points[idx + 1]
+                        let duration = segmentEnd.timeIntervalSince(segmentStart)
+                        if duration <= 0 { continue }
+                        var chosenStage = BBDOSleepStage.ignored
+                        for sample in overlapping where sample.startDate < segmentEnd && sample.endDate > segmentStart {
+                            let stage = self.sleepStage(for: sample.value)
+                            if self.sleepStagePriority(stage) > self.sleepStagePriority(chosenStage) {
+                                chosenStage = stage
+                            }
+                        }
+                        if self.isAsleepStage(chosenStage) { asleep += duration }
+                        if chosenStage == .rem || chosenStage == .core || chosenStage == .deep { specific += duration }
+                    }
+                }
+                return (specific, asleep, session.end.timeIntervalSince1970)
+            }
+
             guard let sleepSession = sessions
                 .filter({ $0.end.timeIntervalSince($0.start) >= 20 * 60 })
-                .max(by: { $0.end < $1.end }) else {
+                .max(by: { lhs, rhs in
+                    let l = sessionScore(lhs)
+                    let r = sessionScore(rhs)
+                    if l.specific != r.specific { return l.specific < r.specific }
+                    if l.asleep != r.asleep { return l.asleep < r.asleep }
+                    return l.end < r.end
+                }) else {
                 completion(0, 0, 0, 0, 0, nil, nil)
                 return
             }
@@ -433,7 +483,12 @@ public class BBDOHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
                 }
             }
 
-            bbdoNativeLog("Sleep breakdown samples=\(all.count) relevant=\(relevant.count) REM=\(Int(rem / 60)) Core=\(Int(core / 60)) Deep=\(Int(deep / 60)) Awake=\(Int(awake / 60)) Unspecified=\(Int(unspec / 60))")
+            var rawCounts: [String: Int] = [:]
+            for sample in relevant {
+                let stageName = self.sleepStageName(self.sleepStage(for: sample.value))
+                rawCounts["\(sample.value):\(stageName)", default: 0] += 1
+            }
+            bbdoNativeLog("Sleep breakdown samples=\(all.count) relevant=\(relevant.count) raw=\(rawCounts) REM=\(Int(rem / 60)) Core=\(Int(core / 60)) Deep=\(Int(deep / 60)) Awake=\(Int(awake / 60)) Unspecified=\(Int(unspec / 60))")
             completion(awake / 60.0, rem / 60.0, core / 60.0, deep / 60.0, unspec / 60.0, sessionStart, sessionEnd)
         }
         healthStore.execute(q)

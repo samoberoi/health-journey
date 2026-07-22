@@ -152,7 +152,7 @@
     min-height: 100%;
   }
   html.bb-native { --bbdo-native-bottom-guard: 0px; --bbdo-onboarding-bottom-guard: 0px; --bbdo-native-top-guard: 0px; }
-  html.bb-native.bb-android { --bbdo-native-bottom-guard: 14px; --bbdo-onboarding-bottom-guard: 0px; --bbdo-native-top-guard: 8px; }
+  html.bb-native.bb-android { --bbdo-native-bottom-guard: 56px; --bbdo-onboarding-bottom-guard: 0px; --bbdo-native-top-guard: 8px; }
   html.bb-native,
   html.bb-native body,
   html.bb-native #root {

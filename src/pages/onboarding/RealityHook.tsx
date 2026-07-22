@@ -35,7 +35,7 @@ export default function RealityHook() {
   return (
     <div className="phone-container ob-lock overflow-x-hidden overflow-y-auto" style={{ minHeight: "100dvh", WebkitOverflowScrolling: "touch" }}>
       <SoundToggle />
-      <div className="flex-1 flex flex-col px-5 pt-[calc(env(safe-area-inset-top)+2rem)] pb-[calc(env(safe-area-inset-bottom)+2.5rem+var(--bbdo-onboarding-bottom-guard,0px))]">
+      <div className="flex-1 flex flex-col px-5 pt-[calc(env(safe-area-inset-top)+2rem)] mobile-bottom-safe">
 
 
         <HeroCard variant="navy" className="pb-8">

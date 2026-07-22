@@ -216,12 +216,12 @@ export default function Plans() {
                       isPopular
                         ? "gradient-blue text-primary-foreground glow-blue"
                         : plan.accent === "premium"
-                        ? "bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-white shadow-md shadow-amber-500/50"
+                        ? "bg-gradient-to-r from-amber-200 via-amber-300 to-amber-400 text-amber-950 shadow-md shadow-amber-300/50"
                         : "bg-amber-100 text-amber-900"
                     )}
                   >
                     {isPopular && <Star className="w-3 h-3" strokeWidth={1.5} />}
-                    {plan.accent === "premium" && <Star className="w-3 h-3 fill-white text-white" strokeWidth={1.5} />}
+                    {plan.accent === "premium" && <Star className="w-3 h-3 fill-amber-900 text-amber-900" strokeWidth={1.5} />}
                     {plan.badge}
                   </div>
                 ) : null}

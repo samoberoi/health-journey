@@ -234,28 +234,28 @@ export default function Tour() {
             >
               {/* Hero */}
               <div className="relative overflow-hidden rounded-3xl p-6 md:p-8 text-white shadow-lift" style={{ backgroundImage: p.gradient }}>
-                <div className="flex items-start justify-between gap-4">
-                  <div>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 text-white/70 text-[11px] font-semibold tracking-[0.18em] uppercase">
                       <span>Pillar {p.index} of 05</span>
                     </div>
-                    <h1 className="mt-3 font-display font-black text-4xl md:text-5xl leading-[0.95] tracking-tight">
+                    <h1 className="mt-3 font-display font-black text-[clamp(1.75rem,8vw,3rem)] md:text-5xl leading-[0.95] tracking-tight break-words">
                       {p.name}.
                     </h1>
                     <p className="mt-3 text-white/85 text-sm md:text-base leading-relaxed max-w-[36ch]">
                       {p.tagline}
                     </p>
                   </div>
-                  <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center shrink-0 overflow-hidden">
-                    <p.Icon className="w-7 h-7 md:w-8 md:h-8" strokeWidth={1.75} />
+                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center shrink-0 overflow-hidden">
+                    <p.Icon className="w-6 h-6 md:w-8 md:h-8" strokeWidth={1.75} />
                   </div>
                 </div>
 
-                <div className="mt-6 grid grid-cols-3 gap-3">
+                <div className="mt-6 grid grid-cols-3 gap-2">
                   {p.stats.map((s) => (
-                    <div key={s.label} className="rounded-2xl bg-white/10 backdrop-blur px-3 py-3 border border-white/10">
-                      <div className="font-display font-black text-lg md:text-xl leading-none">{s.value}</div>
-                      <div className="mt-1.5 text-[10px] md:text-[11px] uppercase tracking-wide text-white/70 leading-tight">{s.label}</div>
+                    <div key={s.label} className="min-w-0 rounded-2xl bg-white/10 backdrop-blur px-2.5 py-3 border border-white/10">
+                      <div className="font-display font-black text-[clamp(0.95rem,4vw,1.25rem)] md:text-xl leading-none break-words">{s.value}</div>
+                      <div className="mt-1.5 text-[10px] md:text-[11px] uppercase tracking-wide text-white/70 leading-tight break-words">{s.label}</div>
                     </div>
                   ))}
                 </div>
@@ -325,13 +325,13 @@ export default function Tour() {
                 Alone they help. Together, they transform. Your dashboard is set up around these five — one tab per pillar!
               </p>
 
-              <div className="mt-8 grid grid-cols-5 gap-2 max-w-md mx-auto">
+              <div className="mt-8 grid grid-cols-5 gap-1.5 max-w-md mx-auto px-1">
                 {PILLARS.map((pl) => (
-                  <div key={pl.key} className="flex flex-col items-center gap-1.5">
-                    <div className="w-10 h-10 rounded-xl text-white flex items-center justify-center overflow-hidden" style={{ backgroundImage: pl.gradient }}>
+                  <div key={pl.key} className="flex flex-col items-center gap-1.5 min-w-0">
+                    <div className="w-10 h-10 rounded-xl text-white flex items-center justify-center overflow-hidden shrink-0" style={{ backgroundImage: pl.gradient }}>
                       <pl.Icon className="w-5 h-5" strokeWidth={1.75} />
                     </div>
-                    <span className="text-[10px] font-semibold tracking-tight text-foreground/80">{pl.name.split(" ")[0]}</span>
+                    <span className="w-full text-center text-[9px] leading-tight font-semibold tracking-tight text-foreground/80 break-words">{pl.name.split(" ")[0]}</span>
                   </div>
                 ))}
               </div>

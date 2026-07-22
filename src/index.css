@@ -152,7 +152,7 @@
     min-height: 100%;
   }
   html.bb-native { --bbdo-native-bottom-guard: 0px; --bbdo-onboarding-bottom-guard: 0px; --bbdo-native-top-guard: 0px; }
-  html.bb-native.bb-android { --bbdo-native-bottom-guard: 14px; --bbdo-onboarding-bottom-guard: 96px; --bbdo-native-top-guard: 8px; }
+  html.bb-native.bb-android { --bbdo-native-bottom-guard: 14px; --bbdo-onboarding-bottom-guard: 0px; --bbdo-native-top-guard: 8px; }
   html.bb-native,
   html.bb-native body,
   html.bb-native #root {
@@ -468,11 +468,7 @@
   }
 
   .mobile-bottom-safe {
-    padding-bottom: calc(env(safe-area-inset-bottom) + var(--bbdo-onboarding-bottom-guard, 0px) + 2.5rem) !important;
-  }
-
-  html.bb-native.bb-android .mobile-bottom-safe {
-    padding-bottom: calc(env(safe-area-inset-bottom) + var(--bbdo-onboarding-bottom-guard) + 2.5rem) !important;
+    padding-bottom: calc(env(safe-area-inset-bottom) + var(--bbdo-native-bottom-guard, 0px) + 1rem) !important;
   }
 
   /* Onboarding */
@@ -491,7 +487,7 @@
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
     touch-action: pan-y;
-    scroll-padding-bottom: calc(2rem + env(safe-area-inset-bottom) + var(--bbdo-onboarding-bottom-guard, 0px));
+    scroll-padding-bottom: calc(4.5rem + env(safe-area-inset-bottom) + var(--bbdo-native-bottom-guard, 0px));
   }
   /* Android onboarding layout: fill the screen, keep the CTA anchored just
      above the system nav bar via mt-auto (no artificial padding pushing it
@@ -516,9 +512,9 @@
     content: ""; position: absolute; inset: 0;
     background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.85) 55%, rgba(255,255,255,1) 100%);
   }
-  .ob-content { @apply relative z-10 flex flex-col; min-height: 100%; padding: calc(2rem + env(safe-area-inset-top) + var(--bbdo-native-top-guard, 0px)) 1.25rem calc(2.5rem + env(safe-area-inset-bottom) + var(--bbdo-onboarding-bottom-guard, 0px)); }
+  .ob-content { @apply relative z-10 flex flex-col; min-height: 100%; padding: calc(2rem + env(safe-area-inset-top) + var(--bbdo-native-top-guard, 0px)) 1.25rem calc(1rem + env(safe-area-inset-bottom) + var(--bbdo-native-bottom-guard, 0px)); }
   @media (max-width: 380px) {
-    .ob-content { padding-top: calc(1.5rem + env(safe-area-inset-top) + var(--bbdo-native-top-guard, 0px)); padding-left: 1rem; padding-right: 1rem; padding-bottom: calc(2rem + env(safe-area-inset-bottom) + var(--bbdo-onboarding-bottom-guard, 0px)); }
+    .ob-content { padding-top: calc(1.5rem + env(safe-area-inset-top) + var(--bbdo-native-top-guard, 0px)); padding-left: 1rem; padding-right: 1rem; padding-bottom: calc(1rem + env(safe-area-inset-bottom) + var(--bbdo-native-bottom-guard, 0px)); }
   }
   @media (max-height: 700px) {
     .ob-content { padding-top: calc(1rem + env(safe-area-inset-top) + var(--bbdo-native-top-guard, 0px)); }

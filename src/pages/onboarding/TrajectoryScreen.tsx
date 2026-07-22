@@ -37,7 +37,7 @@ export default function TrajectoryScreen() {
       const waveB = Math.sin(i * 0.75 + 0.6) * 2.4;
       // "Without change" — gentle decline with small dips
       const current = Math.max(8, Math.round(score - t * 32 + waveA));
-      // "With BBDO" — accelerating rise with a soft S-curve
+      // "Continue with BBDO" — accelerating rise with a soft S-curve
       const improved = Math.min(
         98,
         Math.round(score + (100 - score) * (1 - Math.pow(1 - t, 2.2)) + waveB),
@@ -74,14 +74,14 @@ export default function TrajectoryScreen() {
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full" style={{ background: "var(--bbdo-red, #E63946)" }} />
               <span className="text-[10px] font-bold text-bbdo-ink-soft uppercase tracking-wider">
-                I shall pass for now
+                Pass for now
               </span>
 
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full" style={{ background: "var(--bbdo-blue, #1E3A8A)" }} />
               <span className="text-[10px] font-bold text-bbdo-ink uppercase tracking-wider">
-                With BBDO
+                Continue with BBDO
               </span>
             </div>
           </div>
@@ -129,7 +129,7 @@ export default function TrajectoryScreen() {
                 labelStyle={{ color: "var(--bbdo-ink, #0F1A3D)", fontWeight: 800 }}
                 formatter={(value: number, name: string) => [
                   `${value} pts`,
-                  name === "current" ? "I shall pass for now" : "With BBDO",
+                  name === "current" ? "Pass for now" : "Continue with BBDO",
                 ]}
 
               />
@@ -164,7 +164,7 @@ export default function TrajectoryScreen() {
             <div className="rounded-xl px-3 py-2.5 flex items-start gap-2 text-left" style={{ background: "rgba(230,57,70,0.08)" }}>
               <TrendingDown className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "var(--bbdo-red, #E63946)" }} strokeWidth={2} />
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-bbdo-ink-soft leading-tight">I shall pass for now</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-bbdo-ink-soft leading-tight">Pass for now</p>
                 <p className="text-[15px] font-black tabular-nums mt-0.5" style={{ color: "var(--bbdo-red, #E63946)" }}>
                   {data[data.length - 1].current}
                 </p>
@@ -173,7 +173,7 @@ export default function TrajectoryScreen() {
             <div className="rounded-xl px-3 py-2.5 flex items-start gap-2 text-left" style={{ background: "rgba(30,58,138,0.08)" }}>
               <TrendingUp className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "var(--bbdo-blue, #1E3A8A)" }} strokeWidth={2} />
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-bbdo-ink-soft leading-tight">With BBDO</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-bbdo-ink-soft leading-tight">Continue with BBDO</p>
                 <p className="text-[15px] font-black tabular-nums mt-0.5" style={{ color: "var(--bbdo-blue, #1E3A8A)" }}>
                   {data[data.length - 1].improved}
                 </p>

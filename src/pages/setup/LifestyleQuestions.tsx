@@ -31,7 +31,7 @@ export default function LifestyleQuestions() {
     const gender = u.profile.gender ?? "male";
     const assessment = calculateHealthScore(body, clinical, lifestyle, {}, gender);
     saveUser({ bodyMetrics: body, assessment });
-    navigate("/analyzing");
+    navigate("/insight");
   };
 
   const OptionRow = ({ label, selected, options, onSelect, cols = 2 }: {

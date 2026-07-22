@@ -94,7 +94,7 @@ export default function DeepProfiling() {
       } catch (e) { console.error("Failed to save initial_health_score", e); }
     }
 
-    navigate("/processing");
+    navigate("/setup/score");
   };
 
   const goNext = () => {

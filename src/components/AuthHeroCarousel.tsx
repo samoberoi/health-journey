@@ -15,6 +15,19 @@ const SLIDES = [
   { url: resolveAssetUrl(morningRitual.url), alt: "Morning ritual — lemon water, coffee and mindful start" },
 ];
 
+// Eagerly warm the browser/CDN cache the moment this module is imported, so
+// the first slide paints instantly and subsequent slides swap without a fetch.
+const preloadedImages: HTMLImageElement[] = [];
+if (typeof window !== "undefined") {
+  SLIDES.forEach((s) => {
+    const img = new Image();
+    img.decoding = "async";
+    (img as HTMLImageElement & { fetchPriority?: string }).fetchPriority = "high";
+    img.src = s.url;
+    preloadedImages.push(img);
+  });
+}
+
 interface Props {
   alt?: string;
   intervalMs?: number;
@@ -29,18 +42,18 @@ export default function AuthHeroCarousel({ intervalMs = 4200 }: Props) {
 
   return (
     <>
-      <AnimatePresence mode="sync">
-        <motion.img
-          key={i}
-          src={SLIDES[i].url}
-          alt={SLIDES[i].alt}
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ opacity: { duration: 0.9, ease: "easeInOut" }, scale: { duration: 6, ease: "linear" } }}
+      {/* Render every slide once so they're all decoded and ready — only the active one is visible. */}
+      {SLIDES.map((s, idx) => (
+        <img
+          key={idx}
+          src={s.url}
+          alt={s.alt}
+          loading="eager"
+          decoding="async"
           className="absolute inset-0 w-full h-full object-cover"
+          style={{ opacity: idx === i ? 1 : 0, transition: "opacity 700ms ease-in-out", zIndex: idx === i ? 1 : 0 }}
         />
-      </AnimatePresence>
+      ))}
       <div className="absolute left-1/2 -translate-x-1/2 bottom-3 flex gap-1.5 z-10">
         {SLIDES.map((_, idx) => (
           <span

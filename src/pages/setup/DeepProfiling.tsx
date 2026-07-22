@@ -166,11 +166,11 @@ export default function DeepProfiling() {
         <button onClick={() => current > 0 ? setCurrent(current - 1) : navigate("/projection-preview")} className="w-14 h-14 rounded-xl flex items-center justify-center text-muted-foreground bg-card">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <button onClick={skip} className="ob-cta flex-1 text-white whitespace-nowrap" style={{ background: "var(--bbdo-red, #E63946)" }}>
+        <button onClick={skip} className="ob-cta flex-1 whitespace-nowrap" style={{ background: "transparent", color: "var(--bbdo-ink)", border: "1px solid var(--bbdo-line, rgba(0,0,0,0.12))", boxShadow: "none" }}>
           Skip
         </button>
 
-        <motion.button onClick={goNext} disabled={!canProceed} className="ob-cta flex-1 gradient-blue glow-blue disabled:opacity-40 whitespace-nowrap" whileTap={{ scale: 0.98 }}>
+        <motion.button onClick={goNext} disabled={!canProceed} className="ob-cta flex-1 disabled:opacity-40 whitespace-nowrap" style={{ background: "var(--bbdo-blue)", color: "#fff" }} whileTap={{ scale: 0.98 }}>
           {current === filteredSteps.length - 1 ? "Calculate Score" : "Next"} <ArrowRight className="w-5 h-5" />
         </motion.button>
       </div>

@@ -52,14 +52,14 @@ export default function AuthorityStatement() {
       </div>
 
       <motion.div
-        className="shrink-0"
+        className="ob-bottom"
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.9 }}
       >
         <motion.button
           onClick={() => navigate("/punch")}
-          className="w-full gradient-blue text-primary-foreground font-bold py-4 rounded-full flex items-center justify-center gap-2 glow-blue"
+          className="ob-cta gradient-blue glow-blue"
           whileTap={{ scale: 0.98 }}
         >
           How it works <ArrowRight className="w-5 h-5" />

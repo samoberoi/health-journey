@@ -467,8 +467,12 @@
     scroll-padding-bottom: calc(var(--bbdo-native-bottom-guard) + 1.5rem);
   }
 
+  .mobile-bottom-safe {
+    padding-bottom: calc(env(safe-area-inset-bottom) + var(--bbdo-onboarding-bottom-guard, 0px) + 2.5rem) !important;
+  }
+
   html.bb-native.bb-android .mobile-bottom-safe {
-    padding-bottom: calc(var(--bbdo-onboarding-bottom-guard) + 1rem) !important;
+    padding-bottom: calc(env(safe-area-inset-bottom) + var(--bbdo-onboarding-bottom-guard) + 2.5rem) !important;
   }
 
   /* Onboarding */
@@ -529,7 +533,7 @@
   .ob-stack { @apply flex flex-col gap-2.5; }
   .ob-frost { @apply sub-card; }
   .ob-icon { @apply flex items-center justify-center flex-shrink-0; width: 2.5rem; height: 2.5rem; border-radius: 9999px; background: var(--bbdo-blue-soft); color: var(--bbdo-blue); }
-  .ob-bottom { @apply mt-auto pt-5; }
+  .ob-bottom { @apply mt-auto pt-5 w-full shrink-0; }
   .ob-cta {
     @apply w-full text-center font-bold text-white flex items-center justify-center gap-2;
     min-height: 52px; padding: 0.9rem 1.25rem;

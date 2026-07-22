@@ -78,14 +78,14 @@ export default function BreakPattern() {
 
         {/* CTA */}
         <motion.div
-          className="mt-auto pt-3 shrink-0"
+          className="ob-bottom"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.1 }}
         >
           <motion.button
             onClick={() => navigate("/transformation")}
-            className="w-full gradient-blue text-primary-foreground font-bold py-3.5 rounded-full flex items-center justify-center gap-2 glow-blue"
+            className="ob-cta gradient-blue glow-blue"
             whileTap={{ scale: 0.98 }}
           >
             See real results <ArrowRight className="w-5 h-5" />

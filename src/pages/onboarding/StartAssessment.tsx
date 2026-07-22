@@ -33,7 +33,7 @@ export default function StartAssessment() {
       style={{
         minHeight: "100dvh",
         paddingTop: "calc(env(safe-area-inset-top) + 1rem)",
-        paddingBottom: "calc(env(safe-area-inset-bottom) + var(--bbdo-native-bottom-guard, 0px) + 1.5rem)",
+        paddingBottom: "calc(env(safe-area-inset-bottom) + var(--bbdo-onboarding-bottom-guard, 0px) + 2.5rem)",
         WebkitOverflowScrolling: "touch",
       }}
     >
@@ -54,7 +54,7 @@ export default function StartAssessment() {
           );
         })}
       </div>
-      <motion.div className="w-full max-w-sm mt-auto pt-4" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}>
+      <motion.div className="ob-bottom w-full max-w-sm" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}>
         <motion.button type="button" onClick={goToLogin} className="ob-cta" whileTap={{ scale: 0.98 }}>Get Started <ArrowRight className="h-4 w-4" /></motion.button>
       </motion.div>
     </div>

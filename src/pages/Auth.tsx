@@ -457,12 +457,12 @@ export default function Auth() {
                   </span>
                 </label>
 
-                <div className="mt-auto pt-6">
+                <div className="ob-bottom">
                   <motion.button
                     onClick={sendOtp}
                     disabled={phone.length < 10 || !consent || loading}
                     whileTap={{ scale: 0.98 }}
-                    className="w-full gradient-blue glow-blue text-primary-foreground font-bold py-4 flex items-center justify-center gap-2 disabled:opacity-40 text-[15px] tracking-wide"
+                    className="ob-cta gradient-blue glow-blue disabled:opacity-40"
                   >
                     {loading
                       ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -522,12 +522,12 @@ export default function Auth() {
                 )}
 
 
-                <div className="mt-auto pt-6">
+                <div className="ob-bottom">
                   <motion.button
                     onClick={verifyOtp}
                     disabled={otp.length < 6 || loading}
                     whileTap={{ scale: 0.98 }}
-                    className="w-full gradient-blue glow-blue text-primary-foreground font-bold py-4 flex items-center justify-center gap-2 disabled:opacity-40 text-[15px] tracking-wide"
+                    className="ob-cta gradient-blue glow-blue disabled:opacity-40"
                   >
                     {loading
                       ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -580,7 +580,7 @@ export default function Auth() {
               </div>
 
               <motion.button onClick={submitName} disabled={name.trim().length < 2 || !emailInput.trim() || loading}
-                className="gradient-blue text-primary-foreground font-bold py-4 rounded-xl flex items-center justify-center gap-2 disabled:opacity-40 mt-auto glow-red text-[15px] tracking-wide"
+                className="ob-cta gradient-blue glow-blue disabled:opacity-40 mt-auto"
                 whileTap={{ scale: 0.98 }}>
                 {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <>Let's Go <ChevronRight className="w-4 h-4" /></>}
               </motion.button>

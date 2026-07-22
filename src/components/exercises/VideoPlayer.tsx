@@ -54,7 +54,9 @@ export default function VideoPlayer({ video, onClose }: { video: VideoEntry; onC
   const [restarted, setRestarted] = useState(false);
   const [playerError, setPlayerError] = useState(false);
   const [useNativePlayer] = useState(() => isNativeIOSApp());
-  const [useAndroidSimpleEmbed] = useState(() => isNativeAndroidApp());
+  // Android previously used a "simple" embed (raw youtube-nocookie iframe) but the nested
+  // iframe caused play→immediate-pause under WebView. Use the JS-API path instead.
+  const [useAndroidSimpleEmbed] = useState(() => false);
 
   // Read prior progress once on open — seed accumulator so resumes don't lose credit
   useEffect(() => {

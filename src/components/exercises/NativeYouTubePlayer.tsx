@@ -30,7 +30,11 @@ export default function NativeYouTubePlayer({
   const [launching, setLaunching] = useState(false);
   const [failed, setFailed] = useState(false);
   const useIOSNativePlayer = isNativeIOSApp();
-  const useAndroidSimpleEmbed = isNativeAndroidApp();
+  // Android previously forced the "simple" embed (raw youtube-nocookie iframe). That
+  // caused play→immediate-pause under WebView because of the nested iframe focus loss.
+  // Use the JS-API path on Android too — same as web.
+  const useAndroidSimpleEmbed = false;
+  void isNativeAndroidApp;
   const playerSrc = useMemo(
     () => youtubePlayerProxyUrl(videoId, {
       autoplay: !useAndroidSimpleEmbed,

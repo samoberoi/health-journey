@@ -22,8 +22,7 @@ if (typeof window !== "undefined") {
   SLIDES.forEach((s) => {
     const img = new Image();
     img.decoding = "async";
-    // @ts-expect-error fetchpriority is valid in modern browsers
-    img.fetchPriority = "high";
+    (img as HTMLImageElement & { fetchPriority?: string }).fetchPriority = "high";
     img.src = s.url;
     preloadedImages.push(img);
   });

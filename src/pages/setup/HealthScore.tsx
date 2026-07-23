@@ -174,7 +174,8 @@ export default function HealthScore() {
           </motion.button>
         </div>
 
-      </motion.div>
+      </div>
+
     </div>
   );
 }

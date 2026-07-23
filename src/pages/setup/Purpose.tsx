@@ -36,7 +36,7 @@ export default function Purpose() {
         <Progress value={20} className="h-1.5" />
       </div>
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col flex-1">
+      <div className="flex flex-col flex-1">
         <div className="mb-8">
           <h1 className="text-3xl font-black text-foreground mb-2">Why are you<br />here?</h1>
           <p className="text-muted-foreground text-sm">Pick all that apply — your plan adapts to your goals.</p>
@@ -73,7 +73,8 @@ export default function Purpose() {
             Continue <ArrowRight className="w-5 h-5" />
           </motion.button>
         </div>
-      </motion.div>
+      </div>
+
     </div>
   );
 }

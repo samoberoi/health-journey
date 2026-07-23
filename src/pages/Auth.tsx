@@ -359,7 +359,8 @@ export default function Auth() {
         <AnimatePresence initial={false} mode="wait">
           {step === "phone" && (
             <motion.div key="phone" className="flex flex-col flex-1"
-              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+
               transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}>
 
               {/* Top half hero image — extends to top edge */}
@@ -475,7 +476,8 @@ export default function Auth() {
 
           {step === "otp" && (
             <motion.div key="otp" className="flex flex-col flex-1"
-              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+
               transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}>
 
               {/* Top half hero image */}
@@ -540,7 +542,7 @@ export default function Auth() {
 
 
           {step === "name" && (
-            <motion.div key="name" className="flex flex-col flex-1" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}>
+            <motion.div key="name" className="flex flex-col flex-1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}>
               <motion.div className="mt-1 mb-6 flex flex-col items-center" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
                 <div className="w-24 h-24 rounded-full flex items-center justify-center mb-3 bbdo-card overflow-hidden">
                   <img src={logoImg} alt="Bye Bye Diabetes" className="w-20 h-20 object-cover rounded-full" />

@@ -528,8 +528,10 @@
     background: var(--bbdo-cream);
     border-top: 1px solid rgba(0,0,0,0.04);
   }
+  }
 
   .ob-bg { position: absolute; inset: 0; z-index: 0; opacity: 0.14; }
+
   .ob-bg img { width: 100%; height: 100%; object-fit: cover; }
   .ob-bg::after {
     content: ""; position: absolute; inset: 0;

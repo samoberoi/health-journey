@@ -91,7 +91,7 @@ export default function BasicDetails() {
             Continue <ArrowRight className="w-5 h-5" />
           </motion.button>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

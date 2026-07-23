@@ -35,7 +35,7 @@ export default function BasicDetails() {
         <Progress value={40} className="h-1.5" />
       </div>
 
-      <motion.div className="flex flex-col flex-1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <div className="flex flex-col flex-1">
         <div className="mb-8">
           <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
             <User className="w-6 h-6 text-primary" strokeWidth={1.8} />

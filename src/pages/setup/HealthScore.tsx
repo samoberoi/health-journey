@@ -91,7 +91,7 @@ export default function HealthScore() {
     <div className={`phone-container min-h-dvh flex flex-col px-5 pt-14 mobile-bottom-safe overflow-y-auto ${emotionalBg}`}>
       <SoundToggle />
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col flex-1">
+      <div className="flex flex-col flex-1">
         <div className="mb-6">
           <span className="text-xs font-medium text-primary uppercase tracking-widest">Health Report</span>
           <h1 className="text-3xl font-black text-foreground mt-1">Hi {name}, here's your<br /><span className="text-primary">health analysis</span></h1>
@@ -174,7 +174,8 @@ export default function HealthScore() {
           </motion.button>
         </div>
 
-      </motion.div>
+      </div>
+
     </div>
   );
 }

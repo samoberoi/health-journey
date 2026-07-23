@@ -65,7 +65,7 @@ export default function LifestyleQuestions() {
         <Progress value={100} className="h-1.5" />
       </div>
 
-      <motion.div className="flex flex-col flex-1" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }}>
+      <div className="flex flex-col flex-1">
         <div className="mb-6">
           <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
             <Leaf className="w-6 h-6 text-primary" strokeWidth={1.8} />
@@ -114,7 +114,7 @@ export default function LifestyleQuestions() {
             Calculate My Score <ArrowRight className="w-5 h-5" />
           </motion.button>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
